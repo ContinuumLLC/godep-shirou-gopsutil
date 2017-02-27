@@ -1,0 +1,244 @@
+package msgl
+
+import (
+	"bytes"
+	"errors"
+	"io/ioutil"
+	"testing"
+
+	apiModel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
+	gmock "github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
+	"github.com/golang/mock/gomock"
+)
+
+func createMock(ctrl *gomock.Controller, processError error, serializeError error, respBodyStr string) *gmock.MockAssetServiceDependencies {
+	mockServiceDep := gmock.NewMockAssetServiceDependencies(ctrl)
+
+	mockAssetCollectionService := gmock.NewMockAssetAssetCollectionService(ctrl)
+	mockNetworkService := gmock.NewMockAssetNetworkService(ctrl)
+	mockStorageService := gmock.NewMockAssetStorageService(ctrl)
+	mockProcessService := gmock.NewMockAssetProcessService(ctrl)
+
+	mockPerDal := gmock.NewMockAssetDal(ctrl)
+
+	assetCollectionData := apiModel.AssetCollection{}
+	networkData := apiModel.AssetNetwork{}
+	storageData := apiModel.AssetStorages{}
+	processData := apiModel.AssetProcesses{}
+
+	mockServiceDep.EXPECT().GetAssetAssetCollectionService(gomock.Any()).Return(mockAssetCollectionService)
+	mockServiceDep.EXPECT().GetAssetNetworkService(gomock.Any()).Return(mockNetworkService)
+	mockServiceDep.EXPECT().GetAssetStorageService(gomock.Any()).Return(mockStorageService)
+	mockServiceDep.EXPECT().GetAssetProcessService(gomock.Any()).Return(mockProcessService)
+
+	mockAssetCollectionService.EXPECT().Process().Return(&assetCollectionData, processError)
+	mockNetworkService.EXPECT().Process().Return(&networkData, processError)
+	mockStorageService.EXPECT().Process().Return(&storageData, processError)
+	mockProcessService.EXPECT().Process().Return(&processData, processError)
+
+	mockServiceDep.EXPECT().GetAssetAssetCollectionServiceDependencies().Return(mockServiceDep)
+	mockServiceDep.EXPECT().GetAssetNetworkServiceDependencies().Return(mockServiceDep)
+	mockServiceDep.EXPECT().GetAssetStorageServiceDependencies().Return(mockServiceDep)
+	mockServiceDep.EXPECT().GetAssetProcessServiceDependencies().Return(mockServiceDep)
+
+	mockServiceDep.EXPECT().GetAssetDal(gomock.Any()).Return(mockPerDal)
+	mockPerDal.EXPECT().SerializeObject(gomock.Any()).Return([]byte(respBodyStr), serializeError)
+
+	confMock := mock.NewMockConfigService(ctrl)
+	confMock.EXPECT().GetAssetPluginConfig().Return(&model.AssetPluginConfig{}, nil)
+	mockServiceDep.EXPECT().GetConfigService(gomock.Any()).Return(confMock).AnyTimes()
+
+	return mockServiceDep
+}
+
+func GetProcessAssetTest(t *testing.T) {
+	assetProcFact := ProcessAssetFactoryImpl{}
+
+	asset := assetProcFact.GetProcessAsset(nil, &model.AssetPluginConfig{})
+	if asset == nil {
+		t.Error("New ProcessAsset struct expected, not returned")
+	}
+}
+
+func TestAssetCollection(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	respBodyStr := "testoutput"
+
+	mockServiceDep := createMock(ctrl, nil, nil, respBodyStr)
+	processAssetFact := ProcessAssetFactoryImpl{}
+	processAsset := processAssetFact.GetProcessAsset(mockServiceDep, &model.AssetPluginConfig{})
+	req := createRequest()
+	req.Path = "/assetCollection"
+	resp, err := processAsset.ProcessAssetCollection(req)
+	if err != nil {
+		t.Errorf("Unexpected error returned %v", err)
+	}
+	if resp.Status != protocol.Ok {
+		t.Errorf("Unexpected response status returned %v", resp.Status)
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Unexpected error returned %v", err)
+	}
+
+	if string(data) != respBodyStr {
+		t.Errorf("Unexpected data returned, expected data: %s, returned data: %s", respBodyStr, data)
+	}
+
+}
+
+func TestAssetProcess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	respBodyStr := "testoutput"
+
+	mockServiceDep := createMock(ctrl, nil, nil, respBodyStr)
+	processAssetFact := ProcessAssetFactoryImpl{}
+	processAsset := processAssetFact.GetProcessAsset(mockServiceDep, &model.AssetPluginConfig{})
+	req := createRequest()
+	req.Path = "/assetCollection"
+	resp, err := processAsset.ProcessProcess(req)
+	if err != nil {
+		t.Errorf("Unexpected error returned %v", err)
+	}
+	if resp.Status != protocol.Ok {
+		t.Errorf("Unexpected response status returned %v", resp.Status)
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("Unexpected error returned %v", err)
+	}
+
+	if string(data) != respBodyStr {
+		t.Errorf("Unexpected data returned, expected data: %s, returned data: %s", respBodyStr, data)
+	}
+
+}
+
+func TestAssetConfigurationGetAssetPluginConfMapError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	//config := make(map[string]interface{})
+	getAssetPluginConfMapError := errors.New("GetAssetPluginConfMapError")
+
+	dep := mock.NewMockAssetServiceDependencies(ctrl)
+	serv := mock.NewMockConfigService(ctrl)
+	serv.EXPECT().GetAssetPluginConfMap().Return(nil, getAssetPluginConfMapError)
+	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
+
+	processAssetFact := ProcessAssetFactoryImpl{}
+	processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
+
+	req := createRequest()
+	req.Path = "/asset/configuration"
+	data := `{"AgentServiceURL": "http://localhost:8081",
+        "CommunicationBufferChannelLimit":1,
+        "CommunicationMaxDataToRetrieve":1,
+        "EndPointID":"e1",
+		"HeartBeatCounterBaseValue":  100,
+        "HeartBeatCounterMaxValue":1000,
+		"HeartbeatPluginPath" : "Path1",		
+		"PluginsLocation":
+			{"asset1":"./asset","asset1":"/asset", "asset":"./asset","c":"d"}
+		
+	}`
+	reader := bytes.NewReader([]byte(data))
+	req.Body = reader
+	_, err := processAsset.ProcessConfiguration(req)
+	if err == nil {
+		t.Errorf("Expected error not returned, Expected:%v", getAssetPluginConfMapError)
+	}
+
+	if err != getAssetPluginConfMapError {
+		t.Errorf("Unexpected error returned, Expected:%v, Returned:%v", getAssetPluginConfMapError, err)
+	}
+}
+
+func TestAssetConfigurationSetAssetPluginConfMapError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	config := make(map[string]interface{})
+	setAssetPluginConfMapError := errors.New("SetAssetPluginConfMapError")
+
+	dep := mock.NewMockAssetServiceDependencies(ctrl)
+	serv := mock.NewMockConfigService(ctrl)
+	serv.EXPECT().GetAssetPluginConfMap().Return(config, nil)
+	serv.EXPECT().SetAssetPluginMap(gomock.Any()).Return(setAssetPluginConfMapError)
+
+	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
+
+	processAssetFact := ProcessAssetFactoryImpl{}
+	processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
+
+	req := createRequest()
+	req.Path = "/asset/configuration"
+	data := `{"AgentServiceURL": "http://localhost:8081",
+        "CommunicationBufferChannelLimit":1,
+        "CommunicationMaxDataToRetrieve":1,
+        "EndPointID":"e1",
+		"HeartBeatCounterBaseValue":  100,
+        "HeartBeatCounterMaxValue":1000,
+		"HeartbeatPluginPath" : "Path1",		
+		"PluginsLocation":
+			{"asset1":"./asset","asset1":"/asset", "asset":"./asset","c":"d"}
+		
+	}`
+	reader := bytes.NewReader([]byte(data))
+	req.Body = reader
+	_, err := processAsset.ProcessConfiguration(req)
+	if err == nil {
+		t.Errorf("Expected error not returned, Expected:%v", setAssetPluginConfMapError)
+	}
+
+	if err != setAssetPluginConfMapError {
+		t.Errorf("Unexpected error returned, Expected:%v, Returned:%v", setAssetPluginConfMapError, err)
+	}
+}
+func TestAssetConfiguration(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	config := make(map[string]interface{})
+
+	dep := mock.NewMockAssetServiceDependencies(ctrl)
+	serv := mock.NewMockConfigService(ctrl)
+	serv.EXPECT().GetAssetPluginConfMap().Return(config, nil)
+	serv.EXPECT().SetAssetPluginMap(gomock.Any()).Return(nil)
+
+	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
+
+	processAssetFact := ProcessAssetFactoryImpl{}
+	processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
+
+	req := createRequest()
+	req.Path = "/asset/configuration"
+	data := `{"AgentServiceURL": "http://localhost:8081",
+        "CommunicationBufferChannelLimit":1,
+        "CommunicationMaxDataToRetrieve":1,
+        "EndPointID":"e1",
+		"HeartBeatCounterBaseValue":  100,
+        "HeartBeatCounterMaxValue":1000,
+		"HeartbeatPluginPath" : "Path1",		
+		"PluginsLocation":
+			{"asset1":"./asset","asset1":"/asset", "asset":"./asset","c":"d"}
+		
+	}`
+	reader := bytes.NewReader([]byte(data))
+	req.Body = reader
+	resp, err := processAsset.ProcessConfiguration(req)
+	if err != nil {
+		t.Errorf("Unexpected error not returned, Expected:%v", err)
+	}
+
+	if resp.Status != protocol.Ok {
+		t.Errorf("Unexpected status returned, Expected:%v, Returned:%v", protocol.Ok, resp.Status)
+	}
+}
+
+func createRequest() *protocol.Request {
+	request := protocol.NewRequest()
+	request.Headers.SetKeyValue(protocol.HdrUserAgent, "AgentCore")
+	request.Headers.SetKeyValue(protocol.HdrContentType, "text/json")
+	return request
+}
