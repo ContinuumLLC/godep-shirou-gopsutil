@@ -17,7 +17,7 @@ func TestResolvePluginPathValues(t *testing.T) {
 func TestResolveURLSuffix(t *testing.T) {
 	cfg := model.AssetPluginConfig{URLSuffix: make(map[string]string)}
 	resolveConf{}.resolveURLSuffix(&cfg)
-	if cfg.URLSuffix[model.ConstURLSuffixAssetCollection] != cAgentServiceURLAssetCollection || cfg.URLSuffix[model.ConstURLSuffixProcessor] != cAgentServiceURLProcessor {
+	if cfg.URLSuffix[model.ConstURLSuffixAssetCollection] != cAgentServiceURLAssetCollection {
 		t.Error("Mismatch default URL suffix value (assetCollection,processor)")
 		return
 	}

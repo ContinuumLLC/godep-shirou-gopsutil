@@ -20,7 +20,7 @@ func TestGetAssetListener(t *testing.T) {
 	assetListFact := AssetListenerFactory{}
 	assetSrvcDepMock := mock.NewMockAssetServiceDependencies(ctrl)
 	confMock := mock.NewMockConfigService(ctrl)
-	confMock.EXPECT().GetPerfPluginConfig().Return(&model.PerfPluginConfig{}, nil)
+	confMock.EXPECT().GetAssetPluginConfig().Return(&model.AssetPluginConfig{}, nil)
 	assetSrvcDepMock.EXPECT().GetConfigService(gomock.Any()).Return(confMock)
 	assetList := assetListFact.GetAssetListener(assetSrvcDepMock)
 	if assetList == nil {
@@ -90,9 +90,9 @@ func TestProcessReceiveRequestError(t *testing.T) {
 	servDep.EXPECT().GetReader().Return(resw) //send writer in instead of reader to  trigger an error
 	servDep.EXPECT().GetWriter().Return(resw)
 
-	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep, &model.PerfPluginConfig{})
+	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep, &model.AssetPluginConfig{})
 
-	servDep.EXPECT().GetProcessAsset(gomock.Any(), &model.PerfPluginConfig{}).Return(processPerf).AnyTimes()
+	servDep.EXPECT().GetProcessAsset(gomock.Any(), &model.AssetPluginConfig{}).Return(processPerf).AnyTimes()
 
 	httpServer := http.ServerHTTPFactory{}
 	server := httpServer.GetServer(resw, resw)
@@ -125,9 +125,9 @@ func TestProcessIncorrectRouteError(t *testing.T) {
 	servDep.EXPECT().GetReader().Return(reqr)
 	servDep.EXPECT().GetWriter().Return(resw)
 
-	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep, &model.PerfPluginConfig{})
+	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep, &model.AssetPluginConfig{})
 
-	servDep.EXPECT().GetProcessAsset(gomock.Any(), &model.PerfPluginConfig{}).Return(processPerf).AnyTimes()
+	servDep.EXPECT().GetProcessAsset(gomock.Any(), &model.AssetPluginConfig{}).Return(processPerf).AnyTimes()
 
 	assetListFact := AssetListenerFactory{}
 	assetList := assetListFact.GetAssetListener(servDep)

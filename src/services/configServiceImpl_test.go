@@ -21,41 +21,41 @@ func TestGetConfigService(t *testing.T) {
 	}
 }
 
-func setupGetPerfPluginConfig(t *testing.T, pConf *model.PerfPluginConfig, err error) (*gomock.Controller, configServiceImpl) {
+func setupGetAssetPluginConfig(t *testing.T, pConf *model.AssetPluginConfig, err error) (*gomock.Controller, configServiceImpl) {
 	ctrl := gomock.NewController(t)
 	confSrvcDepMock := mock.NewMockConfigServiceDependencies(ctrl)
 	confDalMock := mock.NewMockConfigDal(ctrl)
-	confDalMock.EXPECT().GetPerfPluginConf().Return(pConf, err)
+	confDalMock.EXPECT().GetAssetPluginConf().Return(pConf, err)
 	confSrvcDepMock.EXPECT().GetConfigDal(gomock.Any()).Return(confDalMock)
 	csrvc := configServiceImpl{
 		factory: confSrvcDepMock,
 	}
-	//_, e := csrvc.GetPerfPluginConfig()
+	//_, e := csrvc.GetAssetPluginConfig()
 	return ctrl, csrvc
 }
 
-func TestGetPerfPluginConfigNoErr(t *testing.T) {
+func TestGetAssetPluginConfigNoErr(t *testing.T) {
 	sConfig = nil // setting this static variable to nil to make it re-initialize
-	pConf := model.PerfPluginConfig{
-		PluginPath: model.PerfPluginPath{
-			Memory: "/asset/memory",
+	pConf := model.AssetPluginConfig{
+		PluginPath: model.AssetPluginPath{
+			AssetCollection: "/assetCollection",
 		},
 		URLSuffix: make(map[string]string),
 	}
-	ctrl, csrvc := setupGetPerfPluginConfig(t, &pConf, nil)
-	_, err := csrvc.GetPerfPluginConfig()
+	ctrl, csrvc := setupGetAssetPluginConfig(t, &pConf, nil)
+	_, err := csrvc.GetAssetPluginConfig()
 	defer ctrl.Finish()
 	if err != nil {
 		t.Errorf("Unexpected error : %v", err)
 	}
 }
 
-func TestGetPerfPluginConfigErr(t *testing.T) {
+func TestGetAssetPluginConfigErr(t *testing.T) {
 	sConfig = nil // setting this static variable to nil to make it re-initialize
-	ctrl, csrvc := setupGetPerfPluginConfig(t, nil, errors.New(model.ErrPerfPluginConfig))
-	_, err := csrvc.GetPerfPluginConfig()
+	ctrl, csrvc := setupGetAssetPluginConfig(t, nil, errors.New(model.ErrAssetPluginConfig))
+	_, err := csrvc.GetAssetPluginConfig()
 	defer ctrl.Finish()
-	if err == nil || !strings.HasPrefix(err.Error(), model.ErrPerfPluginConfig) {
-		t.Errorf("Expected error is %s but got %v", model.ErrPerfPluginConfig, err)
+	if err == nil || !strings.HasPrefix(err.Error(), model.ErrAssetPluginConfig) {
+		t.Errorf("Expected error is %s but got %v", model.ErrAssetPluginConfig, err)
 	}
 }

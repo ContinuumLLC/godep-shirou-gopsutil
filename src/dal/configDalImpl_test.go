@@ -38,7 +38,7 @@ func setupPerPluginConf(t *testing.T, err error) (*gomock.Controller, error) {
 
 	_, e := configDalImpl{
 		factory: cDalDepMock,
-	}.GetPerfPluginConf()
+	}.GetAssetPluginConf()
 	return ctrl, e
 }
 

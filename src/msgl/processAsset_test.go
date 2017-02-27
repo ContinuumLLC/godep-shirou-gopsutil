@@ -17,32 +17,16 @@ import (
 func createMock(ctrl *gomock.Controller, processError error, serializeError error, respBodyStr string) *gmock.MockAssetServiceDependencies {
 	mockServiceDep := gmock.NewMockAssetServiceDependencies(ctrl)
 
-	mockAssetCollectionService := gmock.NewMockAssetAssetCollectionService(ctrl)
-	mockNetworkService := gmock.NewMockAssetNetworkService(ctrl)
-	mockStorageService := gmock.NewMockAssetStorageService(ctrl)
-	mockProcessService := gmock.NewMockAssetProcessService(ctrl)
+	mockAssetCollectionService := gmock.NewMockAssetCollectionService(ctrl)
 
 	mockPerDal := gmock.NewMockAssetDal(ctrl)
 
 	assetCollectionData := apiModel.AssetCollection{}
-	networkData := apiModel.AssetNetwork{}
-	storageData := apiModel.AssetStorages{}
-	processData := apiModel.AssetProcesses{}
-
-	mockServiceDep.EXPECT().GetAssetAssetCollectionService(gomock.Any()).Return(mockAssetCollectionService)
-	mockServiceDep.EXPECT().GetAssetNetworkService(gomock.Any()).Return(mockNetworkService)
-	mockServiceDep.EXPECT().GetAssetStorageService(gomock.Any()).Return(mockStorageService)
-	mockServiceDep.EXPECT().GetAssetProcessService(gomock.Any()).Return(mockProcessService)
+	mockServiceDep.EXPECT().GetAssetCollectionService(gomock.Any()).Return(mockAssetCollectionService)
 
 	mockAssetCollectionService.EXPECT().Process().Return(&assetCollectionData, processError)
-	mockNetworkService.EXPECT().Process().Return(&networkData, processError)
-	mockStorageService.EXPECT().Process().Return(&storageData, processError)
-	mockProcessService.EXPECT().Process().Return(&processData, processError)
 
-	mockServiceDep.EXPECT().GetAssetAssetCollectionServiceDependencies().Return(mockServiceDep)
-	mockServiceDep.EXPECT().GetAssetNetworkServiceDependencies().Return(mockServiceDep)
-	mockServiceDep.EXPECT().GetAssetStorageServiceDependencies().Return(mockServiceDep)
-	mockServiceDep.EXPECT().GetAssetProcessServiceDependencies().Return(mockServiceDep)
+	mockServiceDep.EXPECT().GetAssetCollectionServiceDependencies().Return(mockServiceDep)
 
 	mockServiceDep.EXPECT().GetAssetDal(gomock.Any()).Return(mockPerDal)
 	mockPerDal.EXPECT().SerializeObject(gomock.Any()).Return([]byte(respBodyStr), serializeError)
@@ -99,7 +83,7 @@ func TestAssetProcess(t *testing.T) {
 	processAsset := processAssetFact.GetProcessAsset(mockServiceDep, &model.AssetPluginConfig{})
 	req := createRequest()
 	req.Path = "/assetCollection"
-	resp, err := processAsset.ProcessProcess(req)
+	resp, err := processAsset.ProcessAssetCollection(req)
 	if err != nil {
 		t.Errorf("Unexpected error returned %v", err)
 	}
