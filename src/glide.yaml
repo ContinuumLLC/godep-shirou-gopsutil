@@ -1,0 +1,20 @@
+package: github.com/ContinuumLLC/platform-asset-plugin/src
+import:
+- package: github.com/ContinuumLLC/platform-api-model
+  subpackages:
+  - clients/model/Golang/resourceModel/asset
+- package: github.com/ContinuumLLC/platform-common-lib
+  subpackages:
+  - src/clar
+  - src/env
+  - src/exception
+  - src/json
+  - src/logging
+  - src/plugin/protocol
+  - src/plugin/protocol/http
+  - src/pluginUtils
+  - src/procParser
+testImport:
+- package: github.com/golang/mock
+  subpackages:
+  - gomock

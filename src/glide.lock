@@ -1,0 +1,34 @@
+hash: 00aba031848101cfc3cfcee442c09c7254f8e119e65a6a4c4834d54fe318f657
+updated: 2017-02-27T17:16:54.939344557+05:30
+imports:
+- name: github.com/ContinuumLLC/platform-api-model
+  version: e5e41d1d660a41821427a39d7fe557a319f8fb84
+  subpackages:
+  - clients/model/Golang/resourceModel/asset
+- name: github.com/ContinuumLLC/platform-common-lib
+  version: 4727e115a74fbef6fab64c71d87617011e556aa5
+  subpackages:
+  - src/clar
+  - src/clar/mock
+  - src/env
+  - src/env/mock
+  - src/exception
+  - src/json
+  - src/json/mock
+  - src/logging
+  - src/plugin/protocol
+  - src/plugin/protocol/http
+  - src/pluginUtils
+  - src/procParser
+  - src/procParser/mock
+- name: github.com/golang/mock
+  version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
+  subpackages:
+  - gomock
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: 392c28fe23e1c45ddba891b0320b3b5df220beea
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+testImports: []
