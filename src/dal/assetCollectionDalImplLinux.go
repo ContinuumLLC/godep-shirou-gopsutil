@@ -1,7 +1,7 @@
 package dal
 
 import (
-	//"time"
+	"time"
 
 	amodel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-common-lib/src/logging"
@@ -11,15 +11,15 @@ import (
 
 // AssetCollection Proc related constants
 const (
-	cMemCreatedBy                           string = "/continuum/agent/plugin/asset"
-	cMemDataType                            string = "assetCollection"
-	cMemProcPath                            string = "/proc/meminfo"
-	cMemProcPhysicalTotalBytes              string = "MemTotal"
-	cMemProcPhysicalAvailableBytes          string = "MemAvailable"
-	cMemProcVirtualAvailableBytes           string = "SwapFree"
-	cMemProcVirtualTotalBytes               string = "SwapTotal"
-	cMemProcCommittedBytes                  string = "CommitLimit"
-	cMemProcFreeSystemPageTableEntriesBytes string = "PageTables"
+	cAssetCreatedBy                           string = "/continuum/agent/plugin/asset"
+	cAssetDataType                            string = "assetCollection"
+	cAssetProcPath                            string = "/proc/meminfo"
+	cAssetProcPhysicalTotalBytes              string = "MemTotal"
+	cAssetProcPhysicalAvailableBytes          string = "MemAvailable"
+	cAssetProcVirtualAvailableBytes           string = "SwapFree"
+	cAssetProcVirtualTotalBytes               string = "SwapTotal"
+	cAssetProcCommittedBytes                  string = "CommitLimit"
+	cAssetProcFreeSystemPageTableEntriesBytes string = "PageTables"
 )
 
 //Error Codes
@@ -34,7 +34,7 @@ type assetCollectionDalLinux struct {
 
 //Gets AssetCollection data
 func (dal *assetCollectionDalLinux) GetAssetCollection() (*amodel.AssetCollection, error) {
-	reader, err := dal.factory.GetEnv().GetFileReader(cMemProcPath)
+	reader, err := dal.factory.GetEnv().GetFileReader(cAssetProcPath)
 	if err != nil {
 		dal.logger.Logf(logging.DEBUG, "Error in reading file %v", err)
 		return nil, err
@@ -59,17 +59,17 @@ type translateAssetCollection struct {
 
 func (t translateAssetCollection) translateAssetCollectionProcToModel(data *procParser.Data) *amodel.AssetCollection {
 	assetCollection := new(amodel.AssetCollection)
-	//assetCollection.Type = cMemDataType
-	//assetCollection.CreatedBy = cMemCreatedBy
-	//assetCollection.CreateTimeUTC = time.Now().UTC()
-	//assetCollection.PhysicalTotalBytes = t.getDataFromMap(cMemProcPhysicalTotalBytes, data)
-	//assetCollection.PhysicalAvailableBytes = t.getDataFromMap(cMemProcPhysicalAvailableBytes, data)
+	assetCollection.CreateTimeUTC = time.Now().UTC()
+	assetCollection.Type = cAssetDataType  
+	assetCollection.CreatedBy = cAssetCreatedBy
+	//assetCollection.PhysicalTotalBytes = t.getDataFromMap(cAssetProcPhysicalTotalBytes, data)
+	//assetCollection.PhysicalAvailableBytes = t.getDataFromMap(cAssetProcPhysicalAvailableBytes, data)
 	//assetCollection.PhysicalInUseBytes = assetCollection.PhysicalTotalBytes - assetCollection.PhysicalAvailableBytes
-	//assetCollection.VirtualAvailableBytes = t.getDataFromMap(cMemProcVirtualAvailableBytes, data)
-	//assetCollection.VirtualTotalBytes = t.getDataFromMap(cMemProcVirtualTotalBytes, data)
+	//assetCollection.VirtualAvailableBytes = t.getDataFromMap(cAssetProcVirtualAvailableBytes, data)
+	//assetCollection.VirtualTotalBytes = t.getDataFromMap(cAssetProcVirtualTotalBytes, data)
 	//assetCollection.VirtualInUseBytes = assetCollection.VirtualTotalBytes - assetCollection.VirtualAvailableBytes
-	//assetCollection.CommittedBytes = t.getDataFromMap(cMemProcCommittedBytes, data)
-	//assetCollection.FreeSystemPageTableEntriesBytes = t.getDataFromMap(cMemProcFreeSystemPageTableEntriesBytes, data)
+	//assetCollection.CommittedBytes = t.getDataFromMap(cAssetProcCommittedBytes, data)
+	//assetCollection.FreeSystemPageTableEntriesBytes = t.getDataFromMap(cAssetProcFreeSystemPageTableEntriesBytes, data)
 	return assetCollection
 }
 
