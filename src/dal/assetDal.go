@@ -20,6 +20,10 @@ type assetDalImpl struct {
 
 //SerializeObject serializes the object and returns the byte[]
 func (c assetDalImpl) SerializeObject(v interface{}) ([]byte, error) {
-	//TODO - code to be added
-	return nil, nil
+        b, err := c.factory.GetSerializerJSON().WriteByteStream(v)
+        if err != nil {
+                return nil, err
+        }
+        return b, nil
+
 }

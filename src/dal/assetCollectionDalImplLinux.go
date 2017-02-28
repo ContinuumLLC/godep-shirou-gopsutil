@@ -56,6 +56,11 @@ func (t translateAssetCollection) translateAssetCollectionProcToModel(data *proc
 	assetCollection.CreateTimeUTC = time.Now().UTC()
 	assetCollection.Type = cAssetDataType  
 	assetCollection.CreatedBy = cAssetCreatedBy
+        assetCollection.BaseBoard = *(getBaseBoardInfo())
+        assetCollection.Bios = *(getBiosInfo())
+        //assetCollection.Memory = *(getMemoryInfo())
+        assetCollection.Os = *(getOsInfo())
+        assetCollection.System = *(getSystemInfo())
 	return assetCollection
 }
 
