@@ -20,15 +20,6 @@ type assetDalImpl struct {
 
 //SerializeObject serializes the object and returns the byte[]
 func (c assetDalImpl) SerializeObject(v interface{}) ([]byte, error) {
-	//var b bytes.Buffer
-	//	w := bufio.NewWriter(&b)
-	b, err := c.factory.GetSerializerJSON().WriteByteStream(v)
-	if err != nil {
-		return nil, err
-	}
-	// err = w.Flush()
-	// if err != nil {
-	// 	return nil, exc.New(model.ErrJSONSerializationFailed, err)
-	// }
-	return b, nil
+	//TODO - code to be added
+	return nil, nil
 }
