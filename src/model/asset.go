@@ -30,7 +30,7 @@ type AssetService interface {
 	Process() error
 }
 
-// AssetnServiceFactory returns AssetService
+// AssetServiceFactory returns AssetService
 type AssetServiceFactory interface {
 	GetAssetService(deps AssetServiceDependencies) AssetService
 }

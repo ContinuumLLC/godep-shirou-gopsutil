@@ -13,10 +13,6 @@ const (
 	cAgentServiceURLAssetCollection    string = "/assetCollection"
 )
 
-const (
-	cMaxProcess int = 10
-)
-
 type resolveConf struct{}
 
 func (r resolveConf) resolveValues(pcfg *model.AssetPluginConfig) {

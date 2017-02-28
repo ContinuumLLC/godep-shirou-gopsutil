@@ -14,12 +14,6 @@ const (
 	cAssetCreatedBy                           string = "/continuum/agent/plugin/asset"
 	cAssetDataType                            string = "assetCollection"
 	cAssetProcPath                            string = "/proc/meminfo"
-	cAssetProcPhysicalTotalBytes              string = "MemTotal"
-	cAssetProcPhysicalAvailableBytes          string = "MemAvailable"
-	cAssetProcVirtualAvailableBytes           string = "SwapFree"
-	cAssetProcVirtualTotalBytes               string = "SwapTotal"
-	cAssetProcCommittedBytes                  string = "CommitLimit"
-	cAssetProcFreeSystemPageTableEntriesBytes string = "PageTables"
 )
 
 //Error Codes
@@ -62,14 +56,6 @@ func (t translateAssetCollection) translateAssetCollectionProcToModel(data *proc
 	assetCollection.CreateTimeUTC = time.Now().UTC()
 	assetCollection.Type = cAssetDataType  
 	assetCollection.CreatedBy = cAssetCreatedBy
-	//assetCollection.PhysicalTotalBytes = t.getDataFromMap(cAssetProcPhysicalTotalBytes, data)
-	//assetCollection.PhysicalAvailableBytes = t.getDataFromMap(cAssetProcPhysicalAvailableBytes, data)
-	//assetCollection.PhysicalInUseBytes = assetCollection.PhysicalTotalBytes - assetCollection.PhysicalAvailableBytes
-	//assetCollection.VirtualAvailableBytes = t.getDataFromMap(cAssetProcVirtualAvailableBytes, data)
-	//assetCollection.VirtualTotalBytes = t.getDataFromMap(cAssetProcVirtualTotalBytes, data)
-	//assetCollection.VirtualInUseBytes = assetCollection.VirtualTotalBytes - assetCollection.VirtualAvailableBytes
-	//assetCollection.CommittedBytes = t.getDataFromMap(cAssetProcCommittedBytes, data)
-	//assetCollection.FreeSystemPageTableEntriesBytes = t.getDataFromMap(cAssetProcFreeSystemPageTableEntriesBytes, data)
 	return assetCollection
 }
 
