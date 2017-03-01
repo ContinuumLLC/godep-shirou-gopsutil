@@ -196,7 +196,7 @@ func TestAssetConfiguration(t *testing.T) {
 	//processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	processAsset := processAsset{
+	ps := processAsset{
 		dep:    dep,
 		cfg:    &model.AssetPluginConfig{},
 		logger: log,
@@ -217,7 +217,7 @@ func TestAssetConfiguration(t *testing.T) {
 	}`
 	reader := bytes.NewReader([]byte(data))
 	req.Body = reader
-	resp, err := processAsset.ProcessConfiguration(req)
+	resp, err := ps.ProcessConfiguration(req)
 	if err != nil {
 		t.Errorf("Unexpected error not returned, Expected:%v", err)
 	}
