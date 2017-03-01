@@ -35,28 +35,14 @@ type AssetServiceFactory interface {
 	GetAssetService(deps AssetServiceDependencies) AssetService
 }
 
-// AssetDalFactory returns instance of AssetDal
-type AssetDalFactory interface {
-	GetAssetDal(deps AssetDalDependencies) AssetDal
-}
-
 // AssetDal captures memory metrics from underlying system
 type AssetDal interface {
 	SerializeObject(v interface{}) ([]byte, error)
 }
 
-// AssetDalDependencies gathers dependencies of Dal
-type AssetDalDependencies interface {
-	pluginUtils.PluginIOReader
-	pluginUtils.PluginIOWriter
-	cjson.FactoryJSON
-}
-
 // AssetServiceDependencies is the dependency interface for AssetService
 type AssetServiceDependencies interface {
 	clar.ServiceInitFactory
-	AssetDalFactory
-	AssetDalDependencies
 	ProcessAssetFactory
 	AssetCollectionServiceFactory
 	GetAssetCollectionServiceDependencies() AssetCollectionServiceDependencies
@@ -66,4 +52,7 @@ type AssetServiceDependencies interface {
 	ConfigServiceFactory
 	env.FactoryEnv
 	protocol.ServerFactory
+	cjson.FactoryJSON
+	pluginUtils.PluginIOReader
+	pluginUtils.PluginIOWriter
 }

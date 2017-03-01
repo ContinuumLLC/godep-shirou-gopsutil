@@ -7,19 +7,21 @@ import (
 	"testing"
 
 	apiModel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
-	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
-	gmock "github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
+	mockJson "github.com/ContinuumLLC/platform-common-lib/src/json/mock"
+	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol"
 	"github.com/golang/mock/gomock"
 )
 
-func createMock(ctrl *gomock.Controller, processError error, serializeError error, respBodyStr string) *gmock.MockAssetServiceDependencies {
-	mockServiceDep := gmock.NewMockAssetServiceDependencies(ctrl)
+func createMock(ctrl *gomock.Controller, processError error, serializeError error, respBodyStr string) *mock.MockAssetServiceDependencies {
+	mockServiceDep := mock.NewMockAssetServiceDependencies(ctrl)
 
-	mockAssetCollectionService := gmock.NewMockAssetCollectionService(ctrl)
+	mockAssetCollectionService := mock.NewMockAssetCollectionService(ctrl)
 
-	mockPerDal := gmock.NewMockAssetDal(ctrl)
+	jsonMock := mockJson.NewMockSerializerJSON(ctrl)
+	jsonMock.EXPECT().WriteByteStream(gomock.Any()).Return([]byte(respBodyStr), serializeError)
+	mockServiceDep.EXPECT().GetSerializerJSON().Return(jsonMock)
 
 	assetCollectionData := apiModel.AssetCollection{}
 	mockServiceDep.EXPECT().GetAssetCollectionService(gomock.Any()).Return(mockAssetCollectionService)
@@ -27,9 +29,6 @@ func createMock(ctrl *gomock.Controller, processError error, serializeError erro
 	mockAssetCollectionService.EXPECT().Process().Return(&assetCollectionData, processError)
 
 	mockServiceDep.EXPECT().GetAssetCollectionServiceDependencies().Return(mockServiceDep)
-
-	mockServiceDep.EXPECT().GetAssetDal(gomock.Any()).Return(mockPerDal)
-	mockPerDal.EXPECT().SerializeObject(gomock.Any()).Return([]byte(respBodyStr), serializeError)
 
 	confMock := mock.NewMockConfigService(ctrl)
 	confMock.EXPECT().GetAssetPluginConfig().Return(&model.AssetPluginConfig{}, nil)

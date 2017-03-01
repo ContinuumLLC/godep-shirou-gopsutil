@@ -1,16 +1,16 @@
 package main
 
 import (
+	"github.com/ContinuumLLC/platform-asset-plugin/src/dal"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/msgl"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/services"
 	"github.com/ContinuumLLC/platform-common-lib/src/clar"
 	"github.com/ContinuumLLC/platform-common-lib/src/env"
 	cjson "github.com/ContinuumLLC/platform-common-lib/src/json"
 	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol/http"
 	"github.com/ContinuumLLC/platform-common-lib/src/pluginUtils"
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/dal"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/msgl"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/services"
 )
 
 type factory struct {
@@ -18,7 +18,6 @@ type factory struct {
 	dal.AssetCollectionDalFactoryImpl
 	dal.ConfigDalFactoryImpl
 
-	dal.AssetDalFactoryImpl
 	services.AssetCollectionServiceFactoryImpl
 	services.ConfigServiceFactoryImpl
 

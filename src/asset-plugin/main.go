@@ -13,7 +13,7 @@ const (
 var logger logging.Logger
 
 func main() {
-        var logger logging.Logger
+	var logger logging.Logger
 	factories := factory{}
 	service := factories.GetServiceInit()
 	service.SetupOsArgs(configFile, logFile, os.Args, configIndex, logIndex)

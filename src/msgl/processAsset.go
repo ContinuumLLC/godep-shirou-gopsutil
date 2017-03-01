@@ -19,26 +19,26 @@ type ProcessAssetFactoryImpl struct{}
 //GetProcessAsset returns a Processor processor
 func (ProcessAssetFactoryImpl) GetProcessAsset(deps model.AssetServiceDependencies, config *model.AssetPluginConfig) model.ProcessAsset {
 	return processAsset{
-		serviceDependencies: deps,
-		cfg:                 config,
-		logger:              logging.GetLoggerFactory().New("ProcessAsset"),
+		dep:    deps,
+		cfg:    config,
+		logger: logging.GetLoggerFactory().New("ProcessAsset"),
 	}
 }
 
 type processAsset struct {
-	serviceDependencies model.AssetServiceDependencies
-	cfg                 *model.AssetPluginConfig
-	logger              logging.Logger
+	dep    model.AssetServiceDependencies
+	cfg    *model.AssetPluginConfig
+	logger logging.Logger
 }
 
 //ProcessAssetCollection processes incoming Asset Collection request
 func (p processAsset) ProcessAssetCollection(*protocol.Request) (*protocol.Response, error) {
-	data, err := p.serviceDependencies.GetAssetCollectionService(p.serviceDependencies.GetAssetCollectionServiceDependencies()).Process()
+	data, err := p.dep.GetAssetCollectionService(p.dep.GetAssetCollectionServiceDependencies()).Process()
 	if err != nil {
 		p.logger.Logf(logging.ERROR, "Error in ProcessProcessor %v", err)
 		return nil, err
 	}
-	outBytes, err := p.serviceDependencies.GetAssetDal(p.serviceDependencies).SerializeObject(data)
+	outBytes, err := p.dep.GetSerializerJSON().WriteByteStream(data)
 
 	if err != nil {
 		p.logger.Logf(logging.ERROR, "Error in Process Asset Collection %v", err)
@@ -70,7 +70,7 @@ func (p processAsset) ProcessConfiguration(request *protocol.Request) (*protocol
 		log.Println(err)
 		return nil, err
 	}
-	service := p.serviceDependencies.GetConfigService(p.serviceDependencies)
+	service := p.dep.GetConfigService(p.dep)
 
 	currentConfig, err := service.GetAssetPluginConfMap()
 	if err != nil {
