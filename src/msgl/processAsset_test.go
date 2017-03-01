@@ -10,6 +10,7 @@ import (
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
 	mockJson "github.com/ContinuumLLC/platform-common-lib/src/json/mock"
+	"github.com/ContinuumLLC/platform-common-lib/src/logging"
 	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol"
 	"github.com/golang/mock/gomock"
 )
@@ -191,8 +192,15 @@ func TestAssetConfiguration(t *testing.T) {
 
 	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
 
-	processAssetFact := ProcessAssetFactoryImpl{}
-	processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
+	//processAssetFact := ProcessAssetFactoryImpl{}
+	//processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	processAsset := processAsset{
+		dep:    dep,
+		cfg:    &model.AssetPluginConfig{},
+		logger: log,
+	}
 
 	req := createRequest()
 	req.Path = "/asset/configuration"
