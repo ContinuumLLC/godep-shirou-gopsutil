@@ -11,9 +11,9 @@ type AssetCollectionService interface {
 	Process() (*apiModel.AssetCollection, error)
 }
 
-// AssetCollectionDal captures  asset collection metrics from underlying system
-type AssetCollectionDal interface {
-	GetAssetCollection() (*apiModel.AssetCollection, error)
+// AssetDal captures  asset collection metrics from underlying system
+type AssetDal interface {
+	GetAssetData() (*apiModel.AssetCollection, error)
 }
 
 // AssetCollectionServiceFactory returns AssetCollectionService
@@ -21,9 +21,9 @@ type AssetCollectionServiceFactory interface {
 	GetAssetCollectionService(deps AssetCollectionServiceDependencies) AssetCollectionService
 }
 
-// AssetCollectionDalFactory returns instance of AssetCollectionDal
+// AssetCollectionDalFactory returns instance of AssetDal
 type AssetCollectionDalFactory interface {
-	GetAssetCollectionDal(deps AssetCollectionDalDependencies) AssetCollectionDal
+	GetAssetCollectionDal(deps AssetCollectionDalDependencies) AssetDal
 }
 
 // AssetCollectionServiceDependencies are service dependencies

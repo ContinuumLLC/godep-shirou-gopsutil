@@ -22,8 +22,8 @@ type assetCollectionServiceImpl struct {
 
 // Process function processes.
 func (srv assetCollectionServiceImpl) Process() (*apiModel.AssetCollection, error) {
-	//return srv.factory.GetAssetCollectionDal(srv.factory).GetAssetCollection()
-	assetCol, err := srv.factory.GetAssetCollectionDal(srv.factory).GetAssetCollection()
+	//return srv.factory.GetAssetCollectionDal(srv.factory).GetAssetData()
+	assetCol, err := srv.factory.GetAssetCollectionDal(srv.factory).GetAssetData()
         if err != nil {
                 //err = exception.New(model.ErrPluginService, err)
                 return nil, err

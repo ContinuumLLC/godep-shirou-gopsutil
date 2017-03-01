@@ -13,23 +13,23 @@ import (
 //ProcessAssetFactoryImpl returns a asset Processor
 type ProcessAssetFactoryImpl struct{}
 
-//GetProcessAsset returns a Processor processor
-func (ProcessAssetFactoryImpl) GetProcessAsset(deps model.AssetServiceDependencies, config *model.AssetPluginConfig) model.ProcessAsset {
+//GetHandler returns a Processor processor
+func (ProcessAssetFactoryImpl) GetHandler(deps model.HandlerDependencies, config *model.AssetPluginConfig) model.AssetHandler {
 	return processAsset{
 		dep:    deps,
 		cfg:    config,
-		logger: logging.GetLoggerFactory().New("ProcessAsset"),
+		logger: logging.GetLoggerFactory().New("AssetHandler"),
 	}
 }
 
 type processAsset struct {
-	dep    model.AssetServiceDependencies
+	dep    model.HandlerDependencies
 	cfg    *model.AssetPluginConfig
 	logger logging.Logger
 }
 
-//ProcessAssetCollection processes incoming Asset Collection request
-func (p processAsset) ProcessAssetCollection(*protocol.Request) (*protocol.Response, error) {
+//HandleAsset processes incoming Asset Collection request
+func (p processAsset) HandleAsset(*protocol.Request) (*protocol.Response, error) {
 	data, err := p.dep.GetAssetCollectionService(p.dep.GetAssetCollectionServiceDependencies()).Process()
 	if err != nil {
 		p.logger.Logf(logging.ERROR, "Error in ProcessProcessor %v", err)
@@ -47,7 +47,7 @@ func (p processAsset) ProcessAssetCollection(*protocol.Request) (*protocol.Respo
 	return resp, nil
 }
 
-func (p processAsset) ProcessConfiguration(request *protocol.Request) (*protocol.Response, error) {
+func (p processAsset) HandleConfig(request *protocol.Request) (*protocol.Response, error) {
 	p.logger.Logf(logging.INFO, "Received config to update")
 	configData, err := ioutil.ReadAll(request.Body)
 	if err != nil {

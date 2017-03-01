@@ -20,7 +20,7 @@ func TestGetAssetCollectionParseError(t *testing.T) {
 	defer ctrl.Finish()
 
 	assetDal, _ := setupConfigMocks(ctrl, errors.New(parseError), nil)
-	_, err := assetDal.GetAssetCollection()
+	_, err := assetDal.GetAssetData()
 	if err == nil || err.Error() != parseError {
 		t.Error("Error expected but not returned")
 	}
@@ -82,7 +82,7 @@ func TestGetAssetCollectionParseDataGetBytesError(t *testing.T) {
 	data.Map["MemTotal"] = pp.Line{Values: []string{"physicalTotalBytes", "1", "KB"}}
 
 	assetDal, _ := setupConfigMocks(ctrl, nil, data)
-	_, err := assetDal.GetAssetCollection()
+	_, err := assetDal.GetAssetData()
 	if err != nil {
 		t.Error("Unexpected Error")
 	}

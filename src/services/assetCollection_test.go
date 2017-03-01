@@ -31,8 +31,8 @@ func TestProcessGetAssetCollectionErr(t *testing.T) {
 	mockPerfMemDal := mock.NewMockAssetCollectionDal(ctrl)
 	mockPerfSrvcD.EXPECT().GetAssetCollectionDal(gomock.Any()).Return(mockPerfMemDal)
 
-	setupErr := errors.New("GetAssetCollection error")
-	mockPerfMemDal.EXPECT().GetAssetCollection().Return(&amodel.AssetCollection{}, setupErr)
+	setupErr := errors.New("GetAssetData error")
+	mockPerfMemDal.EXPECT().GetAssetData().Return(&amodel.AssetCollection{}, setupErr)
 	srvc := &assetCollectionServiceImpl{
 		factory: mockPerfSrvcD,
 	}

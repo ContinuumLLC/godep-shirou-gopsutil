@@ -9,15 +9,15 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
 )
 
-//ProcessAsset provides methods to Process incoming request
-type ProcessAsset interface {
-	ProcessAssetCollection(*protocol.Request) (*protocol.Response, error)
-	ProcessConfiguration(*protocol.Request) (*protocol.Response, error)
+//AssetHandler provides methods to Process incoming request
+type AssetHandler interface {
+	HandleAsset(*protocol.Request) (*protocol.Response, error)
+	HandleConfig(*protocol.Request) (*protocol.Response, error)
 }
 
-//ProcessAssetFactory returns processAsset
-type ProcessAssetFactory interface {
-	GetProcessAsset(deps AssetServiceDependencies, cfg *AssetPluginConfig) ProcessAsset
+//HandlerFactory returns processAsset
+type HandlerFactory interface {
+	GetHandler(deps HandlerDependencies, cfg *AssetPluginConfig) AssetHandler
 }
 
 //AssetListener interface provides methods to start processing incoming data
@@ -25,25 +25,20 @@ type AssetListener interface {
 	Process() error
 }
 
-// AssetService captures and returns memory data
+// AssetService is to handle and process Asset data
 type AssetService interface {
 	Process() error
 }
 
 // AssetServiceFactory returns AssetService
 type AssetServiceFactory interface {
-	GetAssetService(deps AssetServiceDependencies) AssetService
+	GetAssetService(deps HandlerDependencies) AssetService
 }
 
-// AssetDal captures memory metrics from underlying system
-type AssetDal interface {
-	SerializeObject(v interface{}) ([]byte, error)
-}
-
-// AssetServiceDependencies is the dependency interface for AssetService
-type AssetServiceDependencies interface {
+// HandlerDependencies is the dependency interface for AssetService
+type HandlerDependencies interface {
 	clar.ServiceInitFactory
-	ProcessAssetFactory
+	HandlerFactory
 	AssetCollectionServiceFactory
 	GetAssetCollectionServiceDependencies() AssetCollectionServiceDependencies
 	AssetCollectionDalFactory
