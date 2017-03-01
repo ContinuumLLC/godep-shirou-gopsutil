@@ -3,10 +3,7 @@ package msgl
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
 
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-common-lib/src/logging"
@@ -51,43 +48,30 @@ func (p processAsset) ProcessAssetCollection(*protocol.Request) (*protocol.Respo
 }
 
 func (p processAsset) ProcessConfiguration(request *protocol.Request) (*protocol.Response, error) {
-	f, _ := os.OpenFile("testlogfile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	defer f.Close()
-
-	log.SetOutput(f)
-
-	log.Println("called")
+	p.logger.Logf(logging.INFO, "Received config to update")
 	configData, err := ioutil.ReadAll(request.Body)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
-	log.Println("read")
 	newConfig := make(map[string]interface{})
-	log.Println(configData)
 	err = json.Unmarshal(configData, &newConfig)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 	service := p.dep.GetConfigService(p.dep)
-
 	currentConfig, err := service.GetAssetPluginConfMap()
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	newConfig = copyMapValue(currentConfig, newConfig)
-	log.Println("trying to save")
 	err = service.SetAssetPluginMap(newConfig)
 	if err != nil {
-		log.Println(err)
 		return nil, err
 	}
 
 	resp := createResponseBody([]byte(`{"result":"success"}`), "", "")
-	fmt.Println(resp)
+	p.logger.Logf(logging.INFO, "Received config - operation completed")
 	return resp, nil
 }
 
