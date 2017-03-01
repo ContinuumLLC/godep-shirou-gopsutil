@@ -14,7 +14,6 @@ import:
   - src/plugin/protocol/http
   - src/pluginUtils
   - src/procParser
-testImport:
 - package: github.com/golang/mock
   subpackages:
   - gomock

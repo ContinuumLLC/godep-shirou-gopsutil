@@ -58,7 +58,7 @@ func (t translateAssetCollection) translateAssetCollectionProcToModel(data *proc
 	assetCollection.CreatedBy = cAssetCreatedBy
         assetCollection.BaseBoard = *(getBaseBoardInfo())
         assetCollection.Bios = *(getBiosInfo())
-        //assetCollection.Memory = *(getMemoryInfo())
+        assetCollection.Memory = *(getMemoryInfo())
         assetCollection.Os = *(getOsInfo())
         assetCollection.System = *(getSystemInfo())
 	return assetCollection
