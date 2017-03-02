@@ -1,50 +1,51 @@
-package dal
+package linux
 
 import (
 	"time"
 
 	amodel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-common-lib/src/logging"
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 )
 
 // AssetCollection Proc related constants
 const (
-	cAssetCreatedBy                           string = "/continuum/agent/plugin/asset"
-	cAssetDataType                            string = "assetCollection"
-	cAssetProcPath                            string = "/proc/meminfo"
+	cAssetCreatedBy string = "/continuum/agent/plugin/asset"
+	cAssetDataType  string = "assetCollection"
+	cAssetProcPath  string = "/proc/meminfo"
 )
 
 //Error Codes
 const (
-	 // INVALIDAssetCollectionMEASURE = "Invalid measure :"
+// INVALIDAssetCollectionMEASURE = "Invalid measure :"
 )
 
-type assetCollectionDalLinux struct {
-	factory model.AssetCollectionDalDependencies
-	logger  logging.Logger
+// AssetCollectionDalLinux ...
+type AssetCollectionDalLinux struct {
+	Factory model.AssetCollectionDalDependencies
+	Logger  logging.Logger
 }
 
-//Gets AssetCollection data
-func (dal *assetCollectionDalLinux) GetAssetData() (*amodel.AssetCollection, error) {
-	reader, err := dal.factory.GetEnv().GetFileReader(cAssetProcPath)
+//GetAssetData ...
+func (dal *AssetCollectionDalLinux) GetAssetData() (*amodel.AssetCollection, error) {
+	reader, err := dal.Factory.GetEnv().GetFileReader(cAssetProcPath)
 	if err != nil {
-		dal.logger.Logf(logging.DEBUG, "Error in reading file %v", err)
+		dal.Logger.Logf(logging.DEBUG, "Error in reading file %v", err)
 		return nil, err
 	}
 	defer reader.Close()
-	parser := dal.factory.GetParser()
+	parser := dal.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode:    procParser.ModeKeyValue,
 		IgnoreNewLine: true,
 	}
 	data, err := parser.Parse(cfg, reader)
 	if err != nil {
-		dal.logger.Logf(logging.DEBUG, "Error in parsing config %v", err)
+		dal.Logger.Logf(logging.DEBUG, "Error in parsing config %v", err)
 		return nil, err
 	}
-	return translateAssetCollection{logger: dal.logger}.translateAssetCollectionProcToModel(data), nil
+	return translateAssetCollection{logger: dal.Logger}.translateAssetCollectionProcToModel(data), nil
 }
 
 type translateAssetCollection struct {
@@ -54,13 +55,13 @@ type translateAssetCollection struct {
 func (t translateAssetCollection) translateAssetCollectionProcToModel(data *procParser.Data) *amodel.AssetCollection {
 	assetCollection := new(amodel.AssetCollection)
 	assetCollection.CreateTimeUTC = time.Now().UTC()
-	assetCollection.Type = cAssetDataType  
+	assetCollection.Type = cAssetDataType
 	assetCollection.CreatedBy = cAssetCreatedBy
-        assetCollection.BaseBoard = *(getBaseBoardInfo())
-        assetCollection.Bios = *(getBiosInfo())
-        assetCollection.Memory = *(getMemoryInfo())
-        assetCollection.Os = *(getOsInfo())
-        assetCollection.System = *(getSystemInfo())
+	assetCollection.BaseBoard = *(getBaseBoardInfo())
+	assetCollection.Bios = *(getBiosInfo())
+	assetCollection.Memory = *(getMemoryInfo())
+	assetCollection.Os = *(getOsInfo())
+	assetCollection.System = *(getSystemInfo())
 	return assetCollection
 }
 
