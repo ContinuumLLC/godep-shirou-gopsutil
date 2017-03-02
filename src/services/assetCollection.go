@@ -9,7 +9,7 @@ import (
 type AssetCollectionServiceFactoryImpl struct{}
 
 // GetAssetCollectionService returns Asset Service
-func (AssetCollectionServiceFactoryImpl) GetAssetCollectionService(deps model.AssetCollectionServiceDependencies) model.AssetCollectionService {
+func (AssetCollectionServiceFactoryImpl) GetAssetCollectionService(deps model.AssetCollectionServiceDependencies) model.AssetService {
 	return assetCollectionServiceImpl{
 		factory: deps,
 	}

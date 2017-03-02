@@ -6,8 +6,8 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
 )
 
-// AssetCollectionService captures and returns asset collection data
-type AssetCollectionService interface {
+// AssetService captures and returns asset collection data
+type AssetService interface {
 	Process() (*apiModel.AssetCollection, error)
 }
 
@@ -16,9 +16,9 @@ type AssetDal interface {
 	GetAssetData() (*apiModel.AssetCollection, error)
 }
 
-// AssetCollectionServiceFactory returns AssetCollectionService
-type AssetCollectionServiceFactory interface {
-	GetAssetCollectionService(deps AssetCollectionServiceDependencies) AssetCollectionService
+// AssetServiceFactory returns AssetService
+type AssetServiceFactory interface {
+	GetAssetCollectionService(deps AssetCollectionServiceDependencies) AssetService
 }
 
 // AssetCollectionDalFactory returns instance of AssetDal

@@ -25,21 +25,11 @@ type AssetListener interface {
 	Process() error
 }
 
-// AssetService is to handle and process Asset data
-type AssetService interface {
-	Process() error
-}
-
-// AssetServiceFactory returns AssetService
-type AssetServiceFactory interface {
-	GetAssetService(deps HandlerDependencies) AssetService
-}
-
 // HandlerDependencies is the dependency interface for AssetService
 type HandlerDependencies interface {
 	clar.ServiceInitFactory
 	HandlerFactory
-	AssetCollectionServiceFactory
+	AssetServiceFactory
 	GetAssetCollectionServiceDependencies() AssetCollectionServiceDependencies
 	AssetCollectionDalFactory
 	procParser.ParserFactory

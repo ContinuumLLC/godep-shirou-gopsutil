@@ -76,7 +76,7 @@ code-quality:
 	gometalinter --vendor --tests --skip=mock --disable=gotype --disable=errcheck --disable=gas --disable=dupl --deadline=1500s --checkstyle --sort=linter ./... > static-analysis.xml
 
 mockgen:
-	mockgen -package mock github.com/ContinuumLLC/platform-asset-plugin/src/model AssetServiceFactory,HandlerDependencies,AssetCollectionService,AssetCollectionServiceFactory,AssetCollectionServiceDependencies,AssetDal,AssetCollectionDalFactory,AssetCollectionDalDependencies,ConfigServiceFactory,ConfigService,ConfigDal,ConfigDalDependencies,ConfigDalFactory,ConfigServiceDependencies > model/mock/mocks.go
+	mockgen -package mock github.com/ContinuumLLC/platform-asset-plugin/src/model AssetServiceFactory,HandlerDependencies,AssetService,AssetServiceFactory,AssetCollectionServiceDependencies,AssetDal,AssetCollectionDalFactory,AssetCollectionDalDependencies,ConfigServiceFactory,ConfigService,ConfigDal,ConfigDalDependencies,ConfigDalFactory,ConfigServiceDependencies > model/mock/mocks.go
 
 pack-service-linux:
 	mkdir -p $(LINUXPLUGINBINPATH)
