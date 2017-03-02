@@ -43,7 +43,7 @@ func GetProcessAssetTest(t *testing.T) {
 
 	asset := assetProcFact.GetHandler(nil, &model.AssetPluginConfig{})
 	if asset == nil {
-		t.Error("New AssetHandler struct expected, not returned")
+		t.Error("New Handler struct expected, not returned")
 	}
 }
 

@@ -1,6 +1,8 @@
 package linux
 
 import (
+	"os/exec"
+	"strings"
 	"time"
 
 	amodel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
@@ -75,4 +77,19 @@ func (t translateAssetCollection) getDataFromMap(key string, data *procParser.Da
 		return 0
 	}
 	return procParser.GetBytes(val, data.Map[key].Values[2])
+}
+
+type cmdExecuter interface {
+	execCommand(cmd string) (string, error)
+}
+
+type dalUtil struct{}
+
+func (util dalUtil) execCommand(cmdName string) (string, error) {
+	out, err := exec.Command("bash", "-c", cmdName).Output()
+	if err != nil {
+		return "", err
+	}
+	outStr := strings.TrimSpace(string(out))
+	return outStr, nil
 }

@@ -148,9 +148,9 @@ func (_mr *_MockAssetServiceDependenciesRecorder) GetParser() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetParser")
 }
 
-func (_m *MockAssetServiceDependencies) GetHandler(_param0 model.HandlerDependencies, _param1 *model.AssetPluginConfig) model.AssetHandler {
+func (_m *MockAssetServiceDependencies) GetHandler(_param0 model.HandlerDependencies, _param1 *model.AssetPluginConfig) model.Handler {
 	ret := _m.ctrl.Call(_m, "GetHandler", _param0, _param1)
-	ret0, _ := ret[0].(model.AssetHandler)
+	ret0, _ := ret[0].(model.Handler)
 	return ret0
 }
 
