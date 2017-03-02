@@ -14,11 +14,11 @@ import (
 type ProcessAssetFactoryImpl struct{}
 
 //GetHandler returns a Processor processor
-func (ProcessAssetFactoryImpl) GetHandler(deps model.HandlerDependencies, config *model.AssetPluginConfig) model.AssetHandler {
+func (ProcessAssetFactoryImpl) GetHandler(deps model.HandlerDependencies, config *model.AssetPluginConfig) model.Handler {
 	return processAsset{
 		dep:    deps,
 		cfg:    config,
-		logger: logging.GetLoggerFactory().New("AssetHandler"),
+		logger: logging.GetLoggerFactory().New("Handler"),
 	}
 }
 

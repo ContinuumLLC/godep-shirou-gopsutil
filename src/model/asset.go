@@ -9,15 +9,15 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
 )
 
-//AssetHandler provides methods to Process incoming request
-type AssetHandler interface {
+//Handler provides methods to Process incoming request
+type Handler interface {
 	HandleAsset(*protocol.Request) (*protocol.Response, error)
 	HandleConfig(*protocol.Request) (*protocol.Response, error)
 }
 
 //HandlerFactory returns processAsset
 type HandlerFactory interface {
-	GetHandler(deps HandlerDependencies, cfg *AssetPluginConfig) AssetHandler
+	GetHandler(deps HandlerDependencies, cfg *AssetPluginConfig) Handler
 }
 
 //AssetListener interface provides methods to start processing incoming data

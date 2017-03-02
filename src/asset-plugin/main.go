@@ -21,6 +21,5 @@ func main() {
 	err := factories.GetAssetListener(factories).Process()
 	if err != nil {
 		logger.Logf(logging.ERROR, "Error retrieving Asset data %+v", err)
-		return
 	}
 }
