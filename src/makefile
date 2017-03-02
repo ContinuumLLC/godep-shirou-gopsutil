@@ -43,7 +43,6 @@ mac: dependencies platform-asset-plugin-mac test cover pack-service-darwin
 local: dependencies localbuild test code-quality
 	
 localbuild: 
-	#go install ./asset-plugin
 	go build -o $(TARGETPATH) ./asset-plugin
 
 pack-service: pack-service-linux pack-service-windows pack-service-darwin
@@ -57,7 +56,7 @@ platform-asset-plugin-win:
 	GOOS=windows GOARCH=amd64 go build -o $(GOPATH)/bin/windows_amd64/$(TARGETNAME).exe ./asset-plugin
 
 platform-asset-plugin-mac:
-	#GOOS=darwin GOARCH=amd64 go build -o $(GOPATH)/bin/darwin_amd64/$(TARGETNAME) ./asset-plugin
+	GOOS=darwin GOARCH=amd64 go build -o $(GOPATH)/bin/darwin_amd64/$(TARGETNAME) ./asset-plugin
 
 dependencies:
 	glide install
@@ -90,7 +89,7 @@ pack-service-windows:
 	cd $(PLUGINPATH)/$(WINDOWSPLUGINPACTARGET); rm -f $(WINDOWSPLUGINPACKNAME); zip -r ../$(WINDOWSPLUGINPACKNAME) *
 	
 pack-service-darwin:
-	#mkdir -p $(MACPLUGINBINPATH)
-	#cp $(GOPATH)/bin/darwin_amd64/$(TARGETNAME) $(MACPLUGINBINPATH)
-	#cd $(PLUGINPATH)/$(MACPLUGINPACTARGET); rm -f $(MACPLUGINPACKNAME); zip -r ../$(MACPLUGINPACKNAME) *
+	mkdir -p $(MACPLUGINBINPATH)
+	cp $(GOPATH)/bin/darwin_amd64/$(TARGETNAME) $(MACPLUGINBINPATH)
+	cd $(PLUGINPATH)/$(MACPLUGINPACTARGET); rm -f $(MACPLUGINPACKNAME); zip -r ../$(MACPLUGINPACKNAME) *
 

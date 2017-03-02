@@ -55,7 +55,7 @@ func TestAssetCollection(t *testing.T) {
 	processAssetFact := ProcessAssetFactoryImpl{}
 	processAsset := processAssetFact.GetProcessAsset(mockServiceDep, &model.AssetPluginConfig{})
 	req := createRequest()
-	req.Path = "/assetCollection"
+	req.Path = "/asset"
 	resp, err := processAsset.ProcessAssetCollection(req)
 	if err != nil {
 		t.Errorf("Unexpected error returned %v", err)
@@ -82,7 +82,7 @@ func TestAssetProcess(t *testing.T) {
 	processAssetFact := ProcessAssetFactoryImpl{}
 	processAsset := processAssetFact.GetProcessAsset(mockServiceDep, &model.AssetPluginConfig{})
 	req := createRequest()
-	req.Path = "/assetCollection"
+	req.Path = "/asset"
 	resp, err := processAsset.ProcessAssetCollection(req)
 	if err != nil {
 		t.Errorf("Unexpected error returned %v", err)
@@ -192,8 +192,6 @@ func TestAssetConfiguration(t *testing.T) {
 
 	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
 
-	//processAssetFact := ProcessAssetFactoryImpl{}
-	//processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 	ps := processAsset{

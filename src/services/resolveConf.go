@@ -6,11 +6,11 @@ import "github.com/ContinuumLLC/platform-asset-plugin/src/model"
 
 //Default config values if not found from the config file
 const (
-	cAssetCollectionPluginPath    string = "/assetCollection"
+	cAssetCollectionPluginPath string = "/asset"
 )
 
 const (
-	cAgentServiceURLAssetCollection    string = "/assetCollection"
+	cAgentServiceURLAssetCollection string = "/asset"
 )
 
 type resolveConf struct{}

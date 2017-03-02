@@ -1,8 +1,8 @@
 {
 	"pluginPath": {
-		"assetCollection": "/assetCollection"
+		"assetCollection": "/asset"
 	},
 	"urlSuffix":{
-		"assetCollection": "/assetCollection"
+		"assetCollection": "/asset"
 	}
 }

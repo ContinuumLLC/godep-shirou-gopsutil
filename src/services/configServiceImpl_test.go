@@ -38,7 +38,7 @@ func TestGetAssetPluginConfigNoErr(t *testing.T) {
 	sConfig = nil // setting this static variable to nil to make it re-initialize
 	pConf := model.AssetPluginConfig{
 		PluginPath: model.AssetPluginPath{
-			AssetCollection: "/assetCollection",
+			AssetCollection: "/asset",
 		},
 		URLSuffix: make(map[string]string),
 	}
