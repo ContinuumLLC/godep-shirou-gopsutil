@@ -47,7 +47,7 @@ localbuild:
 
 pack-service: pack-service-linux pack-service-windows pack-service-darwin
 
-platform-asset-plugin: platform-asset-plugin-win platform-asset-plugin-linux platform-asset-plugin-mac
+platform-asset-plugin: platform-asset-plugin-win platform-asset-plugin-linux #platform-asset-plugin-mac
 
 platform-asset-plugin-linux:
 	GOOS=linux GOARCH=amd64 go build -o $(GOPATH)/bin/linux_amd64/$(TARGETNAME) ./asset-plugin
