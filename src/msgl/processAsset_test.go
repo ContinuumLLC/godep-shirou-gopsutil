@@ -41,9 +41,9 @@ func createMock(ctrl *gomock.Controller, processError error, serializeError erro
 func GetProcessAssetTest(t *testing.T) {
 	assetProcFact := ProcessAssetFactoryImpl{}
 
-	asset := assetProcFact.GetProcessAsset(nil, &model.AssetPluginConfig{})
+	asset := assetProcFact.GetHandler(nil, &model.AssetPluginConfig{})
 	if asset == nil {
-		t.Error("New ProcessAsset struct expected, not returned")
+		t.Error("New AssetHandler struct expected, not returned")
 	}
 }
 
@@ -52,11 +52,16 @@ func TestAssetCollection(t *testing.T) {
 	respBodyStr := "testoutput"
 
 	mockServiceDep := createMock(ctrl, nil, nil, respBodyStr)
-	processAssetFact := ProcessAssetFactoryImpl{}
-	processAsset := processAssetFact.GetProcessAsset(mockServiceDep, &model.AssetPluginConfig{})
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	ps := processAsset{
+		cfg:    &model.AssetPluginConfig{},
+		dep:    mockServiceDep,
+		logger: log,
+	}
 	req := createRequest()
 	req.Path = "/asset"
-	resp, err := processAsset.ProcessAssetCollection(req)
+	resp, err := ps.HandleAsset(req)
 	if err != nil {
 		t.Errorf("Unexpected error returned %v", err)
 	}
@@ -79,11 +84,16 @@ func TestAssetProcess(t *testing.T) {
 	respBodyStr := "testoutput"
 
 	mockServiceDep := createMock(ctrl, nil, nil, respBodyStr)
-	processAssetFact := ProcessAssetFactoryImpl{}
-	processAsset := processAssetFact.GetProcessAsset(mockServiceDep, &model.AssetPluginConfig{})
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	ps := processAsset{
+		cfg:    &model.AssetPluginConfig{},
+		dep:    mockServiceDep,
+		logger: log,
+	}
 	req := createRequest()
 	req.Path = "/asset"
-	resp, err := processAsset.ProcessAssetCollection(req)
+	resp, err := ps.HandleAsset(req)
 	if err != nil {
 		t.Errorf("Unexpected error returned %v", err)
 	}
@@ -113,7 +123,7 @@ func TestAssetConfigurationGetAssetPluginConfMapError(t *testing.T) {
 	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
 
 	processAssetFact := ProcessAssetFactoryImpl{}
-	processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
+	processAsset := processAssetFact.GetHandler(dep, &model.AssetPluginConfig{})
 
 	req := createRequest()
 	req.Path = "/asset/configuration"
@@ -130,7 +140,7 @@ func TestAssetConfigurationGetAssetPluginConfMapError(t *testing.T) {
 	}`
 	reader := bytes.NewReader([]byte(data))
 	req.Body = reader
-	_, err := processAsset.ProcessConfiguration(req)
+	_, err := processAsset.HandleConfig(req)
 	if err == nil {
 		t.Errorf("Expected error not returned, Expected:%v", getAssetPluginConfMapError)
 	}
@@ -154,7 +164,7 @@ func TestAssetConfigurationSetAssetPluginConfMapError(t *testing.T) {
 	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
 
 	processAssetFact := ProcessAssetFactoryImpl{}
-	processAsset := processAssetFact.GetProcessAsset(dep, &model.AssetPluginConfig{})
+	processAsset := processAssetFact.GetHandler(dep, &model.AssetPluginConfig{})
 
 	req := createRequest()
 	req.Path = "/asset/configuration"
@@ -171,7 +181,7 @@ func TestAssetConfigurationSetAssetPluginConfMapError(t *testing.T) {
 	}`
 	reader := bytes.NewReader([]byte(data))
 	req.Body = reader
-	_, err := processAsset.ProcessConfiguration(req)
+	_, err := processAsset.HandleConfig(req)
 	if err == nil {
 		t.Errorf("Expected error not returned, Expected:%v", setAssetPluginConfMapError)
 	}
@@ -191,7 +201,6 @@ func TestAssetConfiguration(t *testing.T) {
 	serv.EXPECT().SetAssetPluginMap(gomock.Any()).Return(nil)
 
 	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
-
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 	ps := processAsset{
@@ -215,7 +224,7 @@ func TestAssetConfiguration(t *testing.T) {
 	}`
 	reader := bytes.NewReader([]byte(data))
 	req.Body = reader
-	resp, err := ps.ProcessConfiguration(req)
+	resp, err := ps.HandleConfig(req)
 	if err != nil {
 		t.Errorf("Unexpected error not returned, Expected:%v", err)
 	}

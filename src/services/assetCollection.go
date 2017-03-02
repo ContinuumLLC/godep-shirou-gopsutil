@@ -3,7 +3,6 @@ package services
 import (
 	apiModel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
-	//"github.com/ContinuumLLC/platform-common-lib/src/exception"
 )
 
 // AssetCollectionServiceFactoryImpl factory implementation
@@ -22,5 +21,5 @@ type assetCollectionServiceImpl struct {
 
 // Process function processes.
 func (srv assetCollectionServiceImpl) Process() (*apiModel.AssetCollection, error) {
-	return srv.factory.GetAssetCollectionDal(srv.factory).GetAssetCollection()
+	return srv.factory.GetAssetCollectionDal(srv.factory).GetAssetData()
 }

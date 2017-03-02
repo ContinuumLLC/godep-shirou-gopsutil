@@ -27,7 +27,7 @@ type assetCollectionDalLinux struct {
 }
 
 //Gets AssetCollection data
-func (dal *assetCollectionDalLinux) GetAssetCollection() (*amodel.AssetCollection, error) {
+func (dal *assetCollectionDalLinux) GetAssetData() (*amodel.AssetCollection, error) {
 	reader, err := dal.factory.GetEnv().GetFileReader(cAssetProcPath)
 	if err != nil {
 		dal.logger.Logf(logging.DEBUG, "Error in reading file %v", err)

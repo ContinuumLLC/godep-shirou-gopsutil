@@ -18,7 +18,7 @@ type AssetListenerFactory struct {
 }
 
 //GetAssetListener returns route handler
-func (AssetListenerFactory) GetAssetListener(deps model.AssetServiceDependencies) model.AssetListener {
+func (AssetListenerFactory) GetAssetListener(deps model.HandlerDependencies) model.AssetListener {
 	config, _ := deps.GetConfigService(deps).GetAssetPluginConfig()
 	return processAssetImpl{
 		dependencies: deps,
@@ -32,7 +32,7 @@ type HandleRoute func(req *protocol.Request) (res *protocol.Response, err error)
 
 type processAssetImpl struct {
 	server       protocol.Server
-	dependencies model.AssetServiceDependencies
+	dependencies model.HandlerDependencies
 	cfg          *model.AssetPluginConfig
 	logger       logging.Logger
 }
@@ -40,9 +40,9 @@ type processAssetImpl struct {
 func (pp processAssetImpl) registerRoutes() {
 	pp.server.RegisterRoutes(
 		&protocol.Route{Path: pp.cfg.PluginPath.AssetCollection,
-			Handle: pp.dependencies.GetProcessAsset(pp.dependencies, pp.cfg).ProcessAssetCollection},
+			Handle: pp.dependencies.GetHandler(pp.dependencies, pp.cfg).HandleAsset},
 		&protocol.Route{Path: pp.cfg.PluginPath.Configuration,
-			Handle: pp.dependencies.GetProcessAsset(pp.dependencies, pp.cfg).ProcessConfiguration},
+			Handle: pp.dependencies.GetHandler(pp.dependencies, pp.cfg).HandleConfig},
 	)
 }
 

@@ -41,9 +41,9 @@ func TestGetAssetListener(t *testing.T) {
 // 	servDep.EXPECT().GetReader().Return(reqr)
 // 	servDep.EXPECT().GetWriter().Return(resw)
 
-// 	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep)
+// 	processPerf := ProcessAssetFactoryImpl{}.GetHandler(servDep)
 
-// 	servDep.EXPECT().GetProcessAsset(gomock.Any()).Return(processPerf).AnyTimes()
+// 	servDep.EXPECT().GetHandler(gomock.Any()).Return(processPerf).AnyTimes()
 
 // 	assetListFact := AssetListenerFactory{}
 // 	assetList := assetListFact.GetAssetListener(servDep)
@@ -90,9 +90,9 @@ func TestProcessReceiveRequestError(t *testing.T) {
 	servDep.EXPECT().GetReader().Return(resw) //send writer in instead of reader to  trigger an error
 	servDep.EXPECT().GetWriter().Return(resw)
 
-	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep, &model.AssetPluginConfig{})
+	processPerf := ProcessAssetFactoryImpl{}.GetHandler(servDep, &model.AssetPluginConfig{})
 
-	servDep.EXPECT().GetProcessAsset(gomock.Any(), &model.AssetPluginConfig{}).Return(processPerf).AnyTimes()
+	servDep.EXPECT().GetHandler(gomock.Any(), &model.AssetPluginConfig{}).Return(processPerf).AnyTimes()
 
 	httpServer := http.ServerHTTPFactory{}
 	server := httpServer.GetServer(resw, resw)
@@ -125,9 +125,9 @@ func TestProcessIncorrectRouteError(t *testing.T) {
 	servDep.EXPECT().GetReader().Return(reqr)
 	servDep.EXPECT().GetWriter().Return(resw)
 
-	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep, &model.AssetPluginConfig{})
+	processPerf := ProcessAssetFactoryImpl{}.GetHandler(servDep, &model.AssetPluginConfig{})
 
-	servDep.EXPECT().GetProcessAsset(gomock.Any(), &model.AssetPluginConfig{}).Return(processPerf).AnyTimes()
+	servDep.EXPECT().GetHandler(gomock.Any(), &model.AssetPluginConfig{}).Return(processPerf).AnyTimes()
 
 	assetListFact := AssetListenerFactory{}
 	assetList := assetListFact.GetAssetListener(servDep)
@@ -165,9 +165,9 @@ func TestProcessIncorrectRouteError(t *testing.T) {
 // 	servDep.EXPECT().GetReader().Return(reqr)
 // 	servDep.EXPECT().GetWriter().Return(resw)
 
-// 	processPerf := ProcessAssetFactoryImpl{}.GetProcessAsset(servDep)
+// 	processPerf := ProcessAssetFactoryImpl{}.GetHandler(servDep)
 
-// 	servDep.EXPECT().GetProcessAsset(gomock.Any()).Return(processPerf).AnyTimes()
+// 	servDep.EXPECT().GetHandler(gomock.Any()).Return(processPerf).AnyTimes()
 
 // 	assetListFact := AssetListenerFactory{}
 // 	assetList := assetListFact.GetAssetListener(servDep)

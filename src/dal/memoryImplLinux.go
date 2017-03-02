@@ -13,63 +13,34 @@ func getMemoryInfo()  *amodel.AssetMemory {
     
     //TotalPhysicalMemoryBytes
     cmdName := "cat /proc/meminfo | grep MemTotal | cut -d \":\" -f2 | awk '{print $1}'"
-    out, _ := exec.Command("bash", "-c", cmdName).Output()
-    totalPhysicalMemoryBytes:= strings.Replace(string(out), "\n","",-1)
-    memBytes, err := strconv.ParseInt(totalPhysicalMemoryBytes, 10, 64)
-    if err != nil {
-        panic(err)
-    }
-    memory.TotalPhysicalMemoryBytes = memBytes 
+    memory.TotalPhysicalMemoryBytes = execCommand(cmdName) 
 
     //TotalVirtualMemoryBytes
     cmdName = "free -t | grep Total | cut -d \":\" -f2 | awk '{print $1}'"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    totalVirtualMemoryBytes := strings.Replace(string(out), "\n","",-1)
-    memBytes, err = strconv.ParseInt(totalVirtualMemoryBytes, 10, 64)
-    if err != nil {
-        panic(err)
-    }
-    memory.TotalVirtualMemoryBytes = memBytes 
+    memory.TotalVirtualMemoryBytes = execCommand(cmdName) 
 
     //AvailableVirtualMemoryBytes
     cmdName = "free -t | grep Total | cut -d \":\" -f2 | awk '{print $3}'"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    availableVirtualMemoryBytes := strings.Replace(string(out), "\n","",-1)
-    memBytes, err = strconv.ParseInt(availableVirtualMemoryBytes, 10, 64)
-    if err != nil {
-         panic(err)
-    }
-    memory.AvailableVirtualMemoryBytes = memBytes
+    memory.AvailableVirtualMemoryBytes = execCommand(cmdName) 
 
     //AvailablePhysicalMemoryBytes
     cmdName = " cat /proc/meminfo | grep MemAvailable | cut -d \":\" -f2 | awk '{print $1}'"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    availablePhysicalMemoryBytes := strings.Replace(string(out), "\n","",-1)
-    memBytes, err = strconv.ParseInt(availablePhysicalMemoryBytes, 10, 64)
-    if err != nil {
-        panic(err)
-    }
-    memory.AvailablePhysicalMemoryBytes = memBytes
+    memory.AvailablePhysicalMemoryBytes = execCommand(cmdName) 
 
     //TotalPageFileSpaceBytes
     cmdName = "cat /proc/meminfo | grep SwapTotal | cut -d \":\" -f2 |  awk '{print $1}'"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    totalPageFileSpaceBytes := strings.Replace(string(out), "\n","",-1)
-    memBytes, err = strconv.ParseInt(totalPageFileSpaceBytes, 10, 64)
-    if err != nil {
-        panic(err)
-    }
-    memory.TotalPageFileSpaceBytes = memBytes
+    memory.TotalPageFileSpaceBytes = execCommand(cmdName) 
 
     //AvailablePageFileSpaceBytes
     cmdName = "cat /proc/meminfo | grep SwapFree | cut -d \":\" -f2 |  awk '{print $1}'"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    availablePageFileSpaceBytes := strings.Replace(string(out), "\n","",-1)
-    memBytes, err = strconv.ParseInt(availablePageFileSpaceBytes, 10, 64)
-    if err != nil {
-        panic(err)
-    }
-    memory.AvailablePageFileSpaceBytes = memBytes
+    memory.AvailablePageFileSpaceBytes = execCommand(cmdName) 
 
     return memory
+}
+
+func execCommand(cmdName string) int64 {
+    out, _ := exec.Command("bash", "-c", cmdName).Output()
+    memStr := strings.Replace(string(out), "\n","",-1)
+    memBytes, _ := strconv.ParseInt(memStr, 10, 64)
+    return memBytes
 }
