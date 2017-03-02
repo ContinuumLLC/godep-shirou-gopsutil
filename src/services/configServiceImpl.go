@@ -47,8 +47,7 @@ func (c *configServiceImpl) GetAssetPluginConfig() (*model.AssetPluginConfig, er
 
 //GetAssetPluginMap reads the config and returns the AssetPluginConfig object
 func (c *configServiceImpl) GetAssetPluginConfMap() (map[string]interface{}, error) {
-	sConfig, err := c.factory.GetConfigDal(c.factory).GetAssetPluginConfMap()
-	return sConfig, err
+	return c.factory.GetConfigDal(c.factory).GetAssetPluginConfMap()
 }
 
 func (c *configServiceImpl) SetAssetPluginMap(conf map[string]interface{}) error {

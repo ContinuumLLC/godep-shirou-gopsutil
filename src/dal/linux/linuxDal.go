@@ -1,4 +1,4 @@
-package dal
+package linux
 
 import (
 	"os/exec"
@@ -23,30 +23,31 @@ const (
 // INVALIDAssetCollectionMEASURE = "Invalid measure :"
 )
 
-type assetCollectionDalLinux struct {
-	factory model.AssetCollectionDalDependencies
-	logger  logging.Logger
+// AssetCollectionDalLinux ...
+type AssetCollectionDalLinux struct {
+	Factory model.AssetCollectionDalDependencies
+	Logger  logging.Logger
 }
 
-//Gets AssetCollection data
-func (dal *assetCollectionDalLinux) GetAssetData() (*amodel.AssetCollection, error) {
-	reader, err := dal.factory.GetEnv().GetFileReader(cAssetProcPath)
+//GetAssetData ...
+func (dal *AssetCollectionDalLinux) GetAssetData() (*amodel.AssetCollection, error) {
+	reader, err := dal.Factory.GetEnv().GetFileReader(cAssetProcPath)
 	if err != nil {
-		dal.logger.Logf(logging.DEBUG, "Error in reading file %v", err)
+		dal.Logger.Logf(logging.DEBUG, "Error in reading file %v", err)
 		return nil, err
 	}
 	defer reader.Close()
-	parser := dal.factory.GetParser()
+	parser := dal.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode:    procParser.ModeKeyValue,
 		IgnoreNewLine: true,
 	}
 	data, err := parser.Parse(cfg, reader)
 	if err != nil {
-		dal.logger.Logf(logging.DEBUG, "Error in parsing config %v", err)
+		dal.Logger.Logf(logging.DEBUG, "Error in parsing config %v", err)
 		return nil, err
 	}
-	return translateAssetCollection{logger: dal.logger}.translateAssetCollectionProcToModel(data), nil
+	return translateAssetCollection{logger: dal.Logger}.translateAssetCollectionProcToModel(data), nil
 }
 
 type translateAssetCollection struct {

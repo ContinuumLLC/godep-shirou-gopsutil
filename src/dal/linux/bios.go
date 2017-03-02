@@ -1,4 +1,4 @@
-package dal
+package linux
 
 import (
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
