@@ -25,7 +25,7 @@ func createMock(ctrl *gomock.Controller, processError error, serializeError erro
 	mockServiceDep.EXPECT().GetSerializerJSON().Return(jsonMock)
 
 	assetCollectionData := apiModel.AssetCollection{}
-	mockServiceDep.EXPECT().GetAssetCollectionService(gomock.Any()).Return(mockAssetCollectionService)
+	mockServiceDep.EXPECT().GetAssetService(gomock.Any()).Return(mockAssetCollectionService)
 
 	mockAssetCollectionService.EXPECT().Process().Return(&assetCollectionData, processError)
 

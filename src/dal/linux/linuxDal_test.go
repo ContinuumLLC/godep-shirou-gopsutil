@@ -44,18 +44,6 @@ func setupConfigMocks(ctrl *gomock.Controller, parseError error, parseData *pp.D
 	return assetDal, mockParser
 }
 
-// func TestGetAssetCollectionDal(t *testing.T) {
-// 	ctrl := gomock.NewController(t)
-// 	defer ctrl.Finish()
-
-// 	deps := mock.NewMockAssetCollectionDalDependencies(ctrl)
-// 	dal := AssetCollectionDalFactoryImpl{}.GetAssetCollectionDal(deps)
-
-// 	if dal == nil {
-// 		t.Error("Dal not initialized")
-// 	}
-// }
-
 func TestGetDataFromMap(t *testing.T) {
 	data := new(pp.Data)
 

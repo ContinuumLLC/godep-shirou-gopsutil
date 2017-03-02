@@ -16,7 +16,7 @@ func TestGetAssetCollectionService(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockPerfSrvcD := mock.NewMockAssetCollectionServiceDependencies(ctrl)
-	assetSrvc := AssetCollectionServiceFactoryImpl{}.GetAssetCollectionService(mockPerfSrvcD)
+	assetSrvc := AssetCollectionServiceFactoryImpl{}.GetAssetService(mockPerfSrvcD)
 	typ, ok := assetSrvc.(assetCollectionServiceImpl)
 	if !ok {
 		t.Errorf("Expected type is assetCollectionServiceImpl but got %v", reflect.TypeOf(typ))
@@ -29,7 +29,7 @@ func TestProcessGetAssetCollectionErr(t *testing.T) {
 
 	mockPerfSrvcD := mock.NewMockAssetCollectionServiceDependencies(ctrl)
 	mockPerfMemDal := mock.NewMockAssetCollectionDal(ctrl)
-	mockPerfSrvcD.EXPECT().GetAssetCollectionDal(gomock.Any()).Return(mockPerfMemDal)
+	mockPerfSrvcD.EXPECT().GetAssetDal(gomock.Any()).Return(mockPerfMemDal)
 
 	setupErr := errors.New("GetAssetData error")
 	mockPerfMemDal.EXPECT().GetAssetData().Return(&amodel.AssetCollection{}, setupErr)

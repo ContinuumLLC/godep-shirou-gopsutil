@@ -12,8 +12,8 @@ import (
 type AssetCollectionDalFactoryImpl struct {
 }
 
-// GetAssetCollectionDal returns Dal
-func (AssetCollectionDalFactoryImpl) GetAssetCollectionDal(deps model.AssetCollectionDalDependencies) model.AssetDal {
+// GetAssetDal returns Dal
+func (AssetCollectionDalFactoryImpl) GetAssetDal(deps model.AssetDalDependencies) model.AssetDal {
 	return &linux.AssetCollectionDalLinux{
 		Factory: deps,
 		Logger:  logging.GetLoggerFactory().New("AssetDal"),

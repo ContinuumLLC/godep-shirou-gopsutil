@@ -8,18 +8,18 @@ import (
 // AssetCollectionServiceFactoryImpl factory implementation
 type AssetCollectionServiceFactoryImpl struct{}
 
-// GetAssetCollectionService returns Asset Service
-func (AssetCollectionServiceFactoryImpl) GetAssetCollectionService(deps model.AssetCollectionServiceDependencies) model.AssetService {
+// GetAssetService returns Asset Service
+func (AssetCollectionServiceFactoryImpl) GetAssetService(deps model.AssetServiceDependencies) model.AssetService {
 	return assetCollectionServiceImpl{
 		factory: deps,
 	}
 }
 
 type assetCollectionServiceImpl struct {
-	factory model.AssetCollectionServiceDependencies
+	factory model.AssetServiceDependencies
 }
 
 // Process function processes.
 func (srv assetCollectionServiceImpl) Process() (*apiModel.AssetCollection, error) {
-	return srv.factory.GetAssetCollectionDal(srv.factory).GetAssetData()
+	return srv.factory.GetAssetDal(srv.factory).GetAssetData()
 }

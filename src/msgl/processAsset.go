@@ -30,7 +30,7 @@ type processAsset struct {
 
 //HandleAsset processes incoming Asset Collection request
 func (p processAsset) HandleAsset(*protocol.Request) (*protocol.Response, error) {
-	data, err := p.dep.GetAssetCollectionService(p.dep.GetAssetCollectionServiceDependencies()).Process()
+	data, err := p.dep.GetAssetService(p.dep.GetAssetCollectionServiceDependencies()).Process()
 	if err != nil {
 		p.logger.Logf(logging.ERROR, "Error in ProcessProcessor %v", err)
 		return nil, err

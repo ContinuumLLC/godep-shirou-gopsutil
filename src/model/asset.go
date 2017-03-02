@@ -30,8 +30,8 @@ type HandlerDependencies interface {
 	clar.ServiceInitFactory
 	HandlerFactory
 	AssetServiceFactory
-	GetAssetCollectionServiceDependencies() AssetCollectionServiceDependencies
-	AssetCollectionDalFactory
+	GetAssetCollectionServiceDependencies() AssetServiceDependencies
+	AssetDalFactory
 	procParser.ParserFactory
 	ConfigDalFactory
 	ConfigServiceFactory

@@ -18,22 +18,22 @@ type AssetDal interface {
 
 // AssetServiceFactory returns AssetService
 type AssetServiceFactory interface {
-	GetAssetCollectionService(deps AssetCollectionServiceDependencies) AssetService
+	GetAssetService(deps AssetServiceDependencies) AssetService
 }
 
-// AssetCollectionDalFactory returns instance of AssetDal
-type AssetCollectionDalFactory interface {
-	GetAssetCollectionDal(deps AssetCollectionDalDependencies) AssetDal
+// AssetDalFactory returns instance of AssetDal
+type AssetDalFactory interface {
+	GetAssetDal(deps AssetDalDependencies) AssetDal
 }
 
-// AssetCollectionServiceDependencies are service dependencies
-type AssetCollectionServiceDependencies interface {
-	AssetCollectionDalDependencies
-	AssetCollectionDalFactory
+// AssetServiceDependencies are service dependencies
+type AssetServiceDependencies interface {
+	AssetDalDependencies
+	AssetDalFactory
 }
 
-// AssetCollectionDalDependencies gathers dependencies of Dal
-type AssetCollectionDalDependencies interface {
+// AssetDalDependencies gathers dependencies of Dal
+type AssetDalDependencies interface {
 	procParser.ParserFactory
 	env.FactoryEnv
 }

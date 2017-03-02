@@ -8,8 +8,8 @@ import "github.com/ContinuumLLC/platform-asset-plugin/src/model"
 type AssetCollectionDalFactoryImpl struct {
 }
 
-// GetAssetCollectionDal returns Dal
-func (AssetCollectionDalFactoryImpl) GetAssetCollectionDal(deps model.AssetCollectionDalDependencies) model.AssetDal {
+// GetAssetDal returns Dal
+func (AssetCollectionDalFactoryImpl) GetAssetDal(deps model.AssetDalDependencies) model.AssetDal {
 	//TODO - to be implemented for Windows
 	return nil
 }

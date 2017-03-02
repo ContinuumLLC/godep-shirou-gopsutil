@@ -33,8 +33,8 @@ type factory struct {
 	http.ServerHTTPFactory
 }
 
-func (f factory) GetAssetCollectionServiceDependencies() model.AssetCollectionServiceDependencies {
-	var ff model.AssetCollectionServiceDependencies = f
-	ret, _ := ff.(model.AssetCollectionServiceDependencies)
+func (f factory) GetAssetCollectionServiceDependencies() model.AssetServiceDependencies {
+	var ff model.AssetServiceDependencies = f
+	ret, _ := ff.(model.AssetServiceDependencies)
 	return ret
 }

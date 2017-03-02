@@ -25,7 +25,7 @@ const (
 
 // AssetCollectionDalLinux ...
 type AssetCollectionDalLinux struct {
-	Factory model.AssetCollectionDalDependencies
+	Factory model.AssetDalDependencies
 	Logger  logging.Logger
 }
 
