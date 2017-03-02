@@ -8,13 +8,13 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/logging"
 )
 
-// AssetCollectionDalFactoryImpl return AssetDal
-type AssetCollectionDalFactoryImpl struct {
+// AssetDalFactoryImpl return AssetDal
+type AssetDalFactoryImpl struct {
 }
 
 // GetAssetDal returns Dal
-func (AssetCollectionDalFactoryImpl) GetAssetDal(deps model.AssetDalDependencies) model.AssetDal {
-	return &linux.AssetCollectionDalLinux{
+func (AssetDalFactoryImpl) GetAssetDal(deps model.AssetDalDependencies) model.AssetDal {
+	return &linux.AssetDalImpl{
 		Factory: deps,
 		Logger:  logging.GetLoggerFactory().New("AssetDal"),
 	}

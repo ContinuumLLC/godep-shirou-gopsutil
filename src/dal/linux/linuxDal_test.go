@@ -26,10 +26,10 @@ func TestGetAssetCollectionParseError(t *testing.T) {
 	}
 }
 
-func setupConfigMocks(ctrl *gomock.Controller, parseError error, parseData *pp.Data) (*AssetCollectionDalLinux, *procMock.MockParser) {
+func setupConfigMocks(ctrl *gomock.Controller, parseError error, parseData *pp.Data) (*AssetDalImpl, *procMock.MockParser) {
 	mockParser := procMock.NewMockParser(ctrl)
 	mockDep := mock.NewMockAssetCollectionDalDependencies(ctrl)
-	assetDal := new(AssetCollectionDalLinux)
+	assetDal := new(AssetDalImpl)
 	assetDal.Factory = mockDep
 	assetDal.Logger = logging.GetLoggerFactory().New("")
 	assetDal.Logger.SetLogLevel(logging.OFF)

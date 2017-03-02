@@ -4,12 +4,12 @@ package dal
 
 import "github.com/ContinuumLLC/platform-asset-plugin/src/model"
 
-// AssetCollectionDalFactoryImpl return AssetDal
-type AssetCollectionDalFactoryImpl struct {
+// AssetDalFactoryImpl return AssetDal
+type AssetDalFactoryImpl struct {
 }
 
 // GetAssetDal returns Dal
-func (AssetCollectionDalFactoryImpl) GetAssetDal(deps model.AssetDalDependencies) model.AssetDal {
+func (AssetDalFactoryImpl) GetAssetDal(deps model.AssetDalDependencies) model.AssetDal {
 	//TODO - to be implemented for Windows
 	return nil
 }

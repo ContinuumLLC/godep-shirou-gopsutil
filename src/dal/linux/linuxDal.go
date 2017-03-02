@@ -23,14 +23,14 @@ const (
 // INVALIDAssetCollectionMEASURE = "Invalid measure :"
 )
 
-// AssetCollectionDalLinux ...
-type AssetCollectionDalLinux struct {
+// AssetDalImpl ...
+type AssetDalImpl struct {
 	Factory model.AssetDalDependencies
 	Logger  logging.Logger
 }
 
 //GetAssetData ...
-func (dal *AssetCollectionDalLinux) GetAssetData() (*amodel.AssetCollection, error) {
+func (dal *AssetDalImpl) GetAssetData() (*amodel.AssetCollection, error) {
 	reader, err := dal.Factory.GetEnv().GetFileReader(cAssetProcPath)
 	if err != nil {
 		dal.Logger.Logf(logging.DEBUG, "Error in reading file %v", err)

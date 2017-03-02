@@ -15,10 +15,10 @@ import (
 
 type factory struct {
 	clar.ServiceInitFactoryImpl
-	dal.AssetCollectionDalFactoryImpl
+	dal.AssetDalFactoryImpl
 	dal.ConfigDalFactoryImpl
 
-	services.AssetCollectionServiceFactoryImpl
+	services.AssetServiceFactoryImpl
 	services.ConfigServiceFactoryImpl
 
 	pluginUtils.StandardIOReaderImpl

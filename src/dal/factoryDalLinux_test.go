@@ -12,7 +12,7 @@ func TestGetAssetCollectionDal(t *testing.T) {
 	defer ctrl.Finish()
 
 	deps := mock.NewMockAssetCollectionDalDependencies(ctrl)
-	dal := AssetCollectionDalFactoryImpl{}.GetAssetDal(deps)
+	dal := AssetDalFactoryImpl{}.GetAssetDal(deps)
 
 	if dal == nil {
 		t.Error("Dal not initialized")
