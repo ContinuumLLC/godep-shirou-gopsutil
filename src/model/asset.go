@@ -41,3 +41,8 @@ type HandlerDependencies interface {
 	pluginUtils.PluginIOReader
 	pluginUtils.PluginIOWriter
 }
+
+// CmdExecuter runs command and returns its output
+type CmdExecuter interface {
+	execCommand(cmd string) (string, error)
+}

@@ -79,10 +79,6 @@ func (t translateAssetCollection) getDataFromMap(key string, data *procParser.Da
 	return procParser.GetBytes(val, data.Map[key].Values[2])
 }
 
-type cmdExecuter interface {
-	execCommand(cmd string) (string, error)
-}
-
 type dalUtil struct{}
 
 func (util dalUtil) execCommand(cmdName string) (string, error) {
@@ -90,6 +86,5 @@ func (util dalUtil) execCommand(cmdName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	outStr := strings.TrimSpace(string(out))
-	return outStr, nil
+	return strings.TrimSpace(string(out)), nil
 }
