@@ -6,6 +6,11 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
 )
 
+const (
+	//ErrOSExecuteCommandFailed error code for execute command for os
+	ErrOSExecuteCommandFailed = "ErrOSExecuteCommandFailed"
+)
+
 // AssetService captures and returns asset collection data
 type AssetService interface {
 	Process() (*apiModel.AssetCollection, error)

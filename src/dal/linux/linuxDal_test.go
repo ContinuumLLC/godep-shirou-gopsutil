@@ -44,22 +44,6 @@ func setupConfigMocks(ctrl *gomock.Controller, parseError error, parseData *pp.D
 	return assetDal, mockParser
 }
 
-func TestGetDataFromMap(t *testing.T) {
-	data := new(pp.Data)
-
-	data.Map = make(map[string]pp.Line, 1)
-	data.Map["MemTotal"] = pp.Line{Values: []string{"MemTotal", "InvalidNumber", "KB"}}
-
-	tm := translateAssetCollection{
-		logger: logging.GetLoggerFactory().New(""),
-	}
-	tm.logger.SetLogLevel(logging.OFF)
-	val := tm.getDataFromMap("MemTotal", data)
-
-	if val != 0 {
-		t.Errorf("Expected 0, returned %d", val)
-	}
-}
 func TestGetAssetCollectionParseDataGetBytesError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
