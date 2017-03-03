@@ -15,9 +15,8 @@ type osInfo struct {
 
 func (o osInfo) getOSInfo() (*asset.AssetOs, error) {
 	os := new(asset.AssetOs)
-	util := dalUtil{
-		envDep: o.dep,
-	}
+	util := new(dalUtil)
+	util.envDep = o.dep
 
 	parser := o.dep.GetParser()
 	cfg := procParser.Config{
