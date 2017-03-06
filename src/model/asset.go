@@ -1,7 +1,7 @@
 package model
 
 import (
-	apiModel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-common-lib/src/env"
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
 )
@@ -15,12 +15,14 @@ const (
 
 // AssetService captures and returns asset collection data
 type AssetService interface {
-	Process() (*apiModel.AssetCollection, error)
+	Process() (*asset.AssetCollection, error)
 }
 
 // AssetDal captures  asset collection metrics from underlying system
 type AssetDal interface {
-	GetAssetData() (*apiModel.AssetCollection, error)
+	GetAssetData() (*asset.AssetCollection, error)
+	GetOS() (*asset.AssetOs, error)
+	//GetSystem() (*asset.AssetSystem, error)
 }
 
 // AssetServiceFactory returns AssetService

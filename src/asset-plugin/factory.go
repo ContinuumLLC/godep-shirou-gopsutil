@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/msgl"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/services"
 	"github.com/ContinuumLLC/platform-common-lib/src/clar"
@@ -31,10 +30,4 @@ type factory struct {
 	msgl.ProcessAssetFactoryImpl
 
 	http.ServerHTTPFactory
-}
-
-func (f factory) GetAssetCollectionServiceDependencies() model.AssetServiceDependencies {
-	var ff model.AssetServiceDependencies = f
-	ret, _ := ff.(model.AssetServiceDependencies)
-	return ret
 }

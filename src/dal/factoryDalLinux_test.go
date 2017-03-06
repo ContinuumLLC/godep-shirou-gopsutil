@@ -7,11 +7,11 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestGetAssetCollectionDal(t *testing.T) {
+func TestGetAssetDal(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	deps := mock.NewMockAssetCollectionDalDependencies(ctrl)
+	deps := mock.NewMockAssetDalDependencies(ctrl)
 	dal := AssetDalFactoryImpl{}.GetAssetDal(deps)
 
 	if dal == nil {

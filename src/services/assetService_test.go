@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	amodel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
-        "github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
 	"github.com/golang/mock/gomock"
 )
 
@@ -15,7 +15,7 @@ func TestGetAssetCollectionService(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockPerfSrvcD := mock.NewMockAssetCollectionServiceDependencies(ctrl)
+	mockPerfSrvcD := mock.NewMockAssetServiceDependencies(ctrl)
 	assetSrvc := AssetServiceFactoryImpl{}.GetAssetService(mockPerfSrvcD)
 	typ, ok := assetSrvc.(assetServiceImpl)
 	if !ok {
@@ -27,8 +27,8 @@ func TestProcessGetAssetCollectionErr(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockPerfSrvcD := mock.NewMockAssetCollectionServiceDependencies(ctrl)
-	mockPerfMemDal := mock.NewMockAssetCollectionDal(ctrl)
+	mockPerfSrvcD := mock.NewMockAssetServiceDependencies(ctrl)
+	mockPerfMemDal := mock.NewMockAssetDal(ctrl)
 	mockPerfSrvcD.EXPECT().GetAssetDal(gomock.Any()).Return(mockPerfMemDal)
 
 	setupErr := errors.New("GetAssetData error")

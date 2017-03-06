@@ -15,27 +15,24 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func createMock(ctrl *gomock.Controller, processError error, serializeError error, respBodyStr string) *mock.MockAssetServiceDependencies {
-	mockServiceDep := mock.NewMockAssetServiceDependencies(ctrl)
+func createMock(ctrl *gomock.Controller, processError error, serializeError error, respBodyStr string) *mock.MockHandlerDependencies {
+	mockHandlerDep := mock.NewMockHandlerDependencies(ctrl)
 
-	mockAssetCollectionService := mock.NewMockAssetCollectionService(ctrl)
+	assetCollectionData := apiModel.AssetCollection{}
+
+	mockAssetService := mock.NewMockAssetService(ctrl)
+	mockAssetService.EXPECT().Process().Return(&assetCollectionData, processError)
+	mockHandlerDep.EXPECT().GetAssetService(gomock.Any()).Return(mockAssetService)
 
 	jsonMock := mockJson.NewMockSerializerJSON(ctrl)
 	jsonMock.EXPECT().WriteByteStream(gomock.Any()).Return([]byte(respBodyStr), serializeError)
-	mockServiceDep.EXPECT().GetSerializerJSON().Return(jsonMock)
-
-	assetCollectionData := apiModel.AssetCollection{}
-	mockServiceDep.EXPECT().GetAssetService(gomock.Any()).Return(mockAssetCollectionService)
-
-	mockAssetCollectionService.EXPECT().Process().Return(&assetCollectionData, processError)
-
-	mockServiceDep.EXPECT().GetAssetCollectionServiceDependencies().Return(mockServiceDep)
+	mockHandlerDep.EXPECT().GetSerializerJSON().Return(jsonMock)
 
 	confMock := mock.NewMockConfigService(ctrl)
 	confMock.EXPECT().GetAssetPluginConfig().Return(&model.AssetPluginConfig{}, nil)
-	mockServiceDep.EXPECT().GetConfigService(gomock.Any()).Return(confMock).AnyTimes()
+	mockHandlerDep.EXPECT().GetConfigService(gomock.Any()).Return(confMock).AnyTimes()
 
-	return mockServiceDep
+	return mockHandlerDep
 }
 
 func GetProcessAssetTest(t *testing.T) {
@@ -117,7 +114,7 @@ func TestAssetConfigurationGetAssetPluginConfMapError(t *testing.T) {
 	//config := make(map[string]interface{})
 	getAssetPluginConfMapError := errors.New("GetAssetPluginConfMapError")
 
-	dep := mock.NewMockAssetServiceDependencies(ctrl)
+	dep := mock.NewMockHandlerDependencies(ctrl)
 	serv := mock.NewMockConfigService(ctrl)
 	serv.EXPECT().GetAssetPluginConfMap().Return(nil, getAssetPluginConfMapError)
 	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
@@ -156,7 +153,7 @@ func TestAssetConfigurationSetAssetPluginConfMapError(t *testing.T) {
 	config := make(map[string]interface{})
 	setAssetPluginConfMapError := errors.New("SetAssetPluginConfMapError")
 
-	dep := mock.NewMockAssetServiceDependencies(ctrl)
+	dep := mock.NewMockHandlerDependencies(ctrl)
 	serv := mock.NewMockConfigService(ctrl)
 	serv.EXPECT().GetAssetPluginConfMap().Return(config, nil)
 	serv.EXPECT().SetAssetPluginMap(gomock.Any()).Return(setAssetPluginConfMapError)
@@ -195,7 +192,7 @@ func TestAssetConfiguration(t *testing.T) {
 
 	config := make(map[string]interface{})
 
-	dep := mock.NewMockAssetServiceDependencies(ctrl)
+	dep := mock.NewMockHandlerDependencies(ctrl)
 	serv := mock.NewMockConfigService(ctrl)
 	serv.EXPECT().GetAssetPluginConfMap().Return(config, nil)
 	serv.EXPECT().SetAssetPluginMap(gomock.Any()).Return(nil)
