@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	//ErrOSExecuteCommandFailed error code for execute command for os
-	ErrOSExecuteCommandFailed = "ErrOSExecuteCommandFailed"
+	//ErrExecuteCommandFailed error code for execute command failed
+	ErrExecuteCommandFailed = "ErrExecuteCommandFailed"
+	//ErrFileReadFailed error code for file read failed
+	ErrFileReadFailed = "ErrFileReadFailed"
 )
 
 // AssetService captures and returns asset collection data

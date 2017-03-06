@@ -14,11 +14,6 @@ const (
 	cAssetDataType  string = "assetCollection"
 )
 
-//Error Codes
-const (
-// INVALIDAssetCollectionMEASURE = "Invalid measure :"
-)
-
 // AssetDalImpl ...
 type AssetDalImpl struct {
 	Factory model.AssetDalDependencies
@@ -31,6 +26,10 @@ func (d AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	if err != nil {
 		return nil, err
 	}
+	s, err := sysInfo{dep: d.Factory}.getSystemInfo()
+	if err != nil {
+		return nil, err
+	}
 	return &asset.AssetCollection{
 		CreatedBy:     cAssetCreatedBy,
 		CreateTimeUTC: time.Now().UTC(),
@@ -39,6 +38,6 @@ func (d AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		BaseBoard:     *(getBaseBoardInfo()),
 		Bios:          *(getBiosInfo()),
 		Memory:        *(getMemoryInfo()),
-		System:        *(getSystemInfo()),
+		System:        *s,
 	}, nil
 }

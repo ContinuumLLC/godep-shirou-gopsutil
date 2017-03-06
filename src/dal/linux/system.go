@@ -1,43 +1,35 @@
 package linux
 
 import (
-	"os/exec"
-	"strings"
-	amodel "github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
+	"github.com/ContinuumLLC/platform-common-lib/src/exception"
 )
 
-func getSystemInfo ()  *amodel.AssetSystem {
-    system := new(amodel.AssetSystem)
-   
-    //Product
-    cmdName := "sudo dmidecode -s system-product-name"
-    out, _ := exec.Command("bash", "-c", cmdName).Output()
-    product := strings.Replace(string(out), "\n","",-1)
-    system.Product = product
+type sysInfo struct {
+	dep model.AssetDalDependencies
+}
 
-    //TimeZone
-    cmdName = "date +%z"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    timeZone := strings.Replace(string(out), "\n","",-1)
-    system.TimeZone = timeZone
-
-    //TimeZoneDescription
-    cmdName = "date +%Z"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    timeZoneDescription := strings.Replace(string(out), "\n","",-1)
-    system.TimeZoneDescription = timeZoneDescription
-
-    //SystemSerialNumber
-    cmdName = "sudo dmidecode -s system-serial-number"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    serialNumber := strings.Replace(string(out), "\n","",-1)
-    system.SerialNumber = serialNumber
-
-    //SystemName
-    cmdName = "hostname"
-    out, _ = exec.Command("bash", "-c", cmdName).Output()
-    systemName := strings.Replace(string(out), "\n","",-1)
-    system.SystemName = systemName
-
-    return system
+func (s sysInfo) getSystemInfo() (*asset.AssetSystem, error) {
+	//This command require sudo access to execute
+	product, err := s.dep.GetParser().ExecuteBash(`lshw -c system | grep product | cut -d ":" -f2`)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	//time zone
+	tz, err := s.dep.GetParser().ExecuteBash("date +%z")
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	//time zone description
+	tzd, err := s.dep.GetParser().ExecuteBash("date +%Z")
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	return &asset.AssetSystem{
+		Product:             product,
+		TimeZone:            tz,
+		TimeZoneDescription: tzd,
+		
+	}, nil
 }
