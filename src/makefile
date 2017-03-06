@@ -6,28 +6,32 @@ else
 	TARGET = $(TARGETNAME)
 endif
 
-TARGETPATH = "$(GOPATH)/bin/$(TARGET)"
+TARGETPATH=$(GOPATH)/bin/$(TARGET)
 
-PLUGINPATH="$(GOPATH)/src/github.com/ContinuumLLC/$(TARGETNAME)/services"
+PLUGINPATH=$(GOPATH)/src/github.com/ContinuumLLC/$(TARGETNAME)/services
+JSONCFGPATH=$(GOPATH)/src/github.com/ContinuumLLC/$(TARGETNAME)/src
+
+JSONCFGNAME="ctm_asset_agent_plugin_cfg.json"
+
 
 #Linux
 LINUXPLUGINPACKPATH=$(PLUGINPATH)/continuum_plugin_linux
-LINUXPLUGINBINPATH="$(LINUXPLUGINPACKPATH)/assetplugin"
-LINUXPLUGINPACKNAME="continuum_plugin_linux.zip"
+LINUXPLUGINBINPATH=$(LINUXPLUGINPACKPATH)/asset
+LINUXPLUGINPACKNAME="continuum_asset_plugin_linux.zip"
 LINUXPLUGINPACTARGET="continuum_plugin_linux"
 
 
 #windows
 WINDOWSPLUGINPACKPATH=$(PLUGINPATH)/continuum_plugin_windows
-WINDOWSPLUGINBINPATH="$(WINDOWSPLUGINPACKPATH)/assetplugin"
-WINDOWSPLUGINPACKNAME="continuum_plugin_windows.zip"
+WINDOWSPLUGINBINPATH=$(WINDOWSPLUGINPACKPATH)/asset
+WINDOWSPLUGINPACKNAME="continuum_asset_plugin_windows.zip"
 WINDOWSPLUGINPACTARGET="continuum_plugin_windows"
 
  
 #darwin
 MACPLUGINPACKPATH=$(PLUGINPATH)/continuum_plugin_darwin
-MACPLUGINBINPATH="$(MACPLUGINPACKPATH)/assetplugin"
-MACPLUGINPACKNAME="continuum_plugin_darwin.zip
+MACPLUGINBINPATH=$(MACPLUGINPACKPATH)/asset
+MACPLUGINPACKNAME="continuum_asset_plugin_darwin.zip
 MACPLUGINPACTARGET="continuum_plugin_darwin"
 
 
@@ -81,6 +85,7 @@ mockgen:
 pack-service-linux:
 	mkdir -p $(LINUXPLUGINBINPATH)
 	cp $(GOPATH)/bin/linux_amd64/$(TARGETNAME) $(LINUXPLUGINBINPATH)
+	cp $(JSONCFGPATH)/$(JSONCFGNAME) $(LINUXPLUGINBINPATH)
 	cd $(PLUGINPATH)/$(LINUXPLUGINPACTARGET); rm -f $(LINUXPLUGINPACKNAME); zip -r ../$(LINUXPLUGINPACKNAME) *
 	
 pack-service-windows:
@@ -89,7 +94,7 @@ pack-service-windows:
 	cd $(PLUGINPATH)/$(WINDOWSPLUGINPACTARGET); rm -f $(WINDOWSPLUGINPACKNAME); zip -r ../$(WINDOWSPLUGINPACKNAME) *
 	
 pack-service-darwin:
-	mkdir -p $(MACPLUGINBINPATH)
-	cp $(GOPATH)/bin/darwin_amd64/$(TARGETNAME) $(MACPLUGINBINPATH)
-	cd $(PLUGINPATH)/$(MACPLUGINPACTARGET); rm -f $(MACPLUGINPACKNAME); zip -r ../$(MACPLUGINPACKNAME) *
+	#mkdir -p $(MACPLUGINBINPATH)
+	#cp $(GOPATH)/bin/darwin_amd64/$(TARGETNAME) $(MACPLUGINBINPATH)
+	#cd $(PLUGINPATH)/$(MACPLUGINPACTARGET); rm -f $(MACPLUGINPACKNAME); zip -r ../$(MACPLUGINPACKNAME) *
 
