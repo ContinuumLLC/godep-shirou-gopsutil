@@ -21,8 +21,8 @@ type AssetService interface {
 // AssetDal captures  asset collection metrics from underlying system
 type AssetDal interface {
 	GetAssetData() (*asset.AssetCollection, error)
-	GetOS() (*asset.AssetOs, error)
-	//GetSystem() (*asset.AssetSystem, error)
+	GetOSInfo() (*asset.AssetOs, error)
+	GetSystemInfo() (*asset.AssetSystem, error)
 }
 
 // AssetServiceFactory returns AssetService

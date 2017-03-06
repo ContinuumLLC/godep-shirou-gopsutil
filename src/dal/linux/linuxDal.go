@@ -17,6 +17,12 @@ const (
 	cAssetDataType  string = "assetCollection"
 )
 
+const (
+	cSysProductCmd string = `lshw -c system | grep product | cut -d ":" -f2`
+	cSysTz         string = "date +%z"
+	cSysTzd        string = "date +%Z"
+)
+
 // AssetDalImpl ...
 type AssetDalImpl struct {
 	Factory model.AssetDalDependencies
@@ -25,11 +31,11 @@ type AssetDalImpl struct {
 
 //GetAssetData ...
 func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
-	o, err := a.GetOS()
+	o, err := a.GetOSInfo()
 	if err != nil {
 		return nil, err
 	}
-	s, err := sysInfo{dep: a.Factory}.getSystemInfo()
+	s, err := a.GetSystemInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +51,8 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	}, nil
 }
 
-// GetOS returns the OS info
-func (a AssetDalImpl) GetOS() (*asset.AssetOs, error) {
+// GetOSInfo returns the OS info
+func (a AssetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 	parser := a.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode: procParser.ModeSeparator,
@@ -60,7 +66,6 @@ func (a AssetDalImpl) GetOS() (*asset.AssetOs, error) {
 	if err != nil {
 		return nil, exception.New(model.ErrExecuteCommandFailed, err)
 	}
-
 	//changing the separator for next file/command to parse and get data
 	cfg.Separator = "="
 	dataFile, err := util.getFileData(parser, cfg, "/etc/default/locale")
@@ -74,5 +79,33 @@ func (a AssetDalImpl) GetOS() (*asset.AssetOs, error) {
 		OsLanguage:   strings.Trim(dataFile.Map["LANG"].Values[1], "\""),
 		//os.InstallDate - To be added
 		//os.SerialNumber - Presently not able to find it for ubuntu
+	}, nil
+}
+
+// GetSystemInfo returns system info
+func (a AssetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
+	//This command require sudo access to execute
+	product, err := a.Factory.GetEnv().ExecuteBash(cSysProductCmd)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	//time zone
+	tz, err := a.Factory.GetEnv().ExecuteBash(cSysTz)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	//time zone description
+	tzd, err := a.Factory.GetEnv().ExecuteBash(cSysTzd)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	return &asset.AssetSystem{
+		Product:             product,
+		TimeZone:            tz,
+		TimeZoneDescription: tzd,
+		//Category - to be added
+		//Model - to be added
+		//SerialNumber - to be added
+		//SystemName - to be added
 	}, nil
 }

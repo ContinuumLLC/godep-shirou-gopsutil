@@ -313,15 +313,26 @@ func (_mr *_MockAssetDalRecorder) GetAssetData() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAssetData")
 }
 
-func (_m *MockAssetDal) GetOS() (*asset.AssetOs, error) {
-	ret := _m.ctrl.Call(_m, "GetOS")
+func (_m *MockAssetDal) GetOSInfo() (*asset.AssetOs, error) {
+	ret := _m.ctrl.Call(_m, "GetOSInfo")
 	ret0, _ := ret[0].(*asset.AssetOs)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-func (_mr *_MockAssetDalRecorder) GetOS() *gomock.Call {
-	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetOS")
+func (_mr *_MockAssetDalRecorder) GetOSInfo() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetOSInfo")
+}
+
+func (_m *MockAssetDal) GetSystemInfo() (*asset.AssetSystem, error) {
+	ret := _m.ctrl.Call(_m, "GetSystemInfo")
+	ret0, _ := ret[0].(*asset.AssetSystem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockAssetDalRecorder) GetSystemInfo() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetSystemInfo")
 }
 
 // Mock of AssetDalFactory interface
