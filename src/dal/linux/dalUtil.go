@@ -34,3 +34,15 @@ func (d dalUtil) getFileData(parser procParser.Parser, cfg procParser.Config, fi
 	}
 	return data, nil
 }
+
+func (d dalUtil) getDataFromMap(key string, data *procParser.Data) int64 {
+	if _, exists := data.Map[key]; !exists {
+		return 0
+	}
+	val, err := procParser.GetInt64(data.Map[key].Values[1])
+	if err != nil {
+		return 0
+	}
+	// unit conversion to Bytes
+	return procParser.GetBytes(val, data.Map[key].Values[2])
+}
