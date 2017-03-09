@@ -39,6 +39,9 @@ func (d dalUtil) getProcData(data *procParser.Data, splitFromKey string) []map[s
 	var keyValArr []map[string][]string
 	var m map[string][]string
 	for i := 0; i < len(data.Lines); i++ {
+		if len(data.Lines[i].Values) == 0 {
+			continue
+		}
 		key := data.Lines[i].Values[0]
 		if key == splitFromKey {
 			if m != nil {

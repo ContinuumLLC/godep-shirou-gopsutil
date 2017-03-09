@@ -231,3 +231,19 @@ func TestGetMemoryInfoNoErr(t *testing.T) {
 		t.Errorf("Unexpected error received  : %v", err)
 	}
 }
+
+func TestGetProcessorInfoErr(t *testing.T) {
+	parseError := model.ErrFileReadFailed
+	_, mockAssetDalD := setupGetFileReader(t, errors.New(parseError), nil, nil)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+
+	_, err := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetProcessorInfo()
+
+	if err == nil || err.Error() != parseError {
+		t.Error("Error expected but not returned")
+	}
+}
