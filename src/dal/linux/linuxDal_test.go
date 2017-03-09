@@ -36,7 +36,7 @@ func setupGetCommandReader(t *testing.T, parseErr error, commandReaderErr error)
 	return ctrl, mockAssetDalD
 }
 
-func setupGetFileReader(t *testing.T, parseErr error, fileReaderErr error) (*gomock.Controller, *mock.MockAssetDalDependencies) {
+func setupGetFileReader(t *testing.T, parseErr error, fileReaderErr error, parseData *procParser.Data) (*gomock.Controller, *mock.MockAssetDalDependencies) {
 	ctrl := gomock.NewController(t)
 	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
 
@@ -48,7 +48,7 @@ func setupGetFileReader(t *testing.T, parseErr error, fileReaderErr error) (*gom
 
 	mockParser := pMock.NewMockParser(ctrl)
 	if fileReaderErr == nil {
-		mockParser.EXPECT().Parse(gomock.Any(), reader).Return(&procParser.Data{}, parseErr)
+		mockParser.EXPECT().Parse(gomock.Any(), reader).Return(parseData, parseErr)
 	}
 	mockAssetDalD.EXPECT().GetParser().Return(mockParser)
 
@@ -174,6 +174,59 @@ func TestGetSystemInfoErr(t *testing.T) {
 func TestGetSystemNoErr(t *testing.T) {
 	ctrl, err := setupGetSystemInfo(t, 5, nil)
 	defer ctrl.Finish()
+	if err != nil {
+		t.Errorf("Unexpected error received  : %v", err)
+	}
+}
+
+func TestGetMemoryInfoErr(t *testing.T) {
+	parseError := model.ErrFileReadFailed
+	_, mockAssetDalD := setupGetFileReader(t, errors.New(parseError), nil, nil)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+
+	_, err := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetMemoryInfo()
+
+	if err == nil || err.Error() != parseError {
+		t.Error("Error expected but not returned")
+	}
+}
+
+func TestGetDataFromMap(t *testing.T) {
+	data := procParser.Data{
+		Map: make(map[string]procParser.Line, 1),
+	}
+	data.Map["MemTotal"] = procParser.Line{Values: []string{"MemTotal", "InvalidNumber", "KB"}}
+
+	util := dalUtil{}
+	val := util.getDataFromMap("MemTotal", &data)
+
+	if val != 0 {
+		t.Errorf("Expected 0, returned %d", val)
+	}
+}
+
+func TestGetMemoryInfoNoErr(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	data := procParser.Data{
+		Map: make(map[string]procParser.Line, 1),
+	}
+	data.Map["MemTotal"] = procParser.Line{Values: []string{"physicalTotalBytes", "1", "KB"}}
+
+	_, mockAssetDalD := setupGetFileReader(t, nil, nil, &data)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+
+	_, err := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetMemoryInfo()
+
 	if err != nil {
 		t.Errorf("Unexpected error received  : %v", err)
 	}

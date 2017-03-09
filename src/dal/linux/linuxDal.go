@@ -25,6 +25,15 @@ const (
 	cSysHostname   string = "hostname"
 )
 
+// Memory Proc related constants
+const (
+	cMemProcPath                   string = "/proc/meminfo"
+	cMemProcPhysicalTotalBytes     string = "MemTotal"
+	cMemProcPhysicalAvailableBytes string = "MemAvailable"
+	cMemProcPageAvailableBytes     string = "SwapFree"
+	cMemProcPageTotalBytes         string = "SwapTotal"
+)
+
 // AssetDalImpl ...
 type AssetDalImpl struct {
 	Factory model.AssetDalDependencies
@@ -46,6 +55,10 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	if err != nil {
 		return nil, err
 	}
+	m, err := a.GetMemoryInfo()
+	if err != nil {
+		return nil, err
+	}
 	return &asset.AssetCollection{
 		CreatedBy:     cAssetCreatedBy,
 		CreateTimeUTC: time.Now().UTC(),
@@ -53,7 +66,7 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		Os:            *o,
 		BaseBoard:     *(getBaseBoardInfo()),
 		Bios:          *(getBiosInfo()),
-		Memory:        *(getMemoryInfo()),
+		Memory:        *m,
 		System:        *s,
 		Networks:      n,
 	}, nil
@@ -136,7 +149,6 @@ func (a AssetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 		ParserMode: procParser.ModeSeparator,
 		Separator:  ":",
 	}
-
 	util := dalUtil{
 		envDep: a.Factory,
 	}
@@ -151,4 +163,34 @@ func (a AssetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 		networks[i].Vendor = mapArr[i]["vendor"][1]
 	}
 	return networks, nil
+}
+
+// GetMemoryInfo returns memory info
+func (a AssetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
+	parser := a.Factory.GetParser()
+	cfg := procParser.Config{
+		ParserMode:    procParser.ModeKeyValue,
+		IgnoreNewLine: true,
+	}
+	util := dalUtil{
+		envDep: a.Factory,
+	}
+	data, err := util.getFileData(parser, cfg, cMemProcPath)
+	if err != nil {
+		return nil, exception.New(model.ErrFileReadFailed, err)
+	}
+
+	memTotal := util.getDataFromMap(cMemProcPhysicalTotalBytes, data)
+	memAvail := util.getDataFromMap(cMemProcPhysicalAvailableBytes, data)
+	swapTotal := util.getDataFromMap(cMemProcPageTotalBytes, data)
+	swapAvail := util.getDataFromMap(cMemProcPageAvailableBytes, data)
+
+	return &asset.AssetMemory{
+		TotalPhysicalMemoryBytes:     memTotal,
+		AvailablePhysicalMemoryBytes: memAvail,
+		TotalPageFileSpaceBytes:      swapTotal,
+		AvailablePageFileSpaceBytes:  swapAvail,
+		TotalVirtualMemoryBytes:      (memTotal + swapTotal),
+		AvailableVirtualMemoryBytes:  (memAvail + swapAvail),
+	}, nil
 }
