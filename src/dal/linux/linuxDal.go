@@ -21,6 +21,8 @@ const (
 	cSysProductCmd string = `lshw -c system | grep product | cut -d ":" -f2`
 	cSysTz         string = "date +%z"
 	cSysTzd        string = "date +%Z"
+	cSysSerialNo   string = "dmidecode -s system-serial-number"
+	cSysHostname   string = "hostname"
 )
 
 // AssetDalImpl ...
@@ -35,7 +37,12 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	if err != nil {
 		return nil, err
 	}
+	a.Logger.Log(logging.INFO, "")
 	s, err := a.GetSystemInfo()
+	if err != nil {
+		return nil, err
+	}
+	n, err := a.GetNetworkInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -48,6 +55,7 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		Bios:          *(getBiosInfo()),
 		Memory:        *(getMemoryInfo()),
 		System:        *s,
+		Networks:      n,
 	}, nil
 }
 
@@ -84,6 +92,7 @@ func (a AssetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 
 // GetSystemInfo returns system info
 func (a AssetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
+	//TODO - Below repetitive code needs to be refactored
 	//This command require sudo access to execute
 	product, err := a.Factory.GetEnv().ExecuteBash(cSysProductCmd)
 	if err != nil {
@@ -99,13 +108,47 @@ func (a AssetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
 	if err != nil {
 		return nil, exception.New(model.ErrExecuteCommandFailed, err)
 	}
+	//serial number
+	srno, err := a.Factory.GetEnv().ExecuteBash(cSysSerialNo)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	//hostname
+	hostname, err := a.Factory.GetEnv().ExecuteBash(cSysHostname)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
 	return &asset.AssetSystem{
 		Product:             product,
 		TimeZone:            tz,
 		TimeZoneDescription: tzd,
 		//Category - to be added
 		//Model - to be added
-		//SerialNumber - to be added
-		//SystemName - to be added
+		SerialNumber: srno,
+		SystemName:   hostname,
 	}, nil
+}
+
+// GetNetworkInfo returns network info
+func (a AssetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
+	parser := a.Factory.GetParser()
+	cfg := procParser.Config{
+		ParserMode: procParser.ModeSeparator,
+		Separator:  ":",
+	}
+
+	util := dalUtil{
+		envDep: a.Factory,
+	}
+	dataCmd, err := util.getCommandData(parser, cfg, "lshw", "-c", "network")
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	mapArr := util.getProcData(dataCmd, "*-network")
+	networks := make([]asset.AssetNetwork, len(mapArr))
+	for i := 0; i < len(mapArr); i++ {
+		networks[i].Product = mapArr[i]["product"][1]
+		networks[i].Vendor = mapArr[i]["vendor"][1]
+	}
+	return networks, nil
 }

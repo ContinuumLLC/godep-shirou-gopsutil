@@ -313,6 +313,17 @@ func (_mr *_MockAssetDalRecorder) GetAssetData() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAssetData")
 }
 
+func (_m *MockAssetDal) GetNetworkInfo() ([]asset.AssetNetwork, error) {
+	ret := _m.ctrl.Call(_m, "GetNetworkInfo")
+	ret0, _ := ret[0].([]asset.AssetNetwork)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockAssetDalRecorder) GetNetworkInfo() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetNetworkInfo")
+}
+
 func (_m *MockAssetDal) GetOSInfo() (*asset.AssetOs, error) {
 	ret := _m.ctrl.Call(_m, "GetOSInfo")
 	ret0, _ := ret[0].(*asset.AssetOs)

@@ -135,6 +135,17 @@ func setupGetSystemInfo(t *testing.T, times int, err error) (*gomock.Controller,
 		mockEnv.EXPECT().ExecuteBash(cSysProductCmd).Return("", nil)
 		mockEnv.EXPECT().ExecuteBash(cSysTz).Return("", nil)
 		str = cSysTzd
+	case 4:
+		mockEnv.EXPECT().ExecuteBash(cSysProductCmd).Return("", nil)
+		mockEnv.EXPECT().ExecuteBash(cSysTz).Return("", nil)
+		mockEnv.EXPECT().ExecuteBash(cSysTzd).Return("", nil)
+		str = cSysSerialNo
+	case 5:
+		mockEnv.EXPECT().ExecuteBash(cSysProductCmd).Return("", nil)
+		mockEnv.EXPECT().ExecuteBash(cSysTz).Return("", nil)
+		mockEnv.EXPECT().ExecuteBash(cSysTzd).Return("", nil)
+		mockEnv.EXPECT().ExecuteBash(cSysSerialNo).Return("", nil)
+		str = cSysHostname
 
 	}
 	mockEnv.EXPECT().ExecuteBash(str).Return("", err)
@@ -150,7 +161,7 @@ func setupGetSystemInfo(t *testing.T, times int, err error) (*gomock.Controller,
 }
 
 func TestGetSystemInfoErr(t *testing.T) {
-	cmdExeArr := []int{1, 2, 3}
+	cmdExeArr := []int{1, 2, 3, 4, 5}
 	for _, i := range cmdExeArr {
 		ctrl, err := setupGetSystemInfo(t, i, errors.New(model.ErrExecuteCommandFailed))
 		defer ctrl.Finish()
@@ -161,7 +172,7 @@ func TestGetSystemInfoErr(t *testing.T) {
 }
 
 func TestGetSystemNoErr(t *testing.T) {
-	ctrl, err := setupGetSystemInfo(t, 3, nil)
+	ctrl, err := setupGetSystemInfo(t, 5, nil)
 	defer ctrl.Finish()
 	if err != nil {
 		t.Errorf("Unexpected error received  : %v", err)

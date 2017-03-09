@@ -23,6 +23,7 @@ type AssetDal interface {
 	GetAssetData() (*asset.AssetCollection, error)
 	GetOSInfo() (*asset.AssetOs, error)
 	GetSystemInfo() (*asset.AssetSystem, error)
+	GetNetworkInfo() ([]asset.AssetNetwork, error)
 }
 
 // AssetServiceFactory returns AssetService
