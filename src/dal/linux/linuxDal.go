@@ -21,6 +21,7 @@ const (
 
 const (
 	cSysProductCmd string = `lshw -c system | grep product | cut -d ":" -f2`
+	cCPUArcCmd     string = `lscpu | grep Architecture | cut -d ":" -f2`
 	cSysTz         string = "date +%z"
 	cSysTzd        string = "date +%Z"
 	cSysSerialNo   string = "dmidecode -s system-serial-number"
@@ -212,6 +213,10 @@ func (a AssetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 	util := dalUtil{
 		envDep: a.Factory,
 	}
+	cpuType, err := a.Factory.GetEnv().ExecuteBash(cCPUArcCmd)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
 	dataFile, err := util.getFileData(parser, cfg, "/proc/cpuinfo")
 	if err != nil {
 		return nil, exception.New(model.ErrFileReadFailed, err)
@@ -224,7 +229,7 @@ func (a AssetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 		processors[i].Manufacturer = mapArr[i]["vendor_id"][1]
 		processors[i].NumberOfCores, _ = strconv.Atoi(mapArr[i]["cpu cores"][1])
 		processors[i].Product = mapArr[i]["model name"][1]
-		//processors[i].ProcessorType ... to be added
+		processors[i].ProcessorType = cpuType
 		//processors[i].SerialNumber  ... to be added
 	}
 	return processors, nil
