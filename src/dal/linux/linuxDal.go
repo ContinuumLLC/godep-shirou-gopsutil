@@ -46,7 +46,6 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	if err != nil {
 		return nil, err
 	}
-	a.Logger.Log(logging.INFO, "")
 	s, err := a.GetSystemInfo()
 	if err != nil {
 		return nil, err
@@ -106,7 +105,6 @@ func (a AssetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 // GetSystemInfo returns system info
 func (a AssetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
 	//TODO - Below repetitive code needs to be refactored
-	//This command require sudo access to execute
 	product, err := a.Factory.GetEnv().ExecuteBash(cSysProductCmd)
 	if err != nil {
 		return nil, exception.New(model.ErrExecuteCommandFailed, err)
@@ -156,6 +154,9 @@ func (a AssetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 	if err != nil {
 		return nil, exception.New(model.ErrExecuteCommandFailed, err)
 	}
+	//getProcData will return the map of map[key]valuesArray
+	//dataCmd is proc data, second param(*-network) is to create another set from this key
+	//third param(logical name) is to name the map key as the value
 	mapArr := util.getProcData(dataCmd, "*-network", "logical name")
 	networks := make(map[string]asset.AssetNetwork)
 	for k := range mapArr {
