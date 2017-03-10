@@ -4,6 +4,8 @@ import (
 	"strings"
 	"time"
 
+	"strconv"
+
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-common-lib/src/exception"
@@ -19,6 +21,7 @@ const (
 
 const (
 	cSysProductCmd string = `lshw -c system | grep product | cut -d ":" -f2`
+	cCPUArcCmd     string = `lscpu | grep Architecture | cut -d ":" -f2`
 	cSysTz         string = "date +%z"
 	cSysTzd        string = "date +%Z"
 	cSysSerialNo   string = "dmidecode -s system-serial-number"
@@ -58,6 +61,10 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	if err != nil {
 		return nil, err
 	}
+	p, err := a.GetProcessorInfo()
+	if err != nil {
+		return nil, err
+	}
 	return &asset.AssetCollection{
 		CreatedBy:     cAssetCreatedBy,
 		CreateTimeUTC: time.Now().UTC(),
@@ -68,6 +75,7 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		Memory:        *m,
 		System:        *s,
 		Networks:      n,
+		Processors:    p,
 	}, nil
 }
 
@@ -241,4 +249,36 @@ func (a AssetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
 		TotalVirtualMemoryBytes:      (memTotal + swapTotal),
 		AvailableVirtualMemoryBytes:  (memAvail + swapAvail),
 	}, nil
+}
+
+// GetProcessorInfo returns processor info
+func (a AssetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
+	parser := a.Factory.GetParser()
+	cfg := procParser.Config{
+		ParserMode: procParser.ModeSeparator,
+		Separator:  ":",
+	}
+	util := dalUtil{
+		envDep: a.Factory,
+	}
+	cpuType, err := a.Factory.GetEnv().ExecuteBash(cCPUArcCmd)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	dataFile, err := util.getFileData(parser, cfg, "/proc/cpuinfo")
+	if err != nil {
+		return nil, exception.New(model.ErrFileReadFailed, err)
+	}
+	mapArr := util.getProcData(dataFile, "processor")
+	processors := make([]asset.AssetProcessor, len(mapArr))
+	for i := 0; i < len(mapArr); i++ {
+		processors[i].ClockSpeedMhz, _ = strconv.ParseFloat(mapArr[i]["cpu MHz"][1], 64)
+		processors[i].Family, _ = strconv.Atoi(mapArr[i]["cpu family"][1])
+		processors[i].Manufacturer = mapArr[i]["vendor_id"][1]
+		processors[i].NumberOfCores, _ = strconv.Atoi(mapArr[i]["cpu cores"][1])
+		processors[i].Product = mapArr[i]["model name"][1]
+		processors[i].ProcessorType = cpuType
+		//processors[i].SerialNumber  ... to be added
+	}
+	return processors, nil
 }

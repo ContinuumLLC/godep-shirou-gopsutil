@@ -42,6 +42,9 @@ func (d dalUtil) getProcData(data *procParser.Data, splitFromKey string, parentM
 		parentKey string
 	)
 	for i := 0; i < len(data.Lines); i++ {
+		if len(data.Lines[i].Values) == 0 {
+			continue
+		}
 		key := data.Lines[i].Values[0]
 		if parentKey != "" {
 			keyValArr[parentKey] = m
