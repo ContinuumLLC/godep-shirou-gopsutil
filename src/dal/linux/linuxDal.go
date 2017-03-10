@@ -269,16 +269,18 @@ func (a AssetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 	if err != nil {
 		return nil, exception.New(model.ErrFileReadFailed, err)
 	}
-	mapArr := util.getProcData(dataFile, "processor")
+	mapArr := util.getProcData(dataFile, "processor", "processor")
 	processors := make([]asset.AssetProcessor, len(mapArr))
-	for i := 0; i < len(mapArr); i++ {
-		processors[i].ClockSpeedMhz, _ = strconv.ParseFloat(mapArr[i]["cpu MHz"][1], 64)
-		processors[i].Family, _ = strconv.Atoi(mapArr[i]["cpu family"][1])
-		processors[i].Manufacturer = mapArr[i]["vendor_id"][1]
-		processors[i].NumberOfCores, _ = strconv.Atoi(mapArr[i]["cpu cores"][1])
-		processors[i].Product = mapArr[i]["model name"][1]
+	var i int
+	for k := range mapArr {
+		processors[i].ClockSpeedMhz, _ = strconv.ParseFloat(mapArr[k]["cpu MHz"][1], 64)
+		processors[i].Family, _ = strconv.Atoi(mapArr[k]["cpu family"][1])
+		processors[i].Manufacturer = mapArr[k]["vendor_id"][1]
+		processors[i].NumberOfCores, _ = strconv.Atoi(mapArr[k]["cpu cores"][1])
+		processors[i].Product = mapArr[k]["model name"][1]
 		processors[i].ProcessorType = cpuType
 		//processors[i].SerialNumber  ... to be added
+		i++
 	}
 	return processors, nil
 }
