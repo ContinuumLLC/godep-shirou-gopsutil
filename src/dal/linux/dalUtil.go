@@ -35,22 +35,29 @@ func (d dalUtil) getFileData(parser procParser.Parser, cfg procParser.Config, fi
 	return data, nil
 }
 
-func (d dalUtil) getProcData(data *procParser.Data, splitFromKey string) []map[string][]string {
-	var keyValArr []map[string][]string
-	var m map[string][]string
+func (d dalUtil) getProcData(data *procParser.Data, splitFromKey string, parentMapKey string) map[string]map[string][]string {
+	keyValArr := make(map[string]map[string][]string)
+	var (
+		m         map[string][]string
+		parentKey string
+	)
 	for i := 0; i < len(data.Lines); i++ {
 		key := data.Lines[i].Values[0]
+		if parentKey != "" {
+			keyValArr[parentKey] = m
+			parentKey = ""
+		}
 		if key == splitFromKey {
-			if m != nil {
-				keyValArr = append(keyValArr, m)
-			}
 			m = make(map[string][]string)
+		}
+		if m != nil && key == parentMapKey {
+			parentKey = data.Lines[i].Values[1]
 		}
 		m[key] = data.Lines[i].Values
 	}
 	//Add the last/first set to the map array
-	if m != nil {
-		keyValArr = append(keyValArr, m)
+	if m != nil && parentKey != "" {
+		keyValArr[parentKey] = m
 	}
 	return keyValArr
 }
