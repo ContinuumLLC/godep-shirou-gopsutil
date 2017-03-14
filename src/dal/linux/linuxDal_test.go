@@ -9,6 +9,7 @@ import (
 
 	"strings"
 
+	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
 	eMock "github.com/ContinuumLLC/platform-common-lib/src/env/mock"
@@ -518,5 +519,41 @@ func TestGetDrivesInfo2(t *testing.T) {
 	}.GetDrivesInformation(&v.Nodelist)
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestMapToArr(t *testing.T) {
+	m := map[string]asset.AssetNetwork{
+		"eth0": asset.AssetNetwork{},
+		"eth1": asset.AssetNetwork{},
+	}
+	nArr := mapToArr(m)
+	if l := len(nArr); l != 2 {
+		t.Errorf("Expected length is %d but received %d", 2, l)
+	}
+}
+
+func TestSetValnmcli(t *testing.T) {
+	networks := map[string]asset.AssetNetwork{
+		"eth0": asset.AssetNetwork{},
+		"eth1": asset.AssetNetwork{},
+	}
+	mapArr := map[string]map[string][]string{
+		"eth0": {
+			"DHCP4.OPTION[11]":         []string{"DHCP4.OPTION[11]", "dhcp_server_identifier = 10.0.3.2"},
+			"DHCP4.OPTION[9]":          []string{"DHCP4.OPTION[9]", "domain_name_servers = 10.2.17.6 10.2.17.25 10.2.17.17"},
+			"DHCP4.OPTION[6]":          []string{"DHCP4.OPTION[6]", "ip_address = 10.0.3.15"},
+			"DHCP4.OPTION[5]":          []string{"DHCP4.OPTION[5]", "ip_address 10.0.3.15"},
+			"DHCP4.OPTION[7]":          []string{"DHCP4.OPTION[7]", "subnet_mask = 255.255.255.0"},
+			"GENERAL.HWADDR":           []string{"GENERAL.HWADDR", "08:00:27:09:C7:82"},
+			"GENERAL.FIRMWARE-VERSION": []string{"GENERAL.FIRMWARE-VERSION"},
+		},
+	}
+	setValnmcli(networks, mapArr)
+	if d := networks["eth0"].DhcpServer; d != "10.0.3.2" {
+		t.Errorf("Expected value is 10.0.3.2 but received %s", d)
+	}
+	if i := networks["eth0"].IPv4; i != "10.0.3.15" {
+		t.Errorf("Expected value is 10.0.3.15 but received %s", i)
 	}
 }
