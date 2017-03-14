@@ -231,10 +231,13 @@ func (a AssetDalImpl) GetDrivesInformation(l *Node) ([]asset.AssetDrive, error) 
 	var tmp asset.AssetDrive
 	diskList := a.getAllNodes(l, "disk", "disk", listOfNodes)
 	for _, value := range diskList {
-		//Need description and logical name, snumber, version in place of model and media type
 		tmp.Manufacturer = value.Vendor
 		tmp.Product = value.Product
 		tmp.SizeBytes = value.SizeInBytes
+		if len(value.LogName) > 0 {
+			tmp.LogicalName = value.LogName[0].Text
+		}
+		tmp.SerialNumber = value.Serial
 		var listOfPart []string
 		tmp.Partitions = a.getAllPartitions(&value, listOfPart)
 
@@ -243,10 +246,13 @@ func (a AssetDalImpl) GetDrivesInformation(l *Node) ([]asset.AssetDrive, error) 
 
 	optDriveList := a.getAllNodes(l, "cdrom", "disk", listOfNodes)
 	for _, value := range optDriveList {
-		//Need description and logical name, snumber, version in place of model and media type
 		tmp.Manufacturer = value.ID
 		tmp.Product = value.Desc
 		tmp.SizeBytes = value.SizeInBytes
+		if len(value.LogName) > 0 {
+			tmp.LogicalName = value.LogName[0].Text
+		}
+		tmp.SerialNumber = value.Serial
 		var listOfPart []string
 		tmp.Partitions = a.getAllPartitions(&value, listOfPart)
 
