@@ -179,36 +179,50 @@ func (a AssetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 		return nil, exception.New(model.ErrExecuteCommandFailed, err)
 	}
 	mapArr = util.getProcData(dataCmd, "GENERAL.DEVICE", "GENERAL.DEVICE")
-	for k := range mapArr {
-		var (
-			dsi  string
-			ds   []string
-			ipv4 string
-		)
-		dsiVal := mapArr[k]["DHCP4.OPTION[11]"][1]
-		dsiArr := strings.Split(dsiVal, "=")
-		if len(dsiArr) > 0 {
-			dsi = strings.TrimSpace(dsiArr[1])
-		}
 
-		dsVal := mapArr[k]["DHCP4.OPTION[9]"][1]
-		dsArr := strings.Split(dsVal, "=")
-		if len(dsArr) > 0 {
-			ds = strings.Split(strings.TrimSpace(dsArr[1]), " ")
-		}
+	setValnmcli(networks, mapArr)
 
-		ipv4Val := mapArr[k]["DHCP4.OPTION[6]"][1]
-		ipv4Arr := strings.Split(ipv4Val, "=")
-		if len(ipv4Arr) > 0 {
-			ipv4 = strings.TrimSpace(ipv4Arr[1])
-		}
-		n := networks[k]
-		n.DhcpServer = dsi
-		n.DnsServers = ds
-		n.PrivateIPv4 = ipv4
-		networks[k] = n
-	}
 	return mapToArr(networks), nil
+}
+
+func setValnmcli(networks map[string]asset.AssetNetwork, mapArr map[string]map[string][]string) {
+	for k := range mapArr {
+
+		for mk := range mapArr[k] {
+			if len(mapArr[k][mk]) == 1 {
+				continue
+			}
+			n := networks[k]
+			setValnmcli2(mapArr[k], mk, &n)
+			networks[k] = n
+		}
+	}
+}
+
+func setValnmcli2(mapA map[string][]string, mk string, n *asset.AssetNetwork) {
+	val := mapA[mk][1]
+	if strings.HasPrefix(mk, "DHCP4.OPTION") {
+		arr := strings.Split(val, "=")
+		var key string
+		if len(arr) == 0 {
+			return
+		}
+		key = strings.TrimSpace(arr[0])
+		switch key {
+		case "dhcp_server_identifier":
+			n.DhcpServer = strings.TrimSpace(arr[1])
+		case "ip_address":
+			n.IPv4 = strings.TrimSpace(arr[1])
+		case "subnet_mask":
+			n.SubnetMask = strings.TrimSpace(arr[1])
+		case "domain_name_servers":
+			n.DnsServers = strings.Split(strings.TrimSpace(arr[1]), " ")
+		}
+	}
+	//Mac address
+	if mk == "GENERAL.HWADDR" {
+		n.MacAddress = strings.Join(mapA[mk][1:], ":")
+	}
 }
 
 func mapToArr(m map[string]asset.AssetNetwork) []asset.AssetNetwork {
@@ -261,13 +275,13 @@ func (a AssetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 	util := dalUtil{
 		envDep: a.Factory,
 	}
-	cpuType, err := a.Factory.GetEnv().ExecuteBash(cCPUArcCmd)
-	if err != nil {
-		return nil, exception.New(model.ErrExecuteCommandFailed, err)
-	}
 	dataFile, err := util.getFileData(parser, cfg, "/proc/cpuinfo")
 	if err != nil {
 		return nil, exception.New(model.ErrFileReadFailed, err)
+	}
+	cpuType, err := a.Factory.GetEnv().ExecuteBash(cCPUArcCmd)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
 	}
 	mapArr := util.getProcData(dataFile, "processor", "processor")
 	processors := make([]asset.AssetProcessor, len(mapArr))

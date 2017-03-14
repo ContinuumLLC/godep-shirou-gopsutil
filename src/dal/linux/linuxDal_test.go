@@ -234,7 +234,9 @@ func TestGetMemoryInfoNoErr(t *testing.T) {
 
 func TestGetProcessorInfoErr(t *testing.T) {
 	parseError := model.ErrFileReadFailed
-	_, mockAssetDalD := setupGetFileReader(t, errors.New(parseError), nil, nil)
+	ctrl, mockAssetDalD := setupGetFileReader(t, errors.New(parseError), nil, nil)
+	defer ctrl.Finish()
+
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 
@@ -245,5 +247,45 @@ func TestGetProcessorInfoErr(t *testing.T) {
 
 	if err == nil || err.Error() != parseError {
 		t.Error("Error expected but not returned")
+	}
+}
+
+func TestGetProcessorInfoBashErr(t *testing.T) {
+	ctrl, mockAssetDalD := setupGetFileReader(t, nil, nil, nil)
+	defer ctrl.Finish()
+	envMock := eMock.NewMockEnv(ctrl)
+	envMock.EXPECT().ExecuteBash(cCPUArcCmd).Return("", errors.New(model.ErrExecuteCommandFailed))
+	mockAssetDalD.EXPECT().GetEnv().Return(envMock)
+
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+
+	_, err := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetProcessorInfo()
+
+	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
+		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
+	}
+}
+
+func TestGetProcessorInfoNoErr(t *testing.T) {
+	ctrl, mockAssetDalD := setupGetFileReader(t, nil, nil, &procParser.Data{})
+	defer ctrl.Finish()
+	envMock := eMock.NewMockEnv(ctrl)
+	envMock.EXPECT().ExecuteBash(cCPUArcCmd).Return("", nil)
+	mockAssetDalD.EXPECT().GetEnv().Return(envMock)
+
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+
+	_, err := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetProcessorInfo()
+
+	if err != nil {
+		t.Errorf("Unexpected error returned : %v", err)
 	}
 }
