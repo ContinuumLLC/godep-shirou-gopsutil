@@ -113,6 +113,26 @@ func setupGetCommandReader(t *testing.T, parseErr error, commandReaderErr error)
 	return ctrl, mockAssetDalD
 }
 
+//TODO - Duplicate function as setupGetCommandReader. Need to relook at it.
+func setupGetCommandReader2(t *testing.T, parseErr error, commandReaderErr error, data *procParser.Data) (*gomock.Controller, *mock.MockAssetDalDependencies) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+
+	mockEnv := eMock.NewMockEnv(ctrl)
+	byteReader := bytes.NewReader([]byte("data"))
+	reader := ioutil.NopCloser(byteReader)
+	mockEnv.EXPECT().GetCommandReader(gomock.Any(), gomock.Any(), gomock.Any()).Return(reader, commandReaderErr)
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv)
+
+	mockParser := pMock.NewMockParser(ctrl)
+	if commandReaderErr == nil {
+		mockParser.EXPECT().Parse(gomock.Any(), reader).Return(data, parseErr)
+	}
+	mockAssetDalD.EXPECT().GetParser().Return(mockParser)
+
+	return ctrl, mockAssetDalD
+}
+
 func setupGetFileReader(t *testing.T, parseErr error, fileReaderErr error, parseData *procParser.Data) (*gomock.Controller, *mock.MockAssetDalDependencies) {
 	ctrl := gomock.NewController(t)
 	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
@@ -555,5 +575,52 @@ func TestSetValnmcli(t *testing.T) {
 	}
 	if i := networks["eth0"].IPv4; i != "10.0.3.15" {
 		t.Errorf("Expected value is 10.0.3.15 but received %s", i)
+	}
+}
+
+func TestGetNetworkInfo(t *testing.T) {
+	ctrl, mockAssetDalD := setupGetCommandReader2(t, nil, errors.New(model.ErrExecuteCommandFailed), &procParser.Data{})
+	defer ctrl.Finish()
+
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	_, err := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetNetworkInfo()
+	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
+		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
+	}
+}
+
+func TestGetNetworkInfoCommandDataErr(t *testing.T) {
+	ctrl, mockAssetDalD := setupGetCommandReader2(t, nil, nil, &procParser.Data{
+		Lines: []procParser.Line{
+			procParser.Line{
+				Values: []string{"*-network", "0"},
+			},
+			procParser.Line{
+				Values: []string{"*product", "82540EM Gigabit Ethernet Controller"},
+			},
+			procParser.Line{
+				Values: []string{"*-network", "1"},
+			},
+		},
+	})
+
+	mockEnv := eMock.NewMockEnv(ctrl)
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	mockEnv.EXPECT().GetCommandReader(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New(model.ErrExecuteCommandFailed))
+
+	defer ctrl.Finish()
+
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	_, err := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetNetworkInfo()
+	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
+		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
 	}
 }
