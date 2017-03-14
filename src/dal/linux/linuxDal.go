@@ -1,6 +1,7 @@
 package linux
 
 import (
+	"encoding/xml"
 	"strings"
 	"time"
 
@@ -26,6 +27,8 @@ const (
 	cSysTzd        string = "date +%Z"
 	cSysSerialNo   string = "dmidecode -s system-serial-number"
 	cSysHostname   string = "hostname"
+	//cListHwAsJSON  string = "lshw -json"
+	cListHwAsXML string = "lshw -c system,memory,bus,disk,volume -xml"
 )
 
 // Memory Proc related constants
@@ -37,14 +40,79 @@ const (
 	cMemProcPageTotalBytes         string = "SwapTotal"
 )
 
+//List denotes list of hardware assets returned by lshw command
+type List struct {
+	XMLName  xml.Name `xml:"list"`
+	Nodelist Node     `xml:"node"`
+}
+
+//Node denotes a particular hardware asset node returned by lshw command
+type Node struct {
+	Class        string        `xml:"class,attr"`
+	ID           string        `xml:"id,attr"`
+	Desc         string        `xml:"description"`
+	Vendor       string        `xml:"vendor"`
+	Product      string        `xml:"product"`
+	Version      string        `xml:"version"`
+	Serial       string        `xml:"serial"`
+	SizeInBytes  int64         `xml:"size"`
+	LogName      []Logicalname `xml:"logicalname"`
+	Capabilities []Capability  `xml:"capabilities>capability"`
+	Nodelist     []Node        `xml:"node"`
+}
+
+//Logicalname denotes logical name of a node
+type Logicalname struct {
+	Text string `xml:",chardata"`
+}
+
+//Capability denotes capability of a node
+type Capability struct {
+	ID   string `xml:"id,attr"`
+	Text string `xml:",chardata"`
+}
+
 // AssetDalImpl ...
 type AssetDalImpl struct {
 	Factory model.AssetDalDependencies
 	Logger  logging.Logger
 }
 
+func (a AssetDalImpl) readHwList() (*List, error) {
+	v := List{}
+	hw, err := a.Factory.GetEnv().ExecuteBash(cListHwAsXML)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	err = xml.Unmarshal([]byte(hw), &v)
+	if err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
 //GetAssetData ...
 func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
+	v, err := a.readHwList()
+	if err != nil {
+		return nil, err
+	}
+
+	pp, err := a.GetBiosInformation(&v.Nodelist)
+	if err != nil {
+		return nil, err
+	}
+
+	pp1, err := a.GetBaseBoardInformation(&v.Nodelist)
+	if err != nil {
+		return nil, err
+	}
+
+	dd, err := a.GetDrivesInformation(&v.Nodelist)
+	if err != nil {
+		return nil, err
+	}
+
 	o, err := a.GetOSInfo()
 	if err != nil {
 		return nil, err
@@ -69,14 +137,124 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		CreatedBy:     cAssetCreatedBy,
 		CreateTimeUTC: time.Now().UTC(),
 		Type:          cAssetDataType,
+		Bios:          *pp,
+		BaseBoard:     *pp1,
 		Os:            *o,
-		BaseBoard:     *(getBaseBoardInfo()),
-		Bios:          *(getBiosInfo()),
 		Memory:        *m,
 		System:        *s,
 		Networks:      n,
+		Drives:        dd,
 		Processors:    p,
 	}, nil
+}
+
+func (a AssetDalImpl) getRequiredNode(l *Node, id string, class string) *Node {
+	if l.ID == id && l.Class == class {
+		return l
+	}
+	if len(l.Nodelist) > 0 {
+		for i := range l.Nodelist {
+			return a.getRequiredNode(&l.Nodelist[i], id, class)
+		}
+	}
+	return nil
+}
+
+func (a AssetDalImpl) getAllNodes(root *Node, id string, class string, listOfNodes []Node) []Node {
+	if root.ID == id && root.Class == class {
+		return append(listOfNodes, *root)
+	}
+	if len(root.Nodelist) > 0 {
+		for i := range root.Nodelist {
+			listOfNodes = a.getAllNodes(&root.Nodelist[i], id, class, listOfNodes)
+		}
+	}
+	return listOfNodes
+}
+
+func (a AssetDalImpl) getAllPartitions(root *Node, listOfPart []string) []string {
+	if len(root.Nodelist) > 0 {
+		var volume string
+		for i, v := range root.Nodelist {
+			if len(v.LogName) > 0 {
+				volume = v.LogName[0].Text
+			}
+			listOfPart = append(listOfPart, volume)
+			listOfPart = a.getAllPartitions(&root.Nodelist[i], listOfPart)
+		}
+	}
+	return listOfPart
+}
+
+//GetBiosInformation ...
+func (a AssetDalImpl) GetBiosInformation(l *Node) (*asset.AssetBios, error) {
+	var smbiosVer string
+	for _, v := range l.Capabilities {
+		if strings.Contains(v.ID, "smbios") {
+			smbiosVer = v.Text
+			break
+		}
+	}
+	n1 := a.getRequiredNode(l, "firmware", "memory")
+	if n1 == nil {
+		return &asset.AssetBios{}, nil
+	}
+
+	return &asset.AssetBios{
+		Manufacturer:  n1.Vendor,
+		Version:       n1.Version,
+		SmbiosVersion: smbiosVer,
+	}, nil
+
+}
+
+//GetBaseBoardInformation ...
+func (a AssetDalImpl) GetBaseBoardInformation(l *Node) (*asset.AssetBaseBoard, error) {
+	n1 := a.getRequiredNode(l, "core", "bus")
+	if n1 == nil {
+		return &asset.AssetBaseBoard{}, nil
+	}
+
+	return &asset.AssetBaseBoard{
+		Product:      n1.Product,
+		Manufacturer: n1.Vendor,
+		Version:      n1.Version,
+		SerialNumber: n1.Serial,
+	}, nil
+
+}
+
+//GetDrivesInformation ...
+func (a AssetDalImpl) GetDrivesInformation(l *Node) ([]asset.AssetDrive, error) {
+	var listOfNodes []Node
+	var listOfDrives []asset.AssetDrive
+	var tmp asset.AssetDrive
+	diskList := a.getAllNodes(l, "disk", "disk", listOfNodes)
+	for _, value := range diskList {
+		//Need description and logical name, snumber, version in place of model and media type
+		tmp.Manufacturer = value.Vendor
+		tmp.Product = value.Product
+		tmp.SizeBytes = value.SizeInBytes
+		var listOfPart []string
+		tmp.Partitions = a.getAllPartitions(&value, listOfPart)
+
+		listOfDrives = append(listOfDrives, tmp)
+	}
+
+	optDriveList := a.getAllNodes(l, "cdrom", "disk", listOfNodes)
+	for _, value := range optDriveList {
+		//Need description and logical name, snumber, version in place of model and media type
+		tmp.Manufacturer = value.ID
+		tmp.Product = value.Desc
+		tmp.SizeBytes = value.SizeInBytes
+		var listOfPart []string
+		tmp.Partitions = a.getAllPartitions(&value, listOfPart)
+
+		listOfDrives = append(listOfDrives, tmp)
+	}
+
+	return listOfDrives, nil
+
 }
 
 // GetOSInfo returns the OS info
