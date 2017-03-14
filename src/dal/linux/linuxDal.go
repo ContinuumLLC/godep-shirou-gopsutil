@@ -22,6 +22,7 @@ const (
 
 const (
 	cSysProductCmd string = `lshw -c system | grep product | cut -d ":" -f2`
+	cCPUArcCmd     string = `lscpu | grep Architecture | cut -d ":" -f2`
 	cSysTz         string = "date +%z"
 	cSysTzd        string = "date +%Z"
 	cSysSerialNo   string = "dmidecode -s system-serial-number"
@@ -116,7 +117,6 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	if err != nil {
 		return nil, err
 	}
-	a.Logger.Log(logging.INFO, "")
 	s, err := a.GetSystemInfo()
 	if err != nil {
 		return nil, err
@@ -291,7 +291,6 @@ func (a AssetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 // GetSystemInfo returns system info
 func (a AssetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
 	//TODO - Below repetitive code needs to be refactored
-	//This command require sudo access to execute
 	product, err := a.Factory.GetEnv().ExecuteBash(cSysProductCmd)
 	if err != nil {
 		return nil, exception.New(model.ErrExecuteCommandFailed, err)
@@ -341,13 +340,63 @@ func (a AssetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 	if err != nil {
 		return nil, exception.New(model.ErrExecuteCommandFailed, err)
 	}
-	mapArr := util.getProcData(dataCmd, "*-network")
-	networks := make([]asset.AssetNetwork, len(mapArr))
-	for i := 0; i < len(mapArr); i++ {
-		networks[i].Product = mapArr[i]["product"][1]
-		networks[i].Vendor = mapArr[i]["vendor"][1]
+	//getProcData will return the map of map[key]valuesArray
+	//dataCmd is proc data, second param(*-network) is to create another set from this key
+	//third param(logical name) is to name the map key as the value
+	mapArr := util.getProcData(dataCmd, "*-network", "logical name")
+	networks := make(map[string]asset.AssetNetwork)
+	for k := range mapArr {
+		n := asset.AssetNetwork{}
+		n.Product = mapArr[k]["product"][1]
+		n.Vendor = mapArr[k]["vendor"][1]
+		n.LogicalName = mapArr[k]["logical name"][1]
+		networks[k] = n
 	}
-	return networks, nil
+	dataCmd, err = util.getCommandData(parser, cfg, "bash", "-c", "nmcli dev list")
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
+	mapArr = util.getProcData(dataCmd, "GENERAL.DEVICE", "GENERAL.DEVICE")
+	for k := range mapArr {
+		var (
+			dsi  string
+			ds   []string
+			ipv4 string
+		)
+		dsiVal := mapArr[k]["DHCP4.OPTION[11]"][1]
+		dsiArr := strings.Split(dsiVal, "=")
+		if len(dsiArr) > 0 {
+			dsi = strings.TrimSpace(dsiArr[1])
+		}
+
+		dsVal := mapArr[k]["DHCP4.OPTION[9]"][1]
+		dsArr := strings.Split(dsVal, "=")
+		if len(dsArr) > 0 {
+			ds = strings.Split(strings.TrimSpace(dsArr[1]), " ")
+		}
+
+		ipv4Val := mapArr[k]["DHCP4.OPTION[6]"][1]
+		ipv4Arr := strings.Split(ipv4Val, "=")
+		if len(ipv4Arr) > 0 {
+			ipv4 = strings.TrimSpace(ipv4Arr[1])
+		}
+		n := networks[k]
+		n.DhcpServer = dsi
+		n.DnsServers = ds
+		n.PrivateIPv4 = ipv4
+		networks[k] = n
+	}
+	return mapToArr(networks), nil
+}
+
+func mapToArr(m map[string]asset.AssetNetwork) []asset.AssetNetwork {
+	networks := make([]asset.AssetNetwork, len(m))
+	var i int
+	for d := range m {
+		networks[i] = m[d]
+		i++
+	}
+	return networks
 }
 
 // GetMemoryInfo returns memory info
@@ -390,20 +439,26 @@ func (a AssetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 	util := dalUtil{
 		envDep: a.Factory,
 	}
+	cpuType, err := a.Factory.GetEnv().ExecuteBash(cCPUArcCmd)
+	if err != nil {
+		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+	}
 	dataFile, err := util.getFileData(parser, cfg, "/proc/cpuinfo")
 	if err != nil {
 		return nil, exception.New(model.ErrFileReadFailed, err)
 	}
-	mapArr := util.getProcData(dataFile, "processor")
+	mapArr := util.getProcData(dataFile, "processor", "processor")
 	processors := make([]asset.AssetProcessor, len(mapArr))
-	for i := 0; i < len(mapArr); i++ {
-		processors[i].ClockSpeedMhz, _ = strconv.ParseFloat(mapArr[i]["cpu MHz"][1], 64)
-		processors[i].Family, _ = strconv.Atoi(mapArr[i]["cpu family"][1])
-		processors[i].Manufacturer = mapArr[i]["vendor_id"][1]
-		processors[i].NumberOfCores, _ = strconv.Atoi(mapArr[i]["cpu cores"][1])
-		processors[i].Product = mapArr[i]["model name"][1]
-		//processors[i].ProcessorType ... to be added
+	var i int
+	for k := range mapArr {
+		processors[i].ClockSpeedMhz, _ = strconv.ParseFloat(mapArr[k]["cpu MHz"][1], 64)
+		processors[i].Family, _ = strconv.Atoi(mapArr[k]["cpu family"][1])
+		processors[i].Manufacturer = mapArr[k]["vendor_id"][1]
+		processors[i].NumberOfCores, _ = strconv.Atoi(mapArr[k]["cpu cores"][1])
+		processors[i].Product = mapArr[k]["model name"][1]
+		processors[i].ProcessorType = cpuType
 		//processors[i].SerialNumber  ... to be added
+		i++
 	}
 	return processors, nil
 }
