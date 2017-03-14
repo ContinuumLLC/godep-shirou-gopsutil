@@ -2,6 +2,7 @@ package linux
 
 import (
 	"bytes"
+	"encoding/xml"
 	"errors"
 	"io/ioutil"
 	"testing"
@@ -15,6 +16,81 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
 	pMock "github.com/ContinuumLLC/platform-common-lib/src/procParser/mock"
 	"github.com/golang/mock/gomock"
+)
+
+const (
+	hwXML  string = "<list></list>"
+	hwXML1 string = `<?xml version="1.0" standalone="yes" ?>
+<list>
+<node id="milinda-virtualbox" claimed="true" class="system" handle="DMI:0001">
+ <description>Computer</description>
+ <product>VirtualBox</product>
+ <vendor>innotek GmbH</vendor>
+ <version>1.2</version>
+ <serial>0</serial>
+ <width units="bits">64</width>
+ <configuration>
+  <setting id="family" value="Virtual Machine" />
+  <setting id="uuid" value="E8F8DC61-D6D2-413D-86FE-A0E3E9807FC2" />
+ </configuration>
+ <capabilities>
+  <capability id="smbios-2.5" >SMBIOS version 2.5</capability>
+  <capability id="dmi-2.5" >DMI version 2.5</capability>
+  <capability id="vsyscall32" >32-bit processes</capability>
+ </capabilities>
+  <node id="core" claimed="true" class="bus" handle="DMI:0008">
+   <description>Motherboard</description>
+   <product>VirtualBox</product>
+   <vendor>Oracle Corporation</vendor>
+   <physid>0</physid>
+   <version>1.2</version>
+   <serial>0</serial>
+    <node id="firmware" claimed="true" class="memory" handle="">
+     <description>BIOS</description>
+     <vendor>innotek GmbH</vendor>
+     <physid>0</physid>
+     <version>VirtualBox</version>
+     <date>12/01/2006</date>
+     <size units="bytes">131072</size>
+    </node>
+  <node id="cdrom" claimed="true" class="disk" handle="SCSI:01:00:00:00">
+   <description>DVD reader</description>
+   <logicalname>/dev/cdrom</logicalname>
+   <logicalname>/dev/dvd</logicalname>
+   <logicalname>/dev/sr0</logicalname>
+  </node>
+  <node id="disk" claimed="true" class="disk" handle="SCSI:02:00:00:00">
+   <description>ATA Disk</description>
+   <product>VBOX HARDDISK</product>
+   <logicalname>/dev/sda</logicalname>
+   <version>1.0</version>
+   <serial>VB7f4a1ba4-6ef7655d</serial>
+   <size units="bytes">64424509440</size>
+    <node id="volume:0" claimed="true" class="volume" handle="">
+     <description>EXT4 volume</description>
+     <vendor>Linux</vendor>
+     <logicalname>/dev/sda1</logicalname>
+     <logicalname>/</logicalname>
+     <version>1.0</version>
+     <serial>ecc36b30-d5d2-40a0-9962-88661930be29</serial>
+     <size units="bytes">55833526272</size>
+     <capacity>55833526272</capacity>
+    </node>
+    <node id="volume:1" claimed="true" class="volume" handle="">
+     <description>Extended partition</description>
+     <logicalname>/dev/sda2</logicalname>
+     <size units="bytes">8587838464</size>
+     <capacity>8587838464</capacity>
+      <node id="logicalvolume" claimed="true" class="volume" handle="">
+       <description>Linux swap / Solaris partition</description>
+       <logicalname>/dev/sda5</logicalname>
+       <capacity>8587837440</capacity>
+      </node>
+    </node>
+  </node>
+  </node>
+</node>
+</list>`
 )
 
 func setupGetCommandReader(t *testing.T, parseErr error, commandReaderErr error) (*gomock.Controller, *mock.MockAssetDalDependencies) {
@@ -245,5 +321,160 @@ func TestGetProcessorInfoErr(t *testing.T) {
 
 	if err == nil || err.Error() != parseError {
 		t.Error("Error expected but not returned")
+	}
+}
+
+func TestReadHwList(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+
+	mockEnv := eMock.NewMockEnv(ctrl)
+
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("<list></list>", nil)
+
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.readHwList()
+	if e != nil {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestReadHwListError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+
+	mockEnv := eMock.NewMockEnv(ctrl)
+
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("<list></list>", errors.New("readHwListErr"))
+
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.readHwList()
+	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
+		t.Errorf("Expecting model.ErrExecuteCommandFailed , Unexpected error %v", e)
+	}
+}
+
+func TestReadHwListErr(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+
+	mockEnv := eMock.NewMockEnv(ctrl)
+
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("nu$756ll", nil)
+
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.readHwList()
+	if e == nil {
+		t.Error("Expecting EOF error ")
+	}
+}
+
+func TestGetBiosInfo(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	v := List{}
+	xml.Unmarshal([]byte(hwXML), &v)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetBiosInformation(&v.Nodelist)
+	if e != nil {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestGetBiosInfo2(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	v := List{}
+	xml.Unmarshal([]byte(hwXML1), &v)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetBiosInformation(&v.Nodelist)
+	if e != nil {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestGetBaseBoardInfo(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	v := List{}
+	xml.Unmarshal([]byte(hwXML), &v)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetBaseBoardInformation(&v.Nodelist)
+	if e != nil {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestGetBaseBoardInfo2(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	v := List{}
+	xml.Unmarshal([]byte(hwXML1), &v)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetBaseBoardInformation(&v.Nodelist)
+	if e != nil {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestGetDrivesInfo(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	v := List{}
+	xml.Unmarshal([]byte(hwXML), &v)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetDrivesInformation(&v.Nodelist)
+	if e != nil {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+func TestGetDrivesInfo2(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	v := List{}
+	xml.Unmarshal([]byte(hwXML1), &v)
+	_, e := AssetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetDrivesInformation(&v.Nodelist)
+	if e != nil {
+		t.Errorf("Unexpected error %v", e)
 	}
 }
