@@ -1,4 +1,6 @@
-package linux
+// +build linux
+
+package dal
 
 import (
 	"encoding/xml"
@@ -27,9 +29,10 @@ const (
 	cSysTzd        string = "date +%Z"
 	cSysSerialNo   string = "dmidecode -s system-serial-number"
 	cSysHostname   string = "hostname"
-	//cListHwAsJSON  string = "lshw -json"
-	cListHwAsXML string = "lshw -c system,memory,bus,disk,volume -xml"
+	cListHwAsXML   string = "lshw -c system,memory,bus,disk,volume -xml"
 )
+
+var v *List
 
 // Memory Proc related constants
 const (
@@ -72,43 +75,40 @@ type Capability struct {
 	Text string `xml:",chardata"`
 }
 
-// AssetDalImpl ...
-type AssetDalImpl struct {
+type assetDalImpl struct {
 	Factory model.AssetDalDependencies
 	Logger  logging.Logger
 }
 
-func (a AssetDalImpl) readHwList() (*List, error) {
-	v := List{}
-	hw, err := a.Factory.GetEnv().ExecuteBash(cListHwAsXML)
-	if err != nil {
-		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+func (a assetDalImpl) readHwList() (*List, error) {
+
+	if v == nil {
+		hw, err := a.Factory.GetEnv().ExecuteBash(cListHwAsXML)
+		if err != nil {
+			return nil, exception.New(model.ErrExecuteCommandFailed, err)
+		}
+		v = new(List)
+		err = xml.Unmarshal([]byte(hw), v)
+		if err != nil {
+			return nil, err
+		}
 	}
-	err = xml.Unmarshal([]byte(hw), &v)
-	if err != nil {
-		return nil, err
-	}
-	return &v, nil
+	return v, nil
 }
 
 //GetAssetData ...
-func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
-	v, err := a.readHwList()
+func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
+	pp, err := a.GetBiosInfo()
 	if err != nil {
 		return nil, err
 	}
 
-	pp, err := a.GetBiosInformation(&v.Nodelist)
+	pp1, err := a.GetBaseBoardInfo()
 	if err != nil {
 		return nil, err
 	}
 
-	pp1, err := a.GetBaseBoardInformation(&v.Nodelist)
-	if err != nil {
-		return nil, err
-	}
-
-	dd, err := a.GetDrivesInformation(&v.Nodelist)
+	dd, err := a.GetDrivesInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func (a AssetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 	}, nil
 }
 
-func (a AssetDalImpl) getRequiredNode(l *Node, id string, class string) *Node {
+func (a assetDalImpl) getRequiredNode(l *Node, id string, class string) *Node {
 	if l.ID == id && l.Class == class {
 		return l
 	}
@@ -160,7 +160,7 @@ func (a AssetDalImpl) getRequiredNode(l *Node, id string, class string) *Node {
 	return nil
 }
 
-func (a AssetDalImpl) getAllNodes(root *Node, id string, class string, listOfNodes []Node) []Node {
+func (a assetDalImpl) getAllNodes(root *Node, id string, class string, listOfNodes []Node) []Node {
 	if root.ID == id && root.Class == class {
 		return append(listOfNodes, *root)
 	}
@@ -172,7 +172,7 @@ func (a AssetDalImpl) getAllNodes(root *Node, id string, class string, listOfNod
 	return listOfNodes
 }
 
-func (a AssetDalImpl) getAllPartitions(root *Node, listOfPart []string) []string {
+func (a assetDalImpl) getAllPartitions(root *Node, listOfPart []string) []string {
 	if len(root.Nodelist) > 0 {
 		var volume string
 		for i, v := range root.Nodelist {
@@ -186,8 +186,14 @@ func (a AssetDalImpl) getAllPartitions(root *Node, listOfPart []string) []string
 	return listOfPart
 }
 
-//GetBiosInformation ...
-func (a AssetDalImpl) GetBiosInformation(l *Node) (*asset.AssetBios, error) {
+//GetBiosInfo ...
+func (a assetDalImpl) GetBiosInfo() (*asset.AssetBios, error) {
+	hlist, err := a.readHwList()
+	if err != nil {
+		return nil, err
+	}
+	l := &hlist.Nodelist
+
 	var smbiosVer string
 	for _, v := range l.Capabilities {
 		if strings.Contains(v.ID, "smbios") {
@@ -208,8 +214,13 @@ func (a AssetDalImpl) GetBiosInformation(l *Node) (*asset.AssetBios, error) {
 
 }
 
-//GetBaseBoardInformation ...
-func (a AssetDalImpl) GetBaseBoardInformation(l *Node) (*asset.AssetBaseBoard, error) {
+//GetBaseBoardInfo ...
+func (a assetDalImpl) GetBaseBoardInfo() (*asset.AssetBaseBoard, error) {
+	hlist, err := a.readHwList()
+	if err != nil {
+		return nil, err
+	}
+	l := &hlist.Nodelist
 	n1 := a.getRequiredNode(l, "core", "bus")
 	if n1 == nil {
 		return &asset.AssetBaseBoard{}, nil
@@ -224,8 +235,13 @@ func (a AssetDalImpl) GetBaseBoardInformation(l *Node) (*asset.AssetBaseBoard, e
 
 }
 
-//GetDrivesInformation ...
-func (a AssetDalImpl) GetDrivesInformation(l *Node) ([]asset.AssetDrive, error) {
+//GetDrivesInfo ...
+func (a assetDalImpl) GetDrivesInfo() ([]asset.AssetDrive, error) {
+	hlist, err := a.readHwList()
+	if err != nil {
+		return nil, err
+	}
+	l := &hlist.Nodelist
 	var listOfNodes []Node
 	var listOfDrives []asset.AssetDrive
 	var tmp asset.AssetDrive
@@ -264,7 +280,7 @@ func (a AssetDalImpl) GetDrivesInformation(l *Node) ([]asset.AssetDrive, error) 
 }
 
 // GetOSInfo returns the OS info
-func (a AssetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
+func (a assetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 	parser := a.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode: procParser.ModeSeparator,
@@ -295,7 +311,7 @@ func (a AssetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 }
 
 // GetSystemInfo returns system info
-func (a AssetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
+func (a assetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
 	//TODO - Below repetitive code needs to be refactored
 	product, err := a.Factory.GetEnv().ExecuteBash(cSysProductCmd)
 	if err != nil {
@@ -333,7 +349,7 @@ func (a AssetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
 }
 
 // GetNetworkInfo returns network info
-func (a AssetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
+func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 	parser := a.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode: procParser.ModeSeparator,
@@ -420,7 +436,7 @@ func mapToArr(m map[string]asset.AssetNetwork) []asset.AssetNetwork {
 }
 
 // GetMemoryInfo returns memory info
-func (a AssetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
+func (a assetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
 	parser := a.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode:    procParser.ModeKeyValue,
@@ -450,7 +466,7 @@ func (a AssetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
 }
 
 // GetProcessorInfo returns processor info
-func (a AssetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
+func (a assetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 	parser := a.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode: procParser.ModeSeparator,

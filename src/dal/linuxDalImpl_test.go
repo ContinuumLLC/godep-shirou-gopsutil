@@ -1,8 +1,7 @@
-package linux
+package dal
 
 import (
 	"bytes"
-	"encoding/xml"
 	"errors"
 	"io/ioutil"
 	"testing"
@@ -171,7 +170,7 @@ func TestGetOSCommandErr(t *testing.T) {
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetOSInfo()
@@ -188,7 +187,7 @@ func TestGetOSFileErr(t *testing.T) {
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetOSInfo()
@@ -206,7 +205,7 @@ func TestGetOSFileErr(t *testing.T) {
 
 // 	log := logging.GetLoggerFactory().New("")
 // 	log.SetLogLevel(logging.OFF)
-// 	_, err := AssetDalImpl{
+// 	_, err := assetDalImpl{
 // 		Factory: mockAssetDalD,
 // 		Logger:  log,
 // 	}.GetOS()
@@ -250,7 +249,7 @@ func setupGetSystemInfo(t *testing.T, times int, err error) (*gomock.Controller,
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, e := AssetDalImpl{
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetSystemInfo()
@@ -282,7 +281,7 @@ func TestGetMemoryInfoErr(t *testing.T) {
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetMemoryInfo()
@@ -319,7 +318,7 @@ func TestGetMemoryInfoNoErr(t *testing.T) {
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetMemoryInfo()
@@ -337,7 +336,7 @@ func TestGetProcessorInfoErr(t *testing.T) {
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetProcessorInfo()
@@ -357,7 +356,7 @@ func TestGetProcessorInfoBashErr(t *testing.T) {
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetProcessorInfo()
@@ -377,7 +376,7 @@ func TestGetProcessorInfoNoErr(t *testing.T) {
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
 
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetProcessorInfo()
@@ -387,18 +386,25 @@ func TestGetProcessorInfoNoErr(t *testing.T) {
 	}
 }
 
-func TestReadHwList(t *testing.T) {
+func setupEnv(t *testing.T) (*gomock.Controller, *mock.MockAssetDalDependencies, *eMock.MockEnv) {
 	ctrl := gomock.NewController(t)
 	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
 
 	mockEnv := eMock.NewMockEnv(ctrl)
-
 	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	v = nil
+
+	return ctrl, mockAssetDalD, mockEnv
+}
+
+func TestReadHwList(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("<list></list>", nil)
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, e := AssetDalImpl{
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.readHwList()
@@ -408,17 +414,14 @@ func TestReadHwList(t *testing.T) {
 }
 
 func TestReadHwListError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
-
-	mockEnv := eMock.NewMockEnv(ctrl)
-
-	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("<list></list>", errors.New("readHwListErr"))
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, e := AssetDalImpl{
+	v = nil
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.readHwList()
@@ -428,17 +431,13 @@ func TestReadHwListError(t *testing.T) {
 }
 
 func TestReadHwListErr(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
-
-	mockEnv := eMock.NewMockEnv(ctrl)
-
-	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("nu$756ll", nil)
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, e := AssetDalImpl{
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.readHwList()
@@ -448,97 +447,147 @@ func TestReadHwListErr(t *testing.T) {
 }
 
 func TestGetBiosInfo(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	v := List{}
-	xml.Unmarshal([]byte(hwXML), &v)
-	_, e := AssetDalImpl{
+
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
+	// v := List{}
+	// xml.Unmarshal([]byte(hwXML), &v)
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
-	}.GetBiosInformation(&v.Nodelist)
+	}.GetBiosInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
 	}
 }
 
 func TestGetBiosInfo2(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	v := List{}
-	xml.Unmarshal([]byte(hwXML1), &v)
-	_, e := AssetDalImpl{
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, nil)
+	// v := List{}
+	// xml.Unmarshal([]byte(hwXML1), &v)
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
-	}.GetBiosInformation(&v.Nodelist)
+	}.GetBiosInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
 	}
 }
 
-func TestGetBaseBoardInfo(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+func TestGetBiosInfoError(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	v := List{}
-	xml.Unmarshal([]byte(hwXML), &v)
-	_, e := AssetDalImpl{
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, errors.New("XMLReadError"))
+	// v := List{}
+	// xml.Unmarshal([]byte(hwXML1), &v)
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
-	}.GetBaseBoardInformation(&v.Nodelist)
+	}.GetBiosInfo()
+	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
+		t.Errorf("Unexpected error %v, was expecting model.ErrExecuteCommandFailed", e)
+	}
+}
+
+func TestGetBaseBoardInfo(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
+	_, e := assetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetBaseBoardInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
 	}
 }
 
 func TestGetBaseBoardInfo2(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	v := List{}
-	xml.Unmarshal([]byte(hwXML1), &v)
-	_, e := AssetDalImpl{
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, nil)
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
-	}.GetBaseBoardInformation(&v.Nodelist)
+	}.GetBaseBoardInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
 	}
 }
 
-func TestGetDrivesInfo(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+func TestGetBaseBoardInfoError(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	v := List{}
-	xml.Unmarshal([]byte(hwXML), &v)
-	_, e := AssetDalImpl{
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, errors.New("XMLReadErr"))
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
-	}.GetDrivesInformation(&v.Nodelist)
+	}.GetBaseBoardInfo()
+	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
+		t.Errorf("Unexpected error %v, was expecting model.ErrExecuteCommandFailed ", e)
+	}
+}
+
+func TestGetDrivesInfo(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
+	_, e := assetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetDrivesInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
 	}
 }
 func TestGetDrivesInfo2(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	v := List{}
-	xml.Unmarshal([]byte(hwXML1), &v)
-	_, e := AssetDalImpl{
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, nil)
+	// v := List{}
+	// xml.Unmarshal([]byte(hwXML1), &v)
+	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
-	}.GetDrivesInformation(&v.Nodelist)
+	}.GetDrivesInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestGetDrivesInfoError(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, errors.New("XMLReadErr"))
+	// v := List{}
+	// xml.Unmarshal([]byte(hwXML1), &v)
+	_, e := assetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetDrivesInfo()
+	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
+		t.Errorf("Unexpected error %v, was expecting model.ErrExecuteCommandFailed", e)
 	}
 }
 
@@ -584,7 +633,7 @@ func TestGetNetworkInfo(t *testing.T) {
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetNetworkInfo()
@@ -616,7 +665,7 @@ func TestGetNetworkInfoCommandDataErr(t *testing.T) {
 
 	log := logging.GetLoggerFactory().New("")
 	log.SetLogLevel(logging.OFF)
-	_, err := AssetDalImpl{
+	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  log,
 	}.GetNetworkInfo()

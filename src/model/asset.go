@@ -25,6 +25,9 @@ type AssetDal interface {
 	GetSystemInfo() (*asset.AssetSystem, error)
 	GetNetworkInfo() ([]asset.AssetNetwork, error)
 	GetMemoryInfo() (*asset.AssetMemory, error)
+	GetBiosInfo() (*asset.AssetBios, error)
+	GetBaseBoardInfo() (*asset.AssetBaseBoard, error)
+	GetDrivesInfo() ([]asset.AssetDrive, error)
 }
 
 // AssetServiceFactory returns AssetService

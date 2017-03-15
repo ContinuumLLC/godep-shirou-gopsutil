@@ -313,6 +313,39 @@ func (_mr *_MockAssetDalRecorder) GetAssetData() *gomock.Call {
 	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetAssetData")
 }
 
+func (_m *MockAssetDal) GetBaseBoardInfo() (*asset.AssetBaseBoard, error) {
+	ret := _m.ctrl.Call(_m, "GetBaseBoardInfo")
+	ret0, _ := ret[0].(*asset.AssetBaseBoard)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockAssetDalRecorder) GetBaseBoardInfo() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBaseBoardInfo")
+}
+
+func (_m *MockAssetDal) GetBiosInfo() (*asset.AssetBios, error) {
+	ret := _m.ctrl.Call(_m, "GetBiosInfo")
+	ret0, _ := ret[0].(*asset.AssetBios)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockAssetDalRecorder) GetBiosInfo() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetBiosInfo")
+}
+
+func (_m *MockAssetDal) GetDrivesInfo() ([]asset.AssetDrive, error) {
+	ret := _m.ctrl.Call(_m, "GetDrivesInfo")
+	ret0, _ := ret[0].([]asset.AssetDrive)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+func (_mr *_MockAssetDalRecorder) GetDrivesInfo() *gomock.Call {
+	return _mr.mock.ctrl.RecordCall(_mr.mock, "GetDrivesInfo")
+}
+
 func (_m *MockAssetDal) GetMemoryInfo() (*asset.AssetMemory, error) {
 	ret := _m.ctrl.Call(_m, "GetMemoryInfo")
 	ret0, _ := ret[0].(*asset.AssetMemory)

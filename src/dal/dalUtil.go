@@ -1,4 +1,4 @@
-package linux
+package dal
 
 import (
 	"github.com/ContinuumLLC/platform-common-lib/src/env"
