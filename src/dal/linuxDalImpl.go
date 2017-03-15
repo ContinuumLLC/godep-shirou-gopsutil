@@ -20,6 +20,7 @@ import (
 const (
 	cAssetCreatedBy string = "/continuum/agent/plugin/asset"
 	cAssetDataType  string = "assetCollection"
+	cAssetDataName  string = "asset"
 )
 
 const (
@@ -137,6 +138,7 @@ func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		CreatedBy:     cAssetCreatedBy,
 		CreateTimeUTC: time.Now().UTC(),
 		Type:          cAssetDataType,
+		Name:          cAssetDataName,
 		Bios:          *pp,
 		BaseBoard:     *pp1,
 		Os:            *o,
