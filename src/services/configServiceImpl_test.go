@@ -50,6 +50,44 @@ func TestGetAssetPluginConfigNoErr(t *testing.T) {
 	}
 }
 
+func TestGetAssetPluginConfMap(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	confSrvcDepMock := mock.NewMockConfigServiceDependencies(ctrl)
+	confDalMock := mock.NewMockConfigDal(ctrl)
+	confDalMock.EXPECT().GetAssetPluginConfMap().Return(nil, nil)
+	confSrvcDepMock.EXPECT().GetConfigDal(gomock.Any()).Return(confDalMock)
+	csrvc := &configServiceImpl{
+		factory: confSrvcDepMock,
+	}
+	_, err := csrvc.GetAssetPluginConfMap()
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+}
+
+func TestSetAssetPluginMap(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	confSrvcDepMock := mock.NewMockConfigServiceDependencies(ctrl)
+	confDalMock := mock.NewMockConfigDal(ctrl)
+	var a map[string]interface{}
+	confDalMock.EXPECT().SetAssetPluginMap(a).Return(nil)
+	confSrvcDepMock.EXPECT().GetConfigDal(gomock.Any()).Return(confDalMock)
+
+	csrvc := &configServiceImpl{
+		factory: confSrvcDepMock,
+	}
+	err := csrvc.SetAssetPluginMap(a)
+	if err != nil {
+		t.Errorf("Unexpected error %v", err)
+	}
+
+}
+
 func TestGetAssetPluginConfigErr(t *testing.T) {
 	sConfig = nil // setting this static variable to nil to make it re-initialize
 	ctrl, csrvc := setupGetAssetPluginConfig(t, nil, errors.New(model.ErrAssetPluginConfig))

@@ -41,6 +41,9 @@ func (c *configServiceImpl) GetAssetPluginConfig() (*model.AssetPluginConfig, er
 			sConfig.URLSuffix = make(map[string]string)
 		}
 		resolveConf{}.resolveValues(sConfig)
+		if sConfig.LogLevel != "" {
+			c.logger.SetLogLevelConfig(sConfig.LogLevel)
+		}
 	}
 	return sConfig, err
 }

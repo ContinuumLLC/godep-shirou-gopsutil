@@ -4,5 +4,6 @@
 	},
 	"urlSuffix":{
 		"assetCollection": "/asset"
-	}
+	},
+	"logLevel":"ERROR"
 }

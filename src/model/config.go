@@ -8,8 +8,9 @@ import (
 
 // AssetPluginConfig is the overall config that asset plugin will use.
 type AssetPluginConfig struct {
-	PluginPath AssetPluginPath    `json:"pluginPath"`
+	PluginPath AssetPluginPath   `json:"pluginPath"`
 	URLSuffix  map[string]string `json:"urlSuffix"`
+	LogLevel   string            `json:"logLevel"`
 }
 
 // AssetPluginPath is to have plugin paths.
