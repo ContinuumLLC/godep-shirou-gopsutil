@@ -108,6 +108,34 @@ func TestAssetProcess(t *testing.T) {
 
 }
 
+func TestAssetProcessError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	// respBodyStr := "testoutput"
+
+	// mockServiceDep := createMock(ctrl, nil, nil, respBodyStr)
+	mockServiceDep := mock.NewMockHandlerDependencies(ctrl)
+
+	assetCollectionData := apiModel.AssetCollection{}
+
+	mockAssetService := mock.NewMockAssetService(ctrl)
+	mockAssetService.EXPECT().Process().Return(&assetCollectionData, errors.New("JSONError"))
+	mockServiceDep.EXPECT().GetAssetService(gomock.Any()).Return(mockAssetService)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	ps := processAsset{
+		cfg:    &model.AssetPluginConfig{},
+		dep:    mockServiceDep,
+		logger: log,
+	}
+	req := createRequest()
+	req.Path = "/asset"
+	_, err := ps.HandleAsset(req)
+	if err == nil || err.Error() != "JSONError" {
+		t.Errorf("Unexpected")
+	}
+
+}
+
 func TestAssetConfigurationGetAssetPluginConfMapError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 

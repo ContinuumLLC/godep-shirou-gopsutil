@@ -101,3 +101,25 @@ func TestGetAssetPluginConfMapReadFileErr(t *testing.T) {
 		t.Errorf("Expected error is :%v but got : %v", errMsg, err)
 	}
 }
+
+func TestAssetPluginMapGood(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	confDalMock := mock.NewMockConfigDalDependencies(ctrl)
+
+	clarMock := mockClar.NewMockServiceInit(ctrl)
+	clarMock.EXPECT().GetConfigPath().Return("") //returns any filename
+	confDalMock.EXPECT().GetServiceInit().Return(clarMock)
+
+	jsonMock := mockJson.NewMockSerializerJSON(ctrl)
+	jsonMock.EXPECT().WriteFile(gomock.Any(), gomock.Any()).Return(nil)
+	confDalMock.EXPECT().GetSerializerJSON().Return(jsonMock)
+
+	var tt map[string]interface{}
+	err := configDalImpl{
+		factory: confDalMock,
+	}.SetAssetPluginMap(tt)
+	if err != nil {
+		t.Errorf("Unexpected error :%v ", err)
+	}
+}
