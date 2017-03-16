@@ -370,7 +370,13 @@ func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 	mapArr := util.getProcData(dataCmd, "*-network", "logical name")
 	networks := make(map[string]asset.AssetNetwork)
 	for k := range mapArr {
-		n := asset.AssetNetwork{}
+		n := asset.AssetNetwork{
+			DhcpServer:       "0.0.0.0",
+			IPv4:             "0.0.0.0",
+			IPv6:             "::",
+			SubnetMask:       "0.0.0.0",
+			DefaultIPGateway: "0.0.0.0",
+		}
 		n.Product = mapArr[k]["product"][1]
 		n.Vendor = mapArr[k]["vendor"][1]
 		n.LogicalName = mapArr[k]["logical name"][1]
