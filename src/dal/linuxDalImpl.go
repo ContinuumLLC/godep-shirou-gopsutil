@@ -171,7 +171,8 @@ func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 }
 
 func (a assetDalImpl) getRequiredNode(l *Node, id string, class string) *Node {
-	if l.ID == id && l.Class == class {
+	//if l.ID == id && l.Class == class {
+	if strings.Contains(l.ID, id) && l.Class == class {
 		return l
 	}
 	if len(l.Nodelist) > 0 {
@@ -284,7 +285,7 @@ func (a assetDalImpl) GetDrivesInfo() ([]asset.AssetDrive, error) {
 
 	optDriveList := a.getAllNodes(l, "cdrom", "disk", listOfNodes)
 	for _, value := range optDriveList {
-		tmp.Manufacturer = value.ID
+		tmp.Manufacturer = value.Vendor
 		tmp.Product = value.Desc
 		tmp.SizeBytes = value.SizeInBytes
 		if len(value.LogName) > 0 {
