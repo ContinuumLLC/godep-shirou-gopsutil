@@ -99,51 +99,71 @@ func (a assetDalImpl) readHwList() (*List, error) {
 
 //GetAssetData ...
 func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
-	pp, err := a.GetBiosInfo()
+	var (
+		bbrd  asset.AssetBaseBoard
+		bios  asset.AssetBios
+		opSys asset.AssetOs
+		memry asset.AssetMemory
+		syst  asset.AssetSystem
+	)
+	b, err := a.GetBiosInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetBiosInfo() %v", err)
+	} else {
+		bios = *b
 	}
 
-	pp1, err := a.GetBaseBoardInfo()
+	bb, err := a.GetBaseBoardInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetBaseBoardInfo() %v", err)
+	} else {
+		bbrd = *bb
 	}
 
 	dd, err := a.GetDrivesInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetDrivesInfo() %v", err)
 	}
 
 	o, err := a.GetOSInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetOSInfo() %v", err)
+	} else {
+		opSys = *o
 	}
+
 	s, err := a.GetSystemInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetSystemInfo() %v", err)
+	} else {
+		syst = *s
 	}
+
 	n, err := a.GetNetworkInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetNetworkInfo() %v", err)
 	}
 	m, err := a.GetMemoryInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetMemoryInfo() %v", err)
+	} else {
+		memry = *m
 	}
 	p, err := a.GetProcessorInfo()
 	if err != nil {
-		return nil, err
+		a.Logger.Logf(logging.ERROR, "GetProcessorInfo() %v", err)
 	}
+
 	return &asset.AssetCollection{
 		CreatedBy:     cAssetCreatedBy,
 		CreateTimeUTC: time.Now().UTC(),
 		Type:          cAssetDataType,
 		Name:          cAssetDataName,
-		Bios:          *pp,
-		BaseBoard:     *pp1,
-		Os:            *o,
-		Memory:        *m,
-		System:        *s,
+		Bios:          bios,
+		BaseBoard:     bbrd,
+		Os:            opSys,
+		Memory:        memry,
+		System:        syst,
 		Networks:      n,
 		Drives:        dd,
 		Processors:    p,
