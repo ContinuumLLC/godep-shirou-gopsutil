@@ -377,9 +377,15 @@ func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 			SubnetMask:       "0.0.0.0",
 			DefaultIPGateway: "0.0.0.0",
 		}
-		n.Product = mapArr[k]["product"][1]
-		n.Vendor = mapArr[k]["vendor"][1]
-		n.LogicalName = mapArr[k]["logical name"][1]
+		if val, ok := mapArr[k]["product"]; ok {
+			n.Product = val[1]
+		}
+		if val, ok := mapArr[k]["vendor"]; ok {
+			n.Vendor = val[1]
+		}
+		if val, ok := mapArr[k]["logical name"]; ok {
+			n.LogicalName = val[1]
+		}
 		networks[k] = n
 	}
 	dataCmd, err = util.getCommandData(parser, cfg, "bash", "-c", "nmcli dev list")

@@ -673,3 +673,51 @@ func TestGetNetworkInfoCommandDataErr(t *testing.T) {
 		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
 	}
 }
+
+func TestGetNetworkInfoCommandDataErr1(t *testing.T) {
+	data := &procParser.Data{
+		Lines: []procParser.Line{
+			procParser.Line{
+				Values: []string{"*-network", "0"},
+			},
+			procParser.Line{
+				Values: []string{"*product", "82540EM Gigabit Ethernet Controller"},
+			},
+			procParser.Line{
+				Values: []string{"logical name", "enp0s3"},
+			},
+			procParser.Line{
+				Values: []string{"*-network", "1"},
+			},
+			procParser.Line{
+				Values: []string{"logical name", "enp0s4"},
+			},
+		},
+	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockAssetDalD := mock.NewMockAssetDalDependencies(ctrl)
+
+	mockEnv := eMock.NewMockEnv(ctrl)
+	mockParser := pMock.NewMockParser(ctrl)
+	byteReader := bytes.NewReader([]byte("data"))
+	reader := ioutil.NopCloser(byteReader)
+	gomock.InOrder(
+		mockAssetDalD.EXPECT().GetParser().Return(mockParser),
+		mockAssetDalD.EXPECT().GetEnv().Return(mockEnv),
+		mockEnv.EXPECT().GetCommandReader(gomock.Any(), gomock.Any(), gomock.Any()).Return(reader, nil),
+		mockParser.EXPECT().Parse(gomock.Any(), reader).Return(data, nil),
+
+		mockAssetDalD.EXPECT().GetEnv().Return(mockEnv),
+		mockEnv.EXPECT().GetCommandReader(gomock.Any(), gomock.Any(), gomock.Any()).Return(reader, errors.New("Err")),
+	)
+	log := logging.GetLoggerFactory().New("")
+	log.SetLogLevel(logging.OFF)
+	_, err := assetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  log,
+	}.GetNetworkInfo()
+	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
+		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
+	}
+}
