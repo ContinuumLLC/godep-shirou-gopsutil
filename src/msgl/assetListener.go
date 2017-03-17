@@ -3,9 +3,10 @@ package msgl
 import (
 	"errors"
 
-	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
+	"github.com/ContinuumLLC/platform-common-lib/src/exception"
 	"github.com/ContinuumLLC/platform-common-lib/src/logging"
+	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol"
 )
 
 //errors
@@ -53,19 +54,24 @@ func (pp processAssetImpl) Process() error {
 
 	pp.server = pp.dependencies.GetServer(stdin, stdout)
 	pp.registerRoutes()
+	var resp *protocol.Response
 	request, err := pp.server.ReceiveRequest()
-
 	if err != nil {
+		err = exception.New(model.ErrAssetMsgListener, err)
+		pp.sendErrorResponse(protocol.StatusCodeInternalError, resp, err)
 		return err
 	}
 
 	route := request.Route
 	if route == nil {
-		return errors.New(ErrInvalidPluginPath)
+		err = errors.New(ErrInvalidPluginPath)
+		pp.sendErrorResponse(protocol.PathNotFound, resp, err)
+		return err
 	}
 
 	response, err := route.Handle(request)
 	if err != nil {
+		pp.sendErrorResponse(protocol.StatusCodeInternalError, resp, err)
 		return err
 	}
 

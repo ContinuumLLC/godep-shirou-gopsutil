@@ -1,7 +1,6 @@
 package msgl
 
 import (
-	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
@@ -51,15 +50,10 @@ func TestProcessReceiveRequestError(t *testing.T) {
 	assetList := assetListFact.GetAssetListener(servDep)
 
 	err := assetList.Process()
-	//checking what the error is for badWrite, since this can be different for different platforms
-	_, errBadWrite := ioutil.ReadAll(resw)
 
-	if err == nil {
-		t.Errorf("Expected error not returned, Expected Error: %v", err)
+	if err == nil || err.Error() != model.ErrAssetMsgListener {
+		t.Errorf("Unexpected error %v, Expected Error: model.ErrAssetMsgListener", err)
 		return
-	}
-	if errBadWrite.Error() != err.Error() {
-		t.Errorf("Unexpected error returned, Expected: %v, Returned: %v", errBadWrite, err)
 	}
 }
 
