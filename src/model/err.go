@@ -1,0 +1,13 @@
+package model
+
+const (
+
+	//Generic error codes to wrap errors generated at downstream layers.
+
+	//ErrAssetService to handle error at service layer
+	ErrAssetService = "ErrAssetService"
+	//ErrAssetDal to handle error at dal layer
+	ErrAssetDal = "ErrAssetDal"
+	//ErrAssetMsgListener to handle error at message listener layer
+	ErrAssetMsgListener = "ErrAssetMsgListener"
+)
