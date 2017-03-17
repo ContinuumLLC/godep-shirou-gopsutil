@@ -410,7 +410,7 @@ func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 	}
 	dataCmd, err = util.getCommandData(parser, cfg, "bash", "-c", "nmcli dev list")
 	if err != nil {
-		return nil, exception.New(model.ErrExecuteCommandFailed, err)
+		return mapToArr(networks), exception.New(model.ErrExecuteCommandFailed, err)
 	}
 	mapArr = util.getProcData(dataCmd, "GENERAL.DEVICE", "GENERAL.DEVICE")
 
