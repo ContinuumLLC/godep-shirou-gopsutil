@@ -4,6 +4,7 @@ package dal
 
 import (
 	"encoding/xml"
+	"net"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/exception"
 	"github.com/ContinuumLLC/platform-common-lib/src/logging"
 	"github.com/ContinuumLLC/platform-common-lib/src/procParser"
+	//net "github.com/shirou/gopsutil/net"
 )
 
 // AssetCollection related constants
@@ -30,7 +32,7 @@ const (
 	cSysTzd        string = "date +%Z"
 	cSysSerialNo   string = "dmidecode -s system-serial-number"
 	cSysHostname   string = "hostname"
-	cListHwAsXML   string = "lshw -c system,memory,bus,disk,volume -xml"
+	cListHwAsXML   string = "lshw -c system,memory,bus,disk,volume,network -xml"
 )
 
 var v *List
@@ -177,14 +179,19 @@ func (a assetDalImpl) getRequiredNode(l *Node, id string, class string) *Node {
 	}
 	if len(l.Nodelist) > 0 {
 		for i := range l.Nodelist {
-			return a.getRequiredNode(&l.Nodelist[i], id, class)
+			tmp := a.getRequiredNode(&l.Nodelist[i], id, class)
+			if tmp != nil {
+				return tmp
+			}
+
 		}
 	}
 	return nil
 }
 
 func (a assetDalImpl) getAllNodes(root *Node, id string, class string, listOfNodes []Node) []Node {
-	if root.ID == id && root.Class == class {
+	//if root.ID == id && root.Class == class {
+	if strings.Contains(root.ID, id) && root.Class == class {
 		return append(listOfNodes, *root)
 	}
 	if len(root.Nodelist) > 0 {
@@ -371,8 +378,69 @@ func (a assetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
 	}, nil
 }
 
+func (a assetDalImpl) getVendorProduct(n1 []Node, s *asset.AssetNetwork) {
+	//Try to get vendor and product for this network interface using lshw -c network command
+	//Correlate lshw and golang's net package on interfce's logical name
+	for _, v3 := range n1 {
+		for _, v2 := range v3.LogName {
+			if v2.Text == s.LogicalName {
+				s.Vendor = v3.Vendor
+				s.Product = v3.Product
+			}
+		}
+	}
+
+}
+
 // GetNetworkInfo returns network info
 func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
+	array := make([]asset.AssetNetwork, 0)
+	var s asset.AssetNetwork
+	var n1 []Node
+	var listOfNodes []Node
+	//Get the result of  lshw -c network command
+	hlist, err := a.readHwList()
+	if err == nil {
+		l := &hlist.Nodelist
+		n1 = a.getAllNodes(l, "network", "network", listOfNodes)
+	}
+
+	//Get Network info using golang's net package
+	interfStat, err := net.Interfaces()
+	if err != nil {
+		return array, err
+	}
+	for _, interf := range interfStat {
+		s.LogicalName = interf.Name
+		s.MacAddress = interf.HardwareAddr.String()
+
+		a.getVendorProduct(n1, &s)
+		//Continue getting remaining Network info using golang's net package
+		s1, err := interf.Addrs()
+		if err != nil {
+			array = append(array, s)
+			return array, err
+		}
+		for _, value := range s1 {
+			ip, subnet, _ := net.ParseCIDR(value.String())
+			if strings.Contains(ip.String(), ":") {
+				s.IPv6 = ip.String()
+			} else {
+				s.IPv4 = ip.String()
+			}
+			if len(subnet.Mask) == 4 {
+				s.SubnetMask = net.IPv4(subnet.Mask[0], subnet.Mask[1], subnet.Mask[2], subnet.Mask[3]).String()
+			}
+			//s.SubnetMask = subnet.Mask.String()
+		}
+
+		array = append(array, s)
+	}
+	return array, nil
+}
+
+// GetNetworkInfo1 returns network info
+func (a assetDalImpl) GetNetworkInfo1() ([]asset.AssetNetwork, error) {
 	parser := a.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode: procParser.ModeSeparator,
