@@ -394,7 +394,7 @@ func (a assetDalImpl) getVendorProduct(n1 []Node, s *asset.AssetNetwork) {
 
 // GetNetworkInfo returns network info
 func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
-	array := make([]asset.AssetNetwork, 0)
+	var array []asset.AssetNetwork
 	var s asset.AssetNetwork
 	var n1 []Node
 	var listOfNodes []Node
