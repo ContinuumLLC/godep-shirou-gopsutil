@@ -395,7 +395,14 @@ func (a assetDalImpl) getVendorProduct(n1 []Node, s *asset.AssetNetwork) {
 // GetNetworkInfo returns network info
 func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 	var array []asset.AssetNetwork
-	var s asset.AssetNetwork
+	//var s asset.AssetNetwork
+	s := asset.AssetNetwork{
+		DhcpServer:       "0.0.0.0",
+		IPv4:             "0.0.0.0",
+		IPv6:             "::",
+		SubnetMask:       "0.0.0.0",
+		DefaultIPGateway: "0.0.0.0",
+	}
 	var n1 []Node
 	var listOfNodes []Node
 	//Get the result of  lshw -c network command
