@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
+	"github.com/ContinuumLLC/platform-common-lib/src/logging"
 )
 
 func TestResolvePluginPathValues(t *testing.T) {
 	path := model.AssetPluginPath{}
-	resolveConf{}.resolvePluginPathValues(&path)
+	resolveConf{logger: logging.GetLoggerFactory().New("")}.resolvePluginPathValues(&path)
 	if path.AssetCollection != cAssetCollectionPluginPath {
 		t.Error("Mismatch default plugin path values")
 	}
@@ -16,7 +17,7 @@ func TestResolvePluginPathValues(t *testing.T) {
 
 func TestResolveURLSuffix(t *testing.T) {
 	cfg := model.AssetPluginConfig{URLSuffix: make(map[string]string)}
-	resolveConf{}.resolveURLSuffix(&cfg)
+	resolveConf{logger: logging.GetLoggerFactory().New("")}.resolveURLSuffix(&cfg)
 	if cfg.URLSuffix[model.ConstURLSuffixAssetCollection] != cAgentServiceURLAssetCollection {
 		t.Error("Mismatch default URL suffix value (assetCollection,processor)")
 		return
