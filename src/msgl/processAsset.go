@@ -50,7 +50,7 @@ func (p processAsset) HandleAsset(*protocol.Request) (*protocol.Response, error)
 }
 
 func (p processAsset) HandleConfig(request *protocol.Request) (*protocol.Response, error) {
-	p.logger.Logf(logging.INFO, "Received config to update")
+
 	configData, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		return nil, err
@@ -58,6 +58,7 @@ func (p processAsset) HandleConfig(request *protocol.Request) (*protocol.Respons
 	newConfig := make(map[string]interface{})
 	err = json.Unmarshal(configData, &newConfig)
 	if err != nil {
+		p.logger.Logf(logging.ERROR, "Error in unmarshaling config data %s", (string)(configData))
 		return nil, err
 	}
 	service := p.dep.GetConfigService(p.dep)

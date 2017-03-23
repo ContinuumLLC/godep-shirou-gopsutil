@@ -1,13 +1,13 @@
 package dal
 
 import (
-	"fmt"
-
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
+	"github.com/ContinuumLLC/platform-common-lib/src/logging"
 )
 
 type configDalImpl struct {
 	factory model.ConfigDalDependencies
+	logger  logging.Logger
 }
 
 const (
@@ -26,20 +26,15 @@ func (c configDalImpl) GetAssetPluginConf() (*model.AssetPluginConfig, error) {
 
 func (c configDalImpl) GetAssetPluginConfMap() (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
-	dir, err := c.factory.GetEnv().GetExeDir()
-	if err != nil {
-		return nil, err
-	}
 
 	filename := c.factory.GetServiceInit().GetConfigPath()
-
 	if filename == "" {
 		filename = configFilename
 	}
-	filename = dir + "/" + filename
-	fmt.Println(filename)
-	err = c.factory.GetDeserializerJSON().ReadFile(&obj, filename)
+
+	err := c.factory.GetDeserializerJSON().ReadFile(&obj, filename)
 	if err != nil {
+		c.logger.Logf(logging.ERROR, "Error in deserializing file: %s", filename)
 		return nil, err
 	}
 	return obj, nil
@@ -61,5 +56,6 @@ type ConfigDalFactoryImpl struct{}
 func (ConfigDalFactoryImpl) GetConfigDal(f model.ConfigDalDependencies) model.ConfigDal {
 	return configDalImpl{
 		factory: f,
+		logger:  logging.GetLoggerFactory().New(""),
 	}
 }
