@@ -41,7 +41,7 @@ var v *List
 const (
 	cMemProcPath                   string = "/proc/meminfo"
 	cMemProcPhysicalTotalBytes     string = "MemTotal"
-	cMemProcPhysicalAvailableBytes string = "MemAvailable"
+	cMemProcPhysicalAvailableBytes string = "MemFree"
 	cMemProcPageAvailableBytes     string = "SwapFree"
 	cMemProcPageTotalBytes         string = "SwapTotal"
 )
