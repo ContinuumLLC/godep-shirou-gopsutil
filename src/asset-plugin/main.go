@@ -18,6 +18,9 @@ func main() {
 	service := factories.GetServiceInit()
 	service.SetupOsArgs(configFile, logFile, os.Args, configIndex, logIndex)
 	logger = logging.GetLoggerFactory().New("Main ")
+
+	logging.TruncateOn = 10000000 //Hardcoded for now
+
 	err := factories.GetAssetListener(factories).Process()
 	if err != nil {
 		logger.Logf(logging.ERROR, "Error retrieving Asset data %+v", err)
