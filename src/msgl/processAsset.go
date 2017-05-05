@@ -18,7 +18,7 @@ func (ProcessAssetFactoryImpl) GetHandler(deps model.HandlerDependencies, config
 	return processAsset{
 		dep:    deps,
 		cfg:    config,
-		logger: logging.GetLoggerFactory().New("Handler"),
+		logger: logging.GetLoggerFactory().Get(),
 	}
 }
 

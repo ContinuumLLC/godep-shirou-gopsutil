@@ -19,7 +19,7 @@ type ConfigServiceFactoryImpl struct{}
 func (ConfigServiceFactoryImpl) GetConfigService(csd model.ConfigServiceDependencies) model.ConfigService {
 	return &configServiceImpl{
 		factory: csd,
-		logger:  logging.GetLoggerFactory().New("ConfigService "),
+		logger:  logging.GetLoggerFactory().Get(),
 	}
 }
 
@@ -40,11 +40,8 @@ func (c *configServiceImpl) GetAssetPluginConfig() (*model.AssetPluginConfig, er
 			sConfig.PluginPath = model.AssetPluginPath{}
 			sConfig.URLSuffix = make(map[string]string)
 		}
-		rc := resolveConf{logger: logging.GetLoggerFactory().New("")}
+		rc := resolveConf{logger: logging.GetLoggerFactory().Get()}
 		rc.resolveValues(sConfig)
-		if sConfig.LogLevel != "" {
-			c.logger.SetLogLevelConfig(sConfig.LogLevel)
-		}
 	}
 	return sConfig, err
 }

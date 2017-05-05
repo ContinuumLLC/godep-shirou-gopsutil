@@ -6,7 +6,7 @@ imports:
   subpackages:
   - clients/model/Golang/resourceModel/asset
 - name: github.com/ContinuumLLC/platform-common-lib
-  version: 4f3e539b1afacb9fd2fe73449aaf0ac32d547950
+  version: 7b5a9d6f4ec5a4691ab159cf5a99446b9d5ce012
   subpackages:
   - src/clar
   - src/clar/mock

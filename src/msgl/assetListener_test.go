@@ -7,6 +7,7 @@ import (
 
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/model/mock"
+	clarMock "github.com/ContinuumLLC/platform-common-lib/src/clar/mock"
 	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol"
 	"github.com/ContinuumLLC/platform-common-lib/src/plugin/protocol/http"
 	"github.com/golang/mock/gomock"
@@ -21,6 +22,10 @@ func TestGetAssetListener(t *testing.T) {
 	confMock := mock.NewMockConfigService(ctrl)
 	confMock.EXPECT().GetAssetPluginConfig().Return(&model.AssetPluginConfig{}, nil)
 	assetSrvcDepMock.EXPECT().GetConfigService(gomock.Any()).Return(confMock)
+	mockSrv := clarMock.NewMockServiceInit(ctrl)
+	mockSrv.EXPECT().GetLogFilePath().Return("")
+	assetSrvcDepMock.EXPECT().GetServiceInit().Return(mockSrv)
+
 	assetList := assetListFact.GetAssetListener(assetSrvcDepMock)
 	if assetList == nil {
 		t.Error("Expected AssetListener returned nil")
@@ -45,6 +50,9 @@ func TestProcessReceiveRequestError(t *testing.T) {
 	httpServer := http.ServerHTTPFactory{}
 	server := httpServer.GetServer(resw, resw)
 	servDep.EXPECT().GetServer(gomock.Any(), gomock.Any()).Return(server)
+	mockSrv := clarMock.NewMockServiceInit(ctrl)
+	mockSrv.EXPECT().GetLogFilePath().Return("")
+	servDep.EXPECT().GetServiceInit().Return(mockSrv)
 
 	assetListFact := AssetListenerFactory{}
 	assetList := assetListFact.GetAssetListener(servDep)
@@ -71,6 +79,10 @@ func TestProcessIncorrectRouteError(t *testing.T) {
 	processPerf := ProcessAssetFactoryImpl{}.GetHandler(servDep, &model.AssetPluginConfig{})
 
 	servDep.EXPECT().GetHandler(gomock.Any(), &model.AssetPluginConfig{}).Return(processPerf).AnyTimes()
+
+	mockSrv := clarMock.NewMockServiceInit(ctrl)
+	mockSrv.EXPECT().GetLogFilePath().Return("")
+	servDep.EXPECT().GetServiceInit().Return(mockSrv)
 
 	assetListFact := AssetListenerFactory{}
 	assetList := assetListFact.GetAssetListener(servDep)

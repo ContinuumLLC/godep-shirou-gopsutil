@@ -70,22 +70,6 @@ func setupAssetPluginConfMap(t *testing.T, err error) (*gomock.Controller, *mock
 	return ctrl, confDalMock
 }
 
-/*
-func TestGetAssetPluginConfMapGetExeErr(t *testing.T) {
-	errMsg := "GetExeDirErr"
-	//ctrl, confDalMock := setupAssetPluginConfMap(t, errors.New(errMsg))
-	ctrl := gomock.NewController(t)
-	confDalMock := mock.NewMockConfigDalDependencies(ctrl)
-	defer ctrl.Finish()
-	_, err := configDalImpl{
-		factory: confDalMock,
-		logger:  logging.GetLoggerFactory().New(""),
-	}.GetAssetPluginConfMap()
-	if err == nil || !strings.HasPrefix(err.Error(), errMsg) {
-		t.Errorf("Expected error is :%v but got : %v", errMsg, err)
-	}
-}
-*/
 //GetAssetPluginConfMap returning error doing DeserializerJSON
 func TestGetAssetPluginConfMapReadFileErr(t *testing.T) {
 	errMsg := "ReadFileErr"
@@ -103,7 +87,7 @@ func TestGetAssetPluginConfMapReadFileErr(t *testing.T) {
 	confDalMock.EXPECT().GetDeserializerJSON().Return(jsonMock)
 	_, err := configDalImpl{
 		factory: confDalMock,
-		logger:  logging.GetLoggerFactory().New(""),
+		logger:  logging.GetLoggerFactory().Get(),
 	}.GetAssetPluginConfMap()
 	if err == nil || !strings.HasPrefix(err.Error(), errMsg) {
 		t.Errorf("Expected error is :%v but got : %v", errMsg, err)

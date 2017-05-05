@@ -15,6 +15,6 @@ type AssetDalFactoryImpl struct {
 func (AssetDalFactoryImpl) GetAssetDal(deps model.AssetDalDependencies) model.AssetDal {
 	return &assetDalImpl{
 		Factory: deps,
-		Logger:  logging.GetLoggerFactory().New("AssetDal"),
+		Logger:  logging.GetLoggerFactory().Get(),
 	}
 }

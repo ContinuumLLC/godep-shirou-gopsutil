@@ -6,5 +6,7 @@
 	"urlSuffix":{
 		"assetCollection": "/asset"
 	},
-	"logLevel":"ERROR"
+	"logLevel":"ERROR",
+    "MaxLogFileSizeInMB":1,
+    "OldLogFileToKeep":5
 }

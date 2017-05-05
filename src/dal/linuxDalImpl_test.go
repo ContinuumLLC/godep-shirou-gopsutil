@@ -352,11 +352,9 @@ func TestGetOSCommandErr(t *testing.T) {
 	ctrl, mockAssetDalD := setupGetCommandReader(t, nil, errors.New(model.ErrExecuteCommandFailed))
 	defer ctrl.Finish()
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetOSInfo()
 	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
 		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
@@ -369,11 +367,9 @@ func TestGetOSFileErr(t *testing.T) {
 
 	setupAddGetFileReader(ctrl, mockAssetDalD, nil, errors.New(model.ErrFileReadFailed))
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetOSInfo()
 	if err == nil || !strings.HasPrefix(err.Error(), model.ErrFileReadFailed) {
 		t.Errorf("Expected error is %s, but received %v", model.ErrFileReadFailed, err)
@@ -387,11 +383,11 @@ func TestGetOSFileErr(t *testing.T) {
 
 // 	setupAddGetFileReader(ctrl, mockAssetDalD, nil, nil)
 
-// 	log := logging.GetLoggerFactory().New("")
-// 	log.SetLogLevel(logging.OFF)
+//
+//
 // 	_, err := assetDalImpl{
 // 		Factory: mockAssetDalD,
-// 		Logger:  log,
+// 		Logger : logging.GetLoggerFactory().Get(),
 // 	}.GetOS()
 // 	if err != nil {
 // 		t.Errorf("Unexpected error : %v", err)
@@ -431,11 +427,9 @@ func setupGetSystemInfo(t *testing.T, times int, err error) (*gomock.Controller,
 	mockEnv.EXPECT().ExecuteBash(str).Return("", err)
 	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(times)
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetSystemInfo()
 	return ctrl, e
 }
@@ -462,12 +456,10 @@ func TestGetSystemNoErr(t *testing.T) {
 func TestGetMemoryInfoErr(t *testing.T) {
 	parseError := model.ErrFileReadFailed
 	_, mockAssetDalD := setupGetFileReader(t, errors.New(parseError), nil, nil)
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetMemoryInfo()
 
 	if err == nil || err.Error() != parseError {
@@ -499,12 +491,10 @@ func TestGetMemoryInfoNoErr(t *testing.T) {
 	data.Map["MemTotal"] = procParser.Line{Values: []string{"physicalTotalBytes", "1", "KB"}}
 
 	_, mockAssetDalD := setupGetFileReader(t, nil, nil, &data)
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetMemoryInfo()
 
 	if err != nil {
@@ -517,12 +507,9 @@ func TestGetProcessorInfoErr(t *testing.T) {
 	ctrl, mockAssetDalD := setupGetFileReader(t, errors.New(parseError), nil, nil)
 	defer ctrl.Finish()
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
-
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetProcessorInfo()
 
 	if err == nil || err.Error() != parseError {
@@ -537,12 +524,9 @@ func TestGetProcessorInfoBashErr(t *testing.T) {
 	envMock.EXPECT().ExecuteBash(cCPUArcCmd).Return("", errors.New(model.ErrExecuteCommandFailed))
 	mockAssetDalD.EXPECT().GetEnv().Return(envMock)
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
-
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetProcessorInfo()
 
 	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
@@ -557,12 +541,9 @@ func TestGetProcessorInfoNoErr(t *testing.T) {
 	envMock.EXPECT().ExecuteBash(cCPUArcCmd).Return("", nil)
 	mockAssetDalD.EXPECT().GetEnv().Return(envMock)
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
-
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetProcessorInfo()
 
 	if err != nil {
@@ -586,11 +567,9 @@ func TestReadHwList(t *testing.T) {
 	defer ctrl.Finish()
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("<list></list>", nil)
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.readHwList()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -602,12 +581,10 @@ func TestReadHwListError(t *testing.T) {
 	defer ctrl.Finish()
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("<list></list>", errors.New("readHwListErr"))
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	v = nil
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.readHwList()
 	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
 		t.Errorf("Expecting model.ErrExecuteCommandFailed , Unexpected error %v", e)
@@ -619,11 +596,9 @@ func TestReadHwListErr(t *testing.T) {
 	defer ctrl.Finish()
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return("nu$756ll", nil)
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.readHwList()
 	if e == nil {
 		t.Error("Expecting EOF error ")
@@ -634,15 +609,13 @@ func TestGetNetworkInfoNew(t *testing.T) {
 	fmt.Println("TestGetNetworkInfoNew")
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
 	// v := List{}
 	// xml.Unmarshal([]byte(hwXML), &v)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetNetworkInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -653,15 +626,13 @@ func TestGetNetworkInfoNew2(t *testing.T) {
 	fmt.Println("TestGetNetworkInfoNew2")
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, nil)
 	// v := List{}
 	// xml.Unmarshal([]byte(hwXML), &v)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetNetworkInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -671,15 +642,13 @@ func TestGetNetworkInfoNew2(t *testing.T) {
 func TestGetBiosInfo(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
 	// v := List{}
 	// xml.Unmarshal([]byte(hwXML), &v)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetBiosInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -689,14 +658,13 @@ func TestGetBiosInfo(t *testing.T) {
 func TestGetBiosInfo2(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, nil)
 	// v := List{}
 	// xml.Unmarshal([]byte(hwXML1), &v)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetBiosInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -706,14 +674,13 @@ func TestGetBiosInfo2(t *testing.T) {
 func TestGetBiosInfoError(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, errors.New("XMLReadError"))
 	// v := List{}
 	// xml.Unmarshal([]byte(hwXML1), &v)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetBiosInfo()
 	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
 		t.Errorf("Unexpected error %v, was expecting model.ErrExecuteCommandFailed", e)
@@ -723,12 +690,11 @@ func TestGetBiosInfoError(t *testing.T) {
 func TestGetBaseBoardInfo(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetBaseBoardInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -738,12 +704,11 @@ func TestGetBaseBoardInfo(t *testing.T) {
 func TestGetBaseBoardInfo2(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, nil)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetBaseBoardInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -753,12 +718,11 @@ func TestGetBaseBoardInfo2(t *testing.T) {
 func TestGetBaseBoardInfoError(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, errors.New("XMLReadErr"))
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetBaseBoardInfo()
 	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
 		t.Errorf("Unexpected error %v, was expecting model.ErrExecuteCommandFailed ", e)
@@ -768,12 +732,11 @@ func TestGetBaseBoardInfoError(t *testing.T) {
 func TestGetDrivesInfo(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetDrivesInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -782,14 +745,13 @@ func TestGetDrivesInfo(t *testing.T) {
 func TestGetDrivesInfo2(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, nil)
 	// v := List{}
 	// xml.Unmarshal([]byte(hwXML1), &v)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetDrivesInfo()
 	if e != nil {
 		t.Errorf("Unexpected error %v", e)
@@ -799,14 +761,13 @@ func TestGetDrivesInfo2(t *testing.T) {
 func TestGetDrivesInfoError(t *testing.T) {
 	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
 	defer ctrl.Finish()
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML1, errors.New("XMLReadErr"))
 	// v := List{}
 	// xml.Unmarshal([]byte(hwXML1), &v)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetDrivesInfo()
 	if e == nil || e.Error() != model.ErrExecuteCommandFailed {
 		t.Errorf("Unexpected error %v, was expecting model.ErrExecuteCommandFailed", e)
@@ -853,11 +814,9 @@ func TestGetNetworkInfo1(t *testing.T) {
 	ctrl, mockAssetDalD := setupGetCommandReader2(t, nil, errors.New(model.ErrExecuteCommandFailed), &procParser.Data{})
 	defer ctrl.Finish()
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetNetworkInfo1()
 	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
 		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
@@ -885,11 +844,9 @@ func TestGetNetworkInfo1CommandDataErr(t *testing.T) {
 
 	defer ctrl.Finish()
 
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetNetworkInfo1()
 	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
 		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)
@@ -933,11 +890,10 @@ func TestGetNetworkInfo1CommandDataErr1(t *testing.T) {
 		mockAssetDalD.EXPECT().GetEnv().Return(mockEnv),
 		mockEnv.EXPECT().GetCommandReader(gomock.Any(), gomock.Any(), gomock.Any()).Return(reader, errors.New("Err")),
 	)
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
+
 	_, err := assetDalImpl{
 		Factory: mockAssetDalD,
-		Logger:  log,
+		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetNetworkInfo1()
 	if err == nil || !strings.HasPrefix(err.Error(), model.ErrExecuteCommandFailed) {
 		t.Errorf("Expected error is %s, but received %v", model.ErrExecuteCommandFailed, err)

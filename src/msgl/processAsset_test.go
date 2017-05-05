@@ -49,12 +49,10 @@ func TestAssetCollection(t *testing.T) {
 	respBodyStr := "testoutput"
 
 	mockServiceDep := createMock(ctrl, nil, nil, respBodyStr)
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	ps := processAsset{
 		cfg:    &model.AssetPluginConfig{},
 		dep:    mockServiceDep,
-		logger: log,
+		logger: logging.GetLoggerFactory().Get(),
 	}
 	req := createRequest()
 	req.Path = "/asset"
@@ -81,12 +79,10 @@ func TestAssetProcess(t *testing.T) {
 	respBodyStr := "testoutput"
 
 	mockServiceDep := createMock(ctrl, nil, nil, respBodyStr)
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	ps := processAsset{
 		cfg:    &model.AssetPluginConfig{},
 		dep:    mockServiceDep,
-		logger: log,
+		logger: logging.GetLoggerFactory().Get(),
 	}
 	req := createRequest()
 	req.Path = "/asset"
@@ -120,12 +116,10 @@ func TestAssetProcessError(t *testing.T) {
 	mockAssetService := mock.NewMockAssetService(ctrl)
 	mockAssetService.EXPECT().Process().Return(&assetCollectionData, errors.New("JSONError"))
 	mockServiceDep.EXPECT().GetAssetService(gomock.Any()).Return(mockAssetService)
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	ps := processAsset{
 		cfg:    &model.AssetPluginConfig{},
 		dep:    mockServiceDep,
-		logger: log,
+		logger: logging.GetLoggerFactory().Get(),
 	}
 	req := createRequest()
 	req.Path = "/asset"
@@ -226,12 +220,10 @@ func TestAssetConfiguration(t *testing.T) {
 	serv.EXPECT().SetAssetPluginMap(gomock.Any()).Return(nil)
 
 	dep.EXPECT().GetConfigService(gomock.Any()).Return(serv)
-	log := logging.GetLoggerFactory().New("")
-	log.SetLogLevel(logging.OFF)
 	ps := processAsset{
 		dep:    dep,
 		cfg:    &model.AssetPluginConfig{},
-		logger: log,
+		logger: logging.GetLoggerFactory().Get(),
 	}
 
 	req := createRequest()

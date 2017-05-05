@@ -1,7 +1,11 @@
 package main
 
-import "github.com/ContinuumLLC/platform-common-lib/src/logging"
-import "os"
+import (
+	"fmt"
+	"os"
+
+	"github.com/ContinuumLLC/platform-common-lib/src/logging"
+)
 
 const (
 	configFile  string = "ctm_asset_agent_plugin_cfg.json"
@@ -10,18 +14,23 @@ const (
 	logIndex    int    = 2
 )
 
-var logger logging.Logger
-
 func main() {
-	var logger logging.Logger
 	factories := factory{}
 	service := factories.GetServiceInit()
 	service.SetupOsArgs(configFile, logFile, os.Args, configIndex, logIndex)
-	logger = logging.GetLoggerFactory().New("Main ")
+	logger, err := logging.GetLoggerFactory().Init(logging.Config{
+		AllowedLogLevel: logging.INFO,
+		LogFileName:     service.GetLogFilePath(),
+		MaxFileSizeInMB: 10,
+		OldFileToKeep:   5,
+	})
 
-	logging.TruncateOn = 10000000 //Hardcoded for now
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	err := factories.GetAssetListener(factories).Process()
+	err = factories.GetAssetListener(factories).Process()
 	if err != nil {
 		logger.Logf(logging.ERROR, "Error retrieving Asset data %+v", err)
 	}

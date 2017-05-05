@@ -56,6 +56,6 @@ type ConfigDalFactoryImpl struct{}
 func (ConfigDalFactoryImpl) GetConfigDal(f model.ConfigDalDependencies) model.ConfigDal {
 	return configDalImpl{
 		factory: f,
-		logger:  logging.GetLoggerFactory().New(""),
+		logger:  logging.GetLoggerFactory().Get(),
 	}
 }

@@ -21,10 +21,20 @@ type AssetListenerFactory struct {
 //GetAssetListener returns route handler
 func (AssetListenerFactory) GetAssetListener(deps model.HandlerDependencies) model.AssetListener {
 	config, _ := deps.GetConfigService(deps).GetAssetPluginConfig()
+	logCfg := &logging.Config{
+		AllowedLogLevel: logging.INFO,
+		LogFileName:     deps.GetServiceInit().GetLogFilePath(),
+		MaxFileSizeInMB: config.MaxLogFileSizeInMB,
+		OldFileToKeep:   config.OldLogFileToKeep,
+	}
+
+	logCfg.SetLogLevel(config.LogLevel)
+	logging.GetLoggerFactory().Update(*logCfg)
+
 	return processAssetImpl{
 		dependencies: deps,
 		cfg:          config,
-		logger:       logging.GetLoggerFactory().New("AssetPlugin "),
+		logger:       logging.GetLoggerFactory().Get(),
 	}
 }
 
