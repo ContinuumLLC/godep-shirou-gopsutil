@@ -40,10 +40,6 @@ func (p processAsset) HandleAsset(*protocol.Request) (*protocol.Response, error)
 		p.logger.Logf(logging.ERROR, "Error in Process Asset Collection %v", err)
 		return nil, err
 	}
-	if p.logger.IsLogLevel(logging.DEBUG) {
-		p.logger.Logf(logging.ERROR, "Asset Data: %s", string(outBytes))
-	}
-
 	resp := createResponseBody(outBytes, p.cfg.URLSuffix[model.ConstURLSuffixAssetCollection], protocol.HdrConstPluginDataPersist)
 
 	return resp, nil
