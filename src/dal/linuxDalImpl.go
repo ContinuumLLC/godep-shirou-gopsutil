@@ -35,7 +35,10 @@ const (
 	cListHwAsXML   string = "lshw -c system,memory,bus,disk,volume,network -xml"
 )
 
-var v *List
+var (
+	v              *List
+	supportedDisks = [...]string{"hd", "sd", "xvd", "sr"}
+)
 
 // Memory Proc related constants
 const (
@@ -44,6 +47,7 @@ const (
 	cMemProcPhysicalAvailableBytes string = "MemFree"
 	cMemProcPageAvailableBytes     string = "SwapFree"
 	cMemProcPageTotalBytes         string = "SwapTotal"
+	cPartitionProcPath             string = "/proc/partitions"
 )
 
 //List denotes list of hardware assets returned by lshw command
@@ -304,9 +308,75 @@ func (a assetDalImpl) GetDrivesInfo() ([]asset.AssetDrive, error) {
 
 		listOfDrives = append(listOfDrives, tmp)
 	}
+	//Disk information for Amazon cloud which are based on Xen hypervisors is not returned through lshw command
+	//use other method like lsblk instead.
+
+	if len(listOfDrives) == 0 {
+		listD, err := a.getDiskInfo()
+		if err != nil {
+			return listOfDrives, err
+		}
+		return listD, nil
+	}
 
 	return listOfDrives, nil
+}
 
+func (a assetDalImpl) getDiskInfo() ([]asset.AssetDrive, error) {
+	var listOfDrives []asset.AssetDrive
+	reader, err := a.Factory.GetEnv().GetFileReader(cPartitionProcPath)
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	cfg := procParser.Config{
+		ParserMode:    procParser.ModeTabular,
+		IgnoreNewLine: true,
+	}
+	data, err := a.Factory.GetParser().Parse(cfg, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	var drive string
+	for i := 0; i < len(data.Lines); i++ {
+		var tmp asset.AssetDrive
+		var driveSize int64
+		if len(data.Lines[i].Values) > 3 {
+			drive = data.Lines[i].Values[3]
+			if !a.isValidDisk(drive) {
+				continue
+			}
+
+			driveSize, _ = procParser.GetInt64(data.Lines[i].Values[2])
+			tmp.LogicalName = "/dev/" + drive
+			tmp.SizeBytes = driveSize * 1024
+			var k int
+			for k = i + 1; k < len(data.Lines); k++ {
+				if strings.HasPrefix(data.Lines[k].Values[3], drive) {
+					parition := data.Lines[k].Values[3]
+					tmp.Partitions = append(tmp.Partitions, "/dev/"+parition)
+					continue
+				}
+				break
+			}
+			i = k - 1
+
+			listOfDrives = append(listOfDrives, tmp)
+		}
+
+	}
+
+	return listOfDrives, nil
+}
+
+func (a assetDalImpl) isValidDisk(drive string) bool {
+	for _, sDisk := range supportedDisks {
+		if strings.HasPrefix(drive, sDisk) {
+			return true
+		}
+	}
+	return false
 }
 
 // GetOSInfo returns the OS info

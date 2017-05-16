@@ -20,6 +20,29 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
+var diskData = &procParser.Data{
+	Lines: []procParser.Line{
+		procParser.Line{
+			Values: []string{"11", "0", "2346782340", "sda"},
+		},
+		procParser.Line{
+			Values: []string{"11", "0", "35345", "sda1"},
+		},
+		procParser.Line{
+			Values: []string{"11", "0", "5646", "sda2"},
+		},
+		procParser.Line{
+			Values: []string{"11", "0", "6757", "sda5"},
+		},
+		procParser.Line{
+			Values: []string{"11", "0", "345345", "sr0"},
+		},
+		procParser.Line{
+			Values: []string{"11", "0", "345345", "xyz"},
+		},
+	},
+}
+
 const (
 	hwXML  string = "<list></list>"
 	hwXML1 string = `<?xml version="1.0" standalone="yes" ?>
@@ -734,6 +757,14 @@ func TestGetDrivesInfo(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
+	byteReader := bytes.NewReader([]byte("data"))
+	reader := ioutil.NopCloser(byteReader)
+	mockEnv.EXPECT().GetFileReader(gomock.Any()).Return(reader, nil)
+	mockParser := pMock.NewMockParser(ctrl)
+
+	mockAssetDalD.EXPECT().GetParser().Return(mockParser)
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	mockParser.EXPECT().Parse(gomock.Any(), gomock.Any()).Return(diskData, nil)
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  logging.GetLoggerFactory().Get(),
@@ -754,6 +785,50 @@ func TestGetDrivesInfo2(t *testing.T) {
 		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetDrivesInfo()
 	if e != nil {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestGetDrivesInfoError2(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
+
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
+	byteReader := bytes.NewReader([]byte("data"))
+	reader := ioutil.NopCloser(byteReader)
+	mockEnv.EXPECT().GetFileReader(gomock.Any()).Return(reader, nil)
+	mockParser := pMock.NewMockParser(ctrl)
+
+	mockAssetDalD.EXPECT().GetParser().Return(mockParser)
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	mockParser.EXPECT().Parse(gomock.Any(), gomock.Any()).Return(diskData, errors.New("ParseErr"))
+	_, e := assetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  logging.GetLoggerFactory().Get(),
+	}.GetDrivesInfo()
+	if e == nil || e.Error() != "ParseErr" {
+		t.Errorf("Unexpected error %v", e)
+	}
+}
+
+func TestGetDrivesInfoError3(t *testing.T) {
+	ctrl, mockAssetDalD, mockEnv := setupEnv(t)
+	defer ctrl.Finish()
+
+	mockEnv.EXPECT().ExecuteBash(cListHwAsXML).Return(hwXML, nil)
+	byteReader := bytes.NewReader([]byte("data"))
+	reader := ioutil.NopCloser(byteReader)
+	mockEnv.EXPECT().GetFileReader(gomock.Any()).Return(reader, errors.New("ReadErr"))
+	//mockParser := pMock.NewMockParser(ctrl)
+
+	//mockAssetDalD.EXPECT().GetParser().Return(mockParser)
+	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
+	//mockParser.EXPECT().Parse(gomock.Any(), gomock.Any()).Return(diskData, errors.New("ParseErr"))
+	_, e := assetDalImpl{
+		Factory: mockAssetDalD,
+		Logger:  logging.GetLoggerFactory().Get(),
+	}.GetDrivesInfo()
+	if e == nil || e.Error() != "ReadErr" {
 		t.Errorf("Unexpected error %v", e)
 	}
 }
