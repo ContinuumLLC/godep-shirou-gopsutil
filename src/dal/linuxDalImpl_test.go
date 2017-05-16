@@ -807,7 +807,7 @@ func TestGetDrivesInfoError2(t *testing.T) {
 		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetDrivesInfo()
 	if e == nil || e.Error() != "ParseErr" {
-		t.Errorf("Unexpected error %v", e)
+		t.Errorf("Expecting ParseErr, Got error %v", e)
 	}
 }
 
@@ -819,17 +819,14 @@ func TestGetDrivesInfoError3(t *testing.T) {
 	byteReader := bytes.NewReader([]byte("data"))
 	reader := ioutil.NopCloser(byteReader)
 	mockEnv.EXPECT().GetFileReader(gomock.Any()).Return(reader, errors.New("ReadErr"))
-	//mockParser := pMock.NewMockParser(ctrl)
 
-	//mockAssetDalD.EXPECT().GetParser().Return(mockParser)
 	mockAssetDalD.EXPECT().GetEnv().Return(mockEnv).Times(1)
-	//mockParser.EXPECT().Parse(gomock.Any(), gomock.Any()).Return(diskData, errors.New("ParseErr"))
 	_, e := assetDalImpl{
 		Factory: mockAssetDalD,
 		Logger:  logging.GetLoggerFactory().Get(),
 	}.GetDrivesInfo()
 	if e == nil || e.Error() != "ReadErr" {
-		t.Errorf("Unexpected error %v", e)
+		t.Errorf("Expecting ReadErr, Got error: %v", e)
 	}
 }
 

@@ -323,7 +323,7 @@ func (a assetDalImpl) GetDrivesInfo() ([]asset.AssetDrive, error) {
 }
 
 func (a assetDalImpl) getDiskInfo() ([]asset.AssetDrive, error) {
-	var listOfDrives []asset.AssetDrive
+
 	reader, err := a.Factory.GetEnv().GetFileReader(cPartitionProcPath)
 	if err != nil {
 		return nil, err
@@ -337,28 +337,26 @@ func (a assetDalImpl) getDiskInfo() ([]asset.AssetDrive, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var drive string
+	var listOfDrives []asset.AssetDrive
 	for i := 0; i < len(data.Lines); i++ {
-		var tmp asset.AssetDrive
-		var driveSize int64
+
 		if len(data.Lines[i].Values) > 3 {
-			drive = data.Lines[i].Values[3]
+			drive := data.Lines[i].Values[3]
 			if !a.isValidDisk(drive) {
 				continue
 			}
+			var tmp asset.AssetDrive
 
-			driveSize, _ = procParser.GetInt64(data.Lines[i].Values[2])
+			driveSize, _ := procParser.GetInt64(data.Lines[i].Values[2])
 			tmp.LogicalName = "/dev/" + drive
 			tmp.SizeBytes = driveSize * 1024
 			var k int
 			for k = i + 1; k < len(data.Lines); k++ {
-				if strings.HasPrefix(data.Lines[k].Values[3], drive) {
-					parition := data.Lines[k].Values[3]
-					tmp.Partitions = append(tmp.Partitions, "/dev/"+parition)
-					continue
+				if !strings.HasPrefix(data.Lines[k].Values[3], drive) {
+					break
 				}
-				break
+				parition := data.Lines[k].Values[3]
+				tmp.Partitions = append(tmp.Partitions, "/dev/"+parition)
 			}
 			i = k - 1
 
