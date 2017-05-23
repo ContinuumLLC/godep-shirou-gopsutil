@@ -23,6 +23,17 @@ type Win32_Processor struct {
 	MaxClockSpeed             uint32
 }
 
+// Win32_PerfFormattedData_Counters_ProcessorInformation stores instance value of the perf counters
+type Win32_PerfFormattedData_Counters_ProcessorInformation struct {
+	Name                    string
+	PercentIdleTime         uint64
+	PercentUserTime         uint64
+	PercentProcessorTime    uint64
+	PercentInterruptTime    uint64
+	PercentProcessorUtility uint64
+	InterruptsPerSec        uint32
+}
+
 // TODO: Get percpu
 func Times(percpu bool) ([]TimesStat, error) {
 	var ret []TimesStat
@@ -83,4 +94,12 @@ func Info() ([]InfoStat, error) {
 	}
 
 	return ret, nil
+}
+
+// PerfInfo returns the performance counter's instance value for ProcessorInformation
+func PerfInfo() ([]Win32_PerfFormattedData_Counters_ProcessorInformation, error) {
+	var ret []Win32_PerfFormattedData_Counters_ProcessorInformation
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
 }
