@@ -24,3 +24,30 @@ build_test:  ## test only buildable
 	GOOS=netbsd go test ./... | $(BUILD_FAIL_PATTERN)
 	GOOS=solaris go test ./... | $(BUILD_FAIL_PATTERN)
 	@echo 'Successfully built on all known operating systems'
+
+all : dependencies build_win build_linux
+
+dependencies:
+	glide install
+
+build_win:
+	export GOOS=windows
+	go build
+	go build ./cpu/
+	go build ./disk
+	go build ./host
+	go build ./load
+	go build ./mem
+	go build ./net
+	go build ./process
+
+build_linux:
+	export GOOS=linux
+	go build
+	go build ./cpu/
+	go build ./disk
+	go build ./host
+	go build ./load
+	go build ./mem
+	go build ./net
+	go build ./process
