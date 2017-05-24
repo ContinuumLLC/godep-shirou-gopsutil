@@ -8,7 +8,6 @@ import (
 	"unsafe"
 
 	"github.com/StackExchange/wmi"
-
 	"github.com/shirou/gopsutil/internal/common"
 )
 
@@ -38,6 +37,11 @@ type Win32_PerfFormattedData_Counters_ProcessorInformation struct {
 	InterruptsPerSec            uint32
 	ProcessorFrequency          uint32
 	DPCRate                     uint32
+}
+
+type Win32_PerfFormattedData_PerfOS_System struct {
+	Processes            uint32
+	ProcessorQueueLength uint32
 }
 
 // TODO: Get percpu
@@ -105,6 +109,15 @@ func Info() ([]InfoStat, error) {
 // PerfInfo returns the performance counter's instance value for ProcessorInformation
 func PerfInfo() ([]Win32_PerfFormattedData_Counters_ProcessorInformation, error) {
 	var ret []Win32_PerfFormattedData_Counters_ProcessorInformation
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
+}
+
+// ProcInfo returns processes count and processor queue length in the system.
+// There is a single queue for processor even on multiprocessors systems
+func ProcInfo() ([]Win32_PerfFormattedData_PerfOS_System, error) {
+	var ret []Win32_PerfFormattedData_PerfOS_System
 	q := wmi.CreateQuery(&ret, "")
 	err := wmi.Query(q, &ret)
 	return ret, err
