@@ -24,7 +24,7 @@ LINUXPLUGINPACTARGET="continuum_plugin_linux"
 #windows
 WINDOWSPLUGINPACKPATH=$(PLUGINPATH)/continuum_plugin_windows
 WINDOWSPLUGINBINPATH=$(WINDOWSPLUGINPACKPATH)/asset
-WINDOWSPLUGINPACKNAME="continuum_asset_plugin_windows.zip"
+WINDOWS64PLUGINPACKNAME="continuum_asset_plugin_windows64.zip"
 WINDOWSPLUGINPACTARGET="continuum_plugin_windows"
 
  
@@ -91,7 +91,7 @@ pack-service-linux:
 pack-service-windows:
 	mkdir -p $(WINDOWSPLUGINBINPATH)
 	cp $(GOPATH)/bin/windows_amd64/$(TARGETNAME).exe $(WINDOWSPLUGINBINPATH)
-	cd $(PLUGINPATH)/$(WINDOWSPLUGINPACTARGET); rm -f $(WINDOWSPLUGINPACKNAME); zip -r ../$(WINDOWSPLUGINPACKNAME) *
+	cd $(PLUGINPATH)/$(WINDOWSPLUGINPACTARGET); rm -f $(WINDOWS64PLUGINPACKNAME); zip -r ../$(WINDOWS64PLUGINPACKNAME) *
 	
 pack-service-darwin:
 	#mkdir -p $(MACPLUGINBINPATH)
