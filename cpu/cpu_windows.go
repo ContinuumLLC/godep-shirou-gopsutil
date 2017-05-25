@@ -24,19 +24,17 @@ type Win32_Processor struct {
 
 // Win32_PerfFormattedData_Counters_ProcessorInformation stores instance value of the perf counters
 type Win32_PerfFormattedData_Counters_ProcessorInformation struct {
-	Name                        string
-	PercentDPCTime              uint64
-	PercentIdleTime             uint64
-	PercentUserTime             uint64
-	PercentProcessorTime        uint64
-	PercentInterruptTime        uint64
-	PercentProcessorUtility     uint64
-	PercentPriorityTime         uint64
-	PercentPrivilegedTime       uint64
-	PercentProcessorPerformance uint64
-	InterruptsPerSec            uint32
-	ProcessorFrequency          uint32
-	DPCRate                     uint32
+	Name                  string
+	PercentDPCTime        uint64
+	PercentIdleTime       uint64
+	PercentUserTime       uint64
+	PercentProcessorTime  uint64
+	PercentInterruptTime  uint64
+	PercentPriorityTime   uint64
+	PercentPrivilegedTime uint64
+	InterruptsPerSec      uint32
+	ProcessorFrequency    uint32
+	DPCRate               uint32
 }
 
 type Win32_PerfFormattedData_PerfOS_System struct {
