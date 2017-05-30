@@ -91,6 +91,7 @@ pack-service-linux:
 pack-service-windows:
 	mkdir -p $(WINDOWSPLUGINBINPATH)
 	cp $(GOPATH)/bin/windows_amd64/$(TARGETNAME).exe $(WINDOWSPLUGINBINPATH)
+	cp $(JSONCFGPATH)/$(JSONCFGNAME) $(WINDOWSPLUGINBINPATH)
 	cd $(PLUGINPATH)/$(WINDOWSPLUGINPACTARGET); rm -f $(WINDOWS64PLUGINPACKNAME); zip -r ../$(WINDOWS64PLUGINPACKNAME) *
 	
 pack-service-darwin:
