@@ -129,18 +129,6 @@ func Partitions(all bool) ([]PartitionStat, error) {
 }
 
 func IOCounters(names ...string) (map[string]IOCountersStat, error) {
-	//Names can be "C:","D:" etc.
-	//We do want to take action based on the names passed and return the stat only for those logical disks.
-	//In case name is blank, it will retun stats of all logical partitions.
-	return ioCounters(true, names...)
-}
-
-//IOCountersAll returns IOCounterStat of all logical disks including _Total and system partitions
-func IOCountersAll() (map[string]IOCountersStat, error) {
-	return ioCounters(false)
-}
-
-func ioCounters(actionOnName bool, names ...string) (map[string]IOCountersStat, error) {
 	ret := make(map[string]IOCountersStat, 0)
 	var dst []Win32_PerfFormattedData
 
@@ -149,14 +137,14 @@ func ioCounters(actionOnName bool, names ...string) (map[string]IOCountersStat, 
 		return ret, err
 	}
 	for _, d := range dst {
-		if actionOnName {
-			if len(d.Name) > 3 { // not get _Total or Harddrive
-				continue
-			}
-			if len(names) > 0 && !common.StringsHas(names, d.Name) {
-				continue
-			}
+
+		if len(d.Name) > 3 { // not get _Total or Harddrive
+			continue
 		}
+		if len(names) > 0 && !common.StringsHas(names, d.Name) {
+			continue
+		}
+
 		ret[d.Name] = IOCountersStat{
 			Name:       d.Name,
 			ReadCount:  uint64(d.AvgDiskReadQueueLength),
