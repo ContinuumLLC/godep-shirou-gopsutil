@@ -2,6 +2,9 @@ package: github.com/shirou/gopsutil
 import:
 - package: github.com/StackExchange/wmi
 - package: github.com/shirou/w32
+- package: golang.org/x/sys
+  subpackages:
+  - windows
 testImport:
 - package: github.com/stretchr/testify
   subpackages:
