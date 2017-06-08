@@ -137,14 +137,37 @@ func IOCounters(names ...string) (map[string]IOCountersStat, error) {
 		return ret, err
 	}
 	for _, d := range dst {
+
 		if len(d.Name) > 3 { // not get _Total or Harddrive
 			continue
 		}
-
 		if len(names) > 0 && !common.StringsHas(names, d.Name) {
 			continue
 		}
 
+		ret[d.Name] = IOCountersStat{
+			Name:       d.Name,
+			ReadCount:  uint64(d.AvgDiskReadQueueLength),
+			WriteCount: d.AvgDiskWriteQueueLength,
+			ReadBytes:  uint64(d.AvgDiskBytesPerRead),
+			WriteBytes: uint64(d.AvgDiskBytesPerWrite),
+			ReadTime:   d.AvgDisksecPerRead,
+			WriteTime:  d.AvgDisksecPerWrite,
+		}
+	}
+	return ret, nil
+}
+
+//PhysicalDiskIOCounters returns the IOCountersStat for the Physical disk
+func PhysicalDiskIOCounters() (map[string]IOCountersStat, error) {
+	ret := make(map[string]IOCountersStat, 0)
+	var dst []Win32_PerfFormattedData
+
+	err := wmi.Query("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk ", &dst)
+	if err != nil {
+		return ret, err
+	}
+	for _, d := range dst {
 		ret[d.Name] = IOCountersStat{
 			Name:       d.Name,
 			ReadCount:  uint64(d.AvgDiskReadQueueLength),
