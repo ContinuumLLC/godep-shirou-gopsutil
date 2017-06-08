@@ -33,6 +33,58 @@ type Win32_PerfFormattedData struct {
 	AvgDisksecPerWrite      uint64
 }
 
+type Win32_PerfFormattedData_PerfDisk_PhysicalDisk struct {
+	AvgDiskBytesPerRead     uint64
+	AvgDiskBytesPerTransfer uint64
+	AvgDiskBytesPerWrite    uint64
+	AvgDiskQueueLength      uint64
+	AvgDiskReadQueueLength  uint64
+	AvgDiskSecPerRead       uint32
+	AvgDiskSecPerTransfer   uint32
+	AvgDiskSecPerWrite      uint32
+	AvgDiskWriteQueueLength uint64
+	CurrentDiskQueueLength  uint32
+	DiskBytesPerSec         uint64
+	DiskReadBytesPerSec     uint64
+	DiskReadsPerSec         uint32
+	DiskTransfersPerSec     uint32
+	DiskWriteBytesPerSec    uint64
+	DiskWritesPerSec        uint32
+	Name                    string
+	PercentDiskReadTime     uint64
+	PercentDiskTime         uint64
+	PercentDiskWriteTime    uint64
+	PercentIdleTime         uint64
+	SplitIOPerSec           uint32
+}
+
+type Win32_PerfFormattedData_PerfDisk_LogicalDisk struct {
+	AvgDiskBytesPerRead     uint64
+	AvgDiskBytesPerTransfer uint64
+	AvgDiskBytesPerWrite    uint64
+	AvgDiskQueueLength      uint64
+	AvgDiskReadQueueLength  uint64
+	AvgDiskSecPerRead       uint32
+	AvgDiskSecPerTransfer   uint32
+	AvgDiskSecPerWrite      uint32
+	AvgDiskWriteQueueLength uint64
+	CurrentDiskQueueLength  uint32
+	DiskBytesPerSec         uint64
+	DiskReadBytesPerSec     uint64
+	DiskReadsPerSec         uint32
+	DiskTransfersPerSec     uint32
+	DiskWriteBytesPerSec    uint64
+	DiskWritesPerSec        uint32
+	Name                    string
+	PercentDiskReadTime     uint64
+	PercentDiskTime         uint64
+	PercentDiskWriteTime    uint64
+	PercentIdleTime         uint64
+	SplitIOPerSec           uint32
+	FreeMegabytes           uint32
+	PercentFreeSpace        uint32
+}
+
 const WaitMSec = 500
 
 func Usage(path string) (*UsageStat, error) {
@@ -158,25 +210,16 @@ func IOCounters(names ...string) (map[string]IOCountersStat, error) {
 	return ret, nil
 }
 
-//PhysicalDiskIOCounters returns the IOCountersStat for the Physical disk
-func PhysicalDiskIOCounters() (map[string]IOCountersStat, error) {
-	ret := make(map[string]IOCountersStat, 0)
-	var dst []Win32_PerfFormattedData
+func PhysicalDisksStats() ([]Win32_PerfFormattedData_PerfDisk_PhysicalDisk, error) {
+	var ret []Win32_PerfFormattedData_PerfDisk_PhysicalDisk
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
+}
 
-	err := wmi.Query("SELECT * FROM Win32_PerfFormattedData_PerfDisk_PhysicalDisk ", &dst)
-	if err != nil {
-		return ret, err
-	}
-	for _, d := range dst {
-		ret[d.Name] = IOCountersStat{
-			Name:       d.Name,
-			ReadCount:  uint64(d.AvgDiskReadQueueLength),
-			WriteCount: d.AvgDiskWriteQueueLength,
-			ReadBytes:  uint64(d.AvgDiskBytesPerRead),
-			WriteBytes: uint64(d.AvgDiskBytesPerWrite),
-			ReadTime:   d.AvgDisksecPerRead,
-			WriteTime:  d.AvgDisksecPerWrite,
-		}
-	}
-	return ret, nil
+func LogicalPartitionsStats() ([]Win32_PerfFormattedData_PerfDisk_LogicalDisk, error) {
+	var ret []Win32_PerfFormattedData_PerfDisk_LogicalDisk
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
 }
