@@ -232,7 +232,8 @@ func LogicalPartitionsStats() ([]Win32_PerfFormattedData_PerfDisk_LogicalDisk, e
 
 func LogicalDiskSize() ([]Win32_LogicalDisk, error) {
 	var ret []Win32_LogicalDisk
-	q := wmi.CreateQuery(&ret, "")
+	// MediaType (12) is for Fixed hard disk media
+	q := wmi.CreateQuery(&ret, "where MediaType = 12")
 	err := wmi.Query(q, &ret)
 	return ret, err
 }
