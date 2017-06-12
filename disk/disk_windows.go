@@ -85,6 +85,12 @@ type Win32_PerfFormattedData_PerfDisk_LogicalDisk struct {
 	PercentFreeSpace        uint32
 }
 
+type Win32_LogicalDisk struct {
+	Name      string
+	Size      uint64
+	FreeSpace uint64
+}
+
 const WaitMSec = 500
 
 func Usage(path string) (*UsageStat, error) {
@@ -219,6 +225,13 @@ func PhysicalDisksStats() ([]Win32_PerfFormattedData_PerfDisk_PhysicalDisk, erro
 
 func LogicalPartitionsStats() ([]Win32_PerfFormattedData_PerfDisk_LogicalDisk, error) {
 	var ret []Win32_PerfFormattedData_PerfDisk_LogicalDisk
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
+}
+
+func LogicalDiskSize() ([]Win32_LogicalDisk, error) {
+	var ret []Win32_LogicalDisk
 	q := wmi.CreateQuery(&ret, "")
 	err := wmi.Query(q, &ret)
 	return ret, err
