@@ -91,6 +91,13 @@ type Win32_LogicalDisk struct {
 	FreeSpace uint64
 }
 
+type Win32_DiskDrive struct {
+	Name       string
+	Model      string
+	Partitions uint32
+	Size       uint64
+}
+
 const WaitMSec = 500
 
 func Usage(path string) (*UsageStat, error) {
@@ -234,6 +241,13 @@ func LogicalDiskSize() ([]Win32_LogicalDisk, error) {
 	var ret []Win32_LogicalDisk
 	// MediaType (12) is for Fixed hard disk media
 	q := wmi.CreateQuery(&ret, "where MediaType = 12")
+	err := wmi.Query(q, &ret)
+	return ret, err
+}
+
+func DiskInfo() ([]Win32_DiskDrive, error) {
+	var ret []Win32_DiskDrive
+	q := wmi.CreateQuery(&ret, "")
 	err := wmi.Query(q, &ret)
 	return ret, err
 }
