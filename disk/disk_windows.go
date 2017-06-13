@@ -94,6 +94,7 @@ type Win32_LogicalDisk struct {
 type Win32_DiskDrive struct {
 	Name       string
 	Model      string
+	Index      uint32
 	Partitions uint32
 	Size       uint64
 }
@@ -245,7 +246,7 @@ func LogicalDiskSize() ([]Win32_LogicalDisk, error) {
 	return ret, err
 }
 
-func DiskInfo() ([]Win32_DiskDrive, error) {
+func Info() ([]Win32_DiskDrive, error) {
 	var ret []Win32_DiskDrive
 	q := wmi.CreateQuery(&ret, "")
 	err := wmi.Query(q, &ret)
