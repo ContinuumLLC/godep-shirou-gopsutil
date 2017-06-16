@@ -27,6 +27,7 @@ type Win32_OperatingSystem struct {
 	Caption        string
 	ProductType    uint32
 	BuildNumber    string
+	CSDVersion     string
 	LastBootUpTime time.Time
 }
 
