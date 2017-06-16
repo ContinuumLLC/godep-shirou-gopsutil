@@ -180,6 +180,19 @@ func PlatformInformation() (platform string, family string, version string, err 
 	return
 }
 
+func ServicePack() (servicePack string, err error) {
+	if osInfo == nil {
+		_, err = GetOSInfo()
+		if err != nil {
+			return servicePack, err
+		}
+	}
+
+	// OS Service Pack
+	servicePack = osInfo.CSDVersion
+	return servicePack, nil
+}
+
 func Users() ([]UserStat, error) {
 	var ret []UserStat
 
