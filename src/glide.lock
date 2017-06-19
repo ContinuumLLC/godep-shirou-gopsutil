@@ -2,7 +2,7 @@ hash: 5aaf865024c21de0c0651cebe7a38e767bb128e68af7e83826d6edb817c8f297
 updated: 2017-03-01T12:38:39.877426348+05:30
 imports:
 - name: github.com/ContinuumLLC/platform-api-model
-  version: cbd91fbea1996934f7c5584f42c284e9d41a2adb
+  version: 1e5566312764aa13b0aa2077af8984e598b344fc
   subpackages:
   - clients/model/Golang/resourceModel/asset
 - name: github.com/ContinuumLLC/platform-common-lib
@@ -31,4 +31,20 @@ imports:
   version: 392c28fe23e1c45ddba891b0320b3b5df220beea
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/shirou/gopsutil
+  repo: https://github.com/ContinuumLLC/godep-shirou-gopsutil
+  version: d230ec09c3fd821b7b48d0c0cd59311944cf903f
+  subpackages:
+  - host
+- name: github.com/go-ole/go-ole
+  version: de8695c8edbf8236f30d6e1376e20b198a028d42
+  subpackages:
+  - oleutil
+- name: github.com/StackExchange/wmi
+  version: ea383cf3ba6ec950874b8486cd72356d007c768f
+- name: golang.org/x/sys
+  version: b90f89a1e7a9c1f6b918820b3daa7f08488c8594
+  subpackages:
+  - windows
+  - unix
 testImports: []

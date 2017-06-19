@@ -17,3 +17,6 @@ import:
 - package: github.com/golang/mock
   subpackages:
   - gomock
+- package: github.com/shirou/gopsutil
+  subpackages:
+  - host
