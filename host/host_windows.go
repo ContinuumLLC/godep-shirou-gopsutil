@@ -28,7 +28,12 @@ type Win32_OperatingSystem struct {
 	ProductType    uint32
 	BuildNumber    string
 	CSDVersion     string
+	OSArchitecture string
+	Manufacturer   string
+	SerialNumber   string
+	OSLanguage     uint32
 	LastBootUpTime time.Time
+	InstallDate    time.Time
 }
 
 func Info() (*InfoStat, error) {
