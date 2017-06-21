@@ -41,7 +41,8 @@ imports:
   subpackages:
   - oleutil
 - name: github.com/StackExchange/wmi
-  version: ea383cf3ba6ec950874b8486cd72356d007c768f
+  repo: https://github.com/ContinuumLLC/godep-StackExchange-wmi
+  version: 2a30afd9a20c3cf26a0a1eb7d3a8dda8d7619a04
 - name: github.com/shirou/w32
   version: bb4de0191aa41b5507caa14b0650cdbddcd9280b
 - name: golang.org/x/sys

@@ -3,101 +3,12 @@
 package dal
 
 import (
-	"time"
-
 	"runtime"
 
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
-	"github.com/ContinuumLLC/platform-common-lib/src/logging"
 	"github.com/shirou/gopsutil/baseboard"
 	"github.com/shirou/gopsutil/host"
 )
-
-// AssetCollection related constants
-const (
-	cAssetCreatedBy string = "/continuum/agent/plugin/asset"
-	cAssetDataType  string = "assetCollection"
-	cAssetDataName  string = "asset"
-)
-
-type assetDalImpl struct {
-	Factory model.AssetDalDependencies
-	Logger  logging.Logger
-}
-
-//GetAssetData ...
-func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
-	var (
-		bbrd  asset.AssetBaseBoard
-		bios  asset.AssetBios
-		opSys asset.AssetOs
-		memry asset.AssetMemory
-		syst  asset.AssetSystem
-	)
-	b, err := a.GetBiosInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetBiosInfo() %v", err)
-	} else {
-		bios = *b
-	}
-
-	bb, err := a.GetBaseBoardInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetBaseBoardInfo() %v", err)
-	} else {
-		bbrd = *bb
-	}
-
-	dd, err := a.GetDrivesInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetDrivesInfo() %v", err)
-	}
-
-	o, err := a.GetOSInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetOSInfo() %v", err)
-	} else {
-		opSys = *o
-	}
-
-	s, err := a.GetSystemInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetSystemInfo() %v", err)
-	} else {
-		syst = *s
-	}
-
-	n, err := a.GetNetworkInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetNetworkInfo() %v", err)
-	}
-	m, err := a.GetMemoryInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetMemoryInfo() %v", err)
-	} else {
-		memry = *m
-	}
-	p, err := a.GetProcessorInfo()
-	if err != nil {
-		a.Logger.Logf(logging.ERROR, "GetProcessorInfo() %v", err)
-	}
-
-	return &asset.AssetCollection{
-		CreatedBy:     cAssetCreatedBy,
-		CreateTimeUTC: time.Now().UTC(),
-		Type:          cAssetDataType,
-		Name:          cAssetDataName,
-		Bios:          bios,
-		BaseBoard:     bbrd,
-		Os:            opSys,
-		Memory:        memry,
-		System:        syst,
-		Networks:      n,
-		Drives:        dd,
-		Processors:    p,
-	}, nil
-}
 
 //GetBiosInfo ...
 func (a assetDalImpl) GetBiosInfo() (*asset.AssetBios, error) {
