@@ -11,7 +11,7 @@ TARGETPATH=$(GOPATH)/bin/$(TARGET)
 PLUGINPATH=$(GOPATH)/src/github.com/ContinuumLLC/$(TARGETNAME)/services
 JSONCFGPATH=$(GOPATH)/src/github.com/ContinuumLLC/$(TARGETNAME)/src
 
-JSONCFGNAME="ctm_asset_agent_plugin_cfg.json"
+JSONCFGNAME="asset_agent_plugin_cfg.json"
 
 
 #Linux

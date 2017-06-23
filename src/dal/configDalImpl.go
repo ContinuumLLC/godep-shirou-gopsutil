@@ -11,7 +11,7 @@ type configDalImpl struct {
 }
 
 const (
-	configFilename = "ctm_asset_agent_plugin_cfg.json"
+	configFilename = "asset_agent_plugin_cfg.json"
 )
 
 // GetAssetConf is the ConfigDal interface method which returns the Config

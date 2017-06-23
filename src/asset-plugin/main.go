@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	configFile  string = "ctm_asset_agent_plugin_cfg.json"
-	logFile     string = "ctm_asset_agent_plugin.log"
+	configFile  string = "asset_agent_plugin_cfg.json"
+	logFile     string = "asset_agent_plugin.log"
 	configIndex int    = 1
 	logIndex    int    = 2
 )
