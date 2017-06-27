@@ -56,7 +56,13 @@ func (a assetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 
 // GetSystemInfo returns system info
 func (a assetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
-	return &asset.AssetSystem{}, nil
+	info, err := host.Info()
+	if err != nil {
+		return nil, err
+	}
+	return &asset.AssetSystem{
+		SystemName: info.Hostname,
+	}, nil
 }
 
 // GetNetworkInfo returns network info
