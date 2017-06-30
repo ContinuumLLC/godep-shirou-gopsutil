@@ -58,6 +58,11 @@ type VirtualMemoryStat struct {
 	Slab         uint64 `json:"slab"`
 	PageTables   uint64 `json:"pagetables"`
 	SwapCached   uint64 `json:"swapcached"`
+
+	// Virtual Memory specific values
+	TotalVirtual     uint64 `json:"totalVirtual"`
+	AvailableVirtual uint64 `json:"availableVirtual"`
+	UsedVirtual      uint64 `json:"usedVirtual"`
 }
 
 type SwapMemoryStat struct {
