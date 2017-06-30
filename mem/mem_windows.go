@@ -45,12 +45,15 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	}
 
 	ret := &VirtualMemoryStat{
-		Total:       memInfo.ullTotalPhys,
-		Available:   memInfo.ullAvailPhys,
-		UsedPercent: float64(memInfo.dwMemoryLoad),
+		Total:            memInfo.ullTotalPhys,
+		Available:        memInfo.ullAvailPhys,
+		UsedPercent:      float64(memInfo.dwMemoryLoad),
+		TotalVirtual:     memInfo.ullTotalVirtual,
+		AvailableVirtual: memInfo.ullAvailVirtual,
 	}
 
 	ret.Used = ret.Total - ret.Available
+	ret.UsedVirtual = ret.TotalVirtual - ret.AvailableVirtual
 	return ret, nil
 }
 
