@@ -27,7 +27,7 @@ type Win32_OperatingSystem struct {
 	Caption        string
 	ProductType    uint32
 	BuildNumber    string
-	CSDVersion     string
+	CSDVersion     *string
 	OSArchitecture string
 	Manufacturer   string
 	SerialNumber   string
@@ -194,7 +194,9 @@ func ServicePack() (servicePack string, err error) {
 	}
 
 	// OS Service Pack
-	servicePack = osInfo.CSDVersion
+	if osInfo.CSDVersion != nil {
+		servicePack = *osInfo.CSDVersion
+	}
 	return servicePack, nil
 }
 
