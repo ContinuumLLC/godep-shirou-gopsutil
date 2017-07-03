@@ -5,9 +5,15 @@ package dal
 import (
 	"runtime"
 
+	"golang.org/x/sys/windows/registry"
+
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/shirou/gopsutil/baseboard"
 	"github.com/shirou/gopsutil/host"
+)
+
+const (
+	baseRegString = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
 )
 
 //GetBiosInfo ...
@@ -81,5 +87,13 @@ func (a assetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 }
 
 func (a assetDalImpl) GetInstalledSoftwareInfo() ([]asset.AssetInstalledSoftware, error) {
+
 	return nil, nil
+}
+
+func (a assetDalImpl) get32BitInstalledSoftInfo() ([]asset.AssetInstalledSoftware, error) {
+	var objInstallSoft installSoftwareImpl
+
+	_, err := objInstallSoft.getSoftwareRegistrySubKeys(baseRegString, registry.WOW64_32KEY)
+	return nil, err
 }
