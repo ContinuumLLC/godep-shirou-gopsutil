@@ -33,6 +33,8 @@ func (a assetDalImpl) GetBaseBoardInfo() (*asset.AssetBaseBoard, error) {
 		Manufacturer: bb.Manufacturer,
 		SerialNumber: bb.SerialNumber,
 		Version:      bb.Version,
+		Model:        bb.Model,
+		InstallDate:  bb.InstallDate,
 	}, nil
 
 }
@@ -48,11 +50,15 @@ func (a assetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 	if err != nil {
 		return nil, err
 	}
+	var svcPack string
+	if os.CSDVersion != nil {
+		svcPack = *os.CSDVersion
+	}
 	return &asset.AssetOs{
 		Product:      os.Caption,
 		Manufacturer: os.Manufacturer,
 		Version:      os.Version,
-		ServicePack:  os.CSDVersion,
+		ServicePack:  svcPack,
 		SerialNumber: os.SerialNumber,
 		InstallDate:  os.InstallDate,
 		Type:         runtime.GOOS,
