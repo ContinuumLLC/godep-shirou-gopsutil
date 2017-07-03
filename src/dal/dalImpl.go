@@ -10,7 +10,7 @@ import (
 
 // AssetCollection related constants
 const (
-	cAssetCreatedBy string = "/continuum/agent/plugin/asset"
+	cAssetCreatedBy string = "/agent/plugin/asset"
 	cAssetDataType  string = "assetCollection"
 	cAssetDataName  string = "asset"
 )
