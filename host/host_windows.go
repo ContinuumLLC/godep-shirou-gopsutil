@@ -27,7 +27,13 @@ type Win32_OperatingSystem struct {
 	Caption        string
 	ProductType    uint32
 	BuildNumber    string
+	CSDVersion     string
+	OSArchitecture string
+	Manufacturer   string
+	SerialNumber   string
+	OSLanguage     uint32
 	LastBootUpTime time.Time
+	InstallDate    time.Time
 }
 
 func Info() (*InfoStat, error) {
@@ -177,6 +183,19 @@ func PlatformInformation() (platform string, family string, version string, err 
 	version = fmt.Sprintf("%s Build %s", osInfo.Version, osInfo.BuildNumber)
 
 	return
+}
+
+func ServicePack() (servicePack string, err error) {
+	if osInfo == nil {
+		_, err = GetOSInfo()
+		if err != nil {
+			return servicePack, err
+		}
+	}
+
+	// OS Service Pack
+	servicePack = osInfo.CSDVersion
+	return servicePack, nil
 }
 
 func Users() ([]UserStat, error) {
