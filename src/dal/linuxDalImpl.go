@@ -589,3 +589,7 @@ func (a assetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 	}
 	return processors, nil
 }
+
+func (a assetDalImpl) GetInstalledSoftwareInfo() ([]asset.AssetInstalledSoftware, error) {
+	return nil, nil
+}

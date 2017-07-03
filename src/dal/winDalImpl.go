@@ -79,3 +79,7 @@ func (a assetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
 func (a assetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
 	return nil, nil
 }
+
+func (a assetDalImpl) GetInstalledSoftwareInfo() ([]asset.AssetInstalledSoftware, error) {
+	return nil, nil
+}
