@@ -3,13 +3,9 @@
 package dal
 
 import (
-	"errors"
 	"strings"
-	"time"
 
 	"golang.org/x/sys/windows/registry"
-
-	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 )
 
 var releaseTypes = [...]string{"Hotfix", "Security Update", "Update Rollup", "Update", "Critical Update", "Security"}
@@ -46,22 +42,6 @@ func (installSoftwareImpl) validatePropertiesForInstallSoftware(objSoftAttribute
 		}
 	}
 	return true
-}
-
-func (installSoftwareImpl) convertInstallDateToTime(installDate string) (tm time.Time, err error) {
-
-	if len(installDate) != 8 {
-		return tm, errors.New(model.ErrAssetInstallDate)
-	}
-	tempInstallDate := installDate[0:4]
-	tempInstallDate += "-"
-	tempInstallDate += installDate[4:6]
-	tempInstallDate += "-"
-	tempInstallDate += installDate[6:8]
-	tempInstallDate += "T00:00:00Z"
-
-	tm, err = time.Parse(time.RFC3339, tempInstallDate)
-	return tm, nil
 }
 
 func (installSoftwareImpl) getSoftwareRegistryProperties(regPath string, access32or64 uint32) (*softwareAttributes, error) {

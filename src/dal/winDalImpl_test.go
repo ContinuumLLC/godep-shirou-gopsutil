@@ -24,3 +24,23 @@ func TestGetAssetData(t *testing.T) {
 		t.Errorf("Could not get AssetData %v", err)
 	}
 }
+
+func TestConvertInstallDateToTime(t *testing.T) {
+	var objInstallSoft assetDalImpl
+	installDate := "20160725"
+
+	_, err := objInstallSoft.convertInstallDateToTime(installDate)
+	if nil != err {
+		t.Errorf("Expected time object, but received error %v", err)
+	}
+}
+
+func TestConvertInstallDateToTimeErr(t *testing.T) {
+	var objInstallSoft assetDalImpl
+	installDate := "20"
+
+	_, err := objInstallSoft.convertInstallDateToTime(installDate)
+	if nil == err {
+		t.Error("Expected error")
+	}
+}

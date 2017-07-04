@@ -28,23 +28,3 @@ func TestValidatePropertiesForInstallSoftwareFalse(t *testing.T) {
 		t.Error("Expected false, but returned true")
 	}
 }
-
-func TestConvertInstallDateToTime(t *testing.T) {
-	var objInstallSoft installSoftwareImpl
-	installDate := "20160725"
-
-	_, err := objInstallSoft.convertInstallDateToTime(installDate)
-	if nil != err {
-		t.Errorf("Expected time object, but received error %v", err)
-	}
-}
-
-func TestConvertInstallDateToTimeErr(t *testing.T) {
-	var objInstallSoft installSoftwareImpl
-	installDate := "20"
-
-	_, err := objInstallSoft.convertInstallDateToTime(installDate)
-	if nil == err {
-		t.Error("Expected error")
-	}
-}
