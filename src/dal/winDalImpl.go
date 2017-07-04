@@ -3,20 +3,19 @@
 package dal
 
 import (
-	"errors"
 	"runtime"
 	"time"
 
 	"golang.org/x/sys/windows/registry"
 
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/model"
 	"github.com/shirou/gopsutil/baseboard"
 	"github.com/shirou/gopsutil/host"
 )
 
 const (
 	baseRegString = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+	os32BitArch   = "386"
 )
 
 //GetBiosInfo ...
@@ -103,16 +102,14 @@ func (a assetDalImpl) GetInstalledSoftwareInfo() ([]asset.AssetInstalledSoftware
 		return nil, err
 	}
 
-	if nil != objAsset32BitInstalledSoftware {
-		objAssetInstalledSoftware = append(objAssetInstalledSoftware, objAsset32BitInstalledSoftware...)
-	}
+	objAssetInstalledSoftware = append(objAssetInstalledSoftware, objAsset32BitInstalledSoftware...)
 
-	objAsset64BitInstalledSoftware, err := a.getInstalledSoftInfo(registry.WOW64_64KEY)
-	if nil != err {
-		return nil, err
-	}
+	if os32BitArch != runtime.GOARCH {
+		objAsset64BitInstalledSoftware, err := a.getInstalledSoftInfo(registry.WOW64_64KEY)
+		if nil != err {
+			return nil, err
+		}
 
-	if nil != objAsset64BitInstalledSoftware {
 		objAssetInstalledSoftware = append(objAssetInstalledSoftware, objAsset64BitInstalledSoftware...)
 	}
 
@@ -155,17 +152,5 @@ func (a assetDalImpl) appendAttributesToAssetInstalledSoftware(softAttributes so
 }
 
 func (a assetDalImpl) convertInstallDateToTime(installDate string) (tm time.Time, err error) {
-
-	if len(installDate) != 8 {
-		return tm, errors.New(model.ErrAssetInstallDate)
-	}
-	tempInstallDate := installDate[0:4]
-	tempInstallDate += "-"
-	tempInstallDate += installDate[4:6]
-	tempInstallDate += "-"
-	tempInstallDate += installDate[6:8]
-	tempInstallDate += "T00:00:00Z"
-
-	tm, err = time.Parse(time.RFC3339, tempInstallDate)
-	return tm, nil
+	return time.Parse("20060102", installDate)
 }
