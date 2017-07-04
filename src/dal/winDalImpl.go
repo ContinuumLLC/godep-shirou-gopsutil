@@ -136,14 +136,14 @@ func (a assetDalImpl) getInstalledSoftInfo(access32or64 uint32) ([]asset.AssetIn
 		softAttributes, err := objInstallSoft.getSoftwareRegistryProperties(regSubKeys, access32or64)
 		if nil == err {
 			if objInstallSoft.validatePropertiesForInstallSoftware(*softAttributes) {
-				a.appendAttributesToAssetInstalledSoftware(*softAttributes, objAssetInstalledSoftware)
+				a.appendAttributesToAssetInstalledSoftware(*softAttributes, &objAssetInstalledSoftware)
 			}
 		}
 	}
 	return objAssetInstalledSoftware, nil
 }
 
-func (a assetDalImpl) appendAttributesToAssetInstalledSoftware(softAttributes softwareAttributes, assetInstallSoft []asset.AssetInstalledSoftware) []asset.AssetInstalledSoftware {
+func (a assetDalImpl) appendAttributesToAssetInstalledSoftware(softAttributes softwareAttributes, assetInstallSoft *[]asset.AssetInstalledSoftware) {
 	var objAssetInstalledSoftware asset.AssetInstalledSoftware
 
 	objAssetInstalledSoftware.Name = softAttributes.displayName
@@ -151,9 +151,7 @@ func (a assetDalImpl) appendAttributesToAssetInstalledSoftware(softAttributes so
 	objAssetInstalledSoftware.Version = softAttributes.displayVersion
 	objAssetInstalledSoftware.InstallDate, _ = a.convertInstallDateToTime(softAttributes.installDate)
 
-	assetInstallSoft = append(assetInstallSoft, objAssetInstalledSoftware)
-
-	return assetInstallSoft
+	*assetInstallSoft = append(*assetInstallSoft, objAssetInstalledSoftware)
 }
 
 func (a assetDalImpl) convertInstallDateToTime(installDate string) (tm time.Time, err error) {
