@@ -33,7 +33,7 @@ imports:
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/shirou/gopsutil
   repo: https://github.com/ContinuumLLC/godep-shirou-gopsutil
-  version: d230ec09c3fd821b7b48d0c0cd59311944cf903f
+  version: 660da45e02c9e0305db8f987d3eed9a46bfc8615
   subpackages:
   - host
 - name: github.com/go-ole/go-ole
@@ -41,8 +41,7 @@ imports:
   subpackages:
   - oleutil
 - name: github.com/StackExchange/wmi
-  repo: https://github.com/ContinuumLLC/godep-StackExchange-wmi
-  version: 2a30afd9a20c3cf26a0a1eb7d3a8dda8d7619a04
+  version: ea383cf3ba6ec950874b8486cd72356d007c768f
 - name: github.com/shirou/w32
   version: bb4de0191aa41b5507caa14b0650cdbddcd9280b
 - name: golang.org/x/sys
