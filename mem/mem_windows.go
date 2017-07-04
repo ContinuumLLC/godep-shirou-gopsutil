@@ -5,6 +5,7 @@ package mem
 import (
 	"unsafe"
 
+	"github.com/StackExchange/wmi"
 	"github.com/shirou/gopsutil/internal/common"
 	"golang.org/x/sys/windows"
 )
@@ -25,6 +26,13 @@ type memoryStatusEx struct {
 	ullAvailExtendedVirtual uint64
 }
 
+// Win32_OperatingSystem struct to provide virtual memory values
+type Win32_OperatingSystem struct {
+	//Virtual memory total and free in KBs
+	TotalVirtualMemorySize uint64
+	FreeVirtualMemory      uint64
+}
+
 func VirtualMemory() (*VirtualMemoryStat, error) {
 	var memInfo memoryStatusEx
 	memInfo.cbSize = uint32(unsafe.Sizeof(memInfo))
@@ -34,14 +42,24 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	}
 
 	ret := &VirtualMemoryStat{
-		Total:            memInfo.ullTotalPhys,
-		Available:        memInfo.ullAvailPhys,
-		UsedPercent:      float64(memInfo.dwMemoryLoad),
-		TotalVirtual:     memInfo.ullTotalVirtual,
-		AvailableVirtual: memInfo.ullAvailVirtual,
+		Total:       memInfo.ullTotalPhys,
+		Available:   memInfo.ullAvailPhys,
+		UsedPercent: float64(memInfo.dwMemoryLoad),
 	}
-
 	ret.Used = ret.Total - ret.Available
+
+	// GlobalMemoryStatusEx WinAPI retrieves virtual memory information
+	// but does not match with the one that is displayed by the system information application run on the same system.
+	// (Start->Program->Accessories->System Tools->System Information).
+	// https://groups.google.com/forum/#!topic/microsoft.public.vc.mfc/i7UzUJOYziE
+	var dst []Win32_OperatingSystem
+	q := wmi.CreateQuery(&dst, "")
+	err := wmi.Query(q, &dst)
+	if err != nil {
+		return ret, err
+	}
+	ret.TotalVirtual = dst[0].TotalVirtualMemorySize * 1024 // in bytes
+	ret.AvailableVirtual = dst[0].FreeVirtualMemory * 1024  // in bytes
 	ret.UsedVirtual = ret.TotalVirtual - ret.AvailableVirtual
 	return ret, nil
 }
