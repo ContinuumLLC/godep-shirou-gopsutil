@@ -10,4 +10,6 @@ const (
 	ErrAssetDal = "ErrAssetDal"
 	//ErrAssetMsgListener to handle error at message listener layer
 	ErrAssetMsgListener = "ErrAssetMsgListener"
+	//ErrAssetInstallDate to handle invalid or blank date format
+	ErrAssetInstallDate = "ErrAssetInstallDate"
 )

@@ -10,7 +10,7 @@ import (
 
 // AssetCollection related constants
 const (
-	cAssetCreatedBy string = "/continuum/agent/plugin/asset"
+	cAssetCreatedBy string = "/agent/plugin/asset"
 	cAssetDataType  string = "assetCollection"
 	cAssetDataName  string = "asset"
 )
@@ -79,18 +79,24 @@ func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		a.Logger.Logf(logging.ERROR, "GetProcessorInfo() %v", err)
 	}
 
+	installSoft, err := a.GetInstalledSoftwareInfo()
+	if err != nil {
+		a.Logger.Logf(logging.ERROR, "GetInstalledSoftwareInfo() %v", err)
+	}
+
 	return &asset.AssetCollection{
-		CreatedBy:     cAssetCreatedBy,
-		CreateTimeUTC: time.Now().UTC(),
-		Type:          cAssetDataType,
-		Name:          cAssetDataName,
-		Bios:          bios,
-		BaseBoard:     baseboard,
-		Os:            os,
-		Memory:        mem,
-		System:        sys,
-		Networks:      net,
-		Drives:        storages,
-		Processors:    cpu,
+		CreatedBy:          cAssetCreatedBy,
+		CreateTimeUTC:      time.Now().UTC(),
+		Type:               cAssetDataType,
+		Name:               cAssetDataName,
+		Bios:               bios,
+		BaseBoard:          baseboard,
+		Os:                 os,
+		Memory:             mem,
+		System:             sys,
+		Networks:           net,
+		Drives:             storages,
+		Processors:         cpu,
+		InstalledSoftwares: installSoft,
 	}, nil
 }
