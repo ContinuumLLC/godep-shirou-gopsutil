@@ -1,0 +1,14 @@
+// +build linux
+
+package bios
+
+import (
+	"errors"
+
+	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+)
+
+// TODO: Info returns baseboard information for Linux
+func Info() (*asset.AssetBios, error) {
+	return nil, errors.New("not implemented yet")
+}

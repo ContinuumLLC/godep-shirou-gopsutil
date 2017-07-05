@@ -6,13 +6,14 @@ import (
 	"runtime"
 
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/bios"
 	"github.com/shirou/gopsutil/baseboard"
 	"github.com/shirou/gopsutil/host"
 )
 
 //GetBiosInfo ...
 func (a assetDalImpl) GetBiosInfo() (*asset.AssetBios, error) {
-	return &asset.AssetBios{}, nil
+	return bios.ByWMI{}.Info()
 }
 
 //GetBaseBoardInfo ...
