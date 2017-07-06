@@ -7,23 +7,25 @@ import (
 	"github.com/StackExchange/wmi"
 )
 
-// ByWMI implements bios Information using WMI
+const biosQuery = "SELECT Name,Manufacturer,SerialNumber,Version,SMBIOSBIOSVersion FROM Win32_BIOS"
+
+// ByWMI implements BIOS Information using WMI
 type ByWMI struct {
 }
 
-// Info returns baseboard information for Windows using WMI
+// Win32_BIOS WMI struct representation
+type win32BIOS struct {
+	Name              string
+	Manufacturer      string
+	SerialNumber      string
+	Version           string
+	SMBIOSBIOSVersion string
+}
+
+// Info returns BIOS information for Windows using WMI
 func (ByWMI) Info() (*asset.AssetBios, error) {
-	// Win32_BIOS struct represents a bios
-	type Win32_BIOS struct {
-		Name              string
-		Manufacturer      string
-		SerialNumber      string
-		Version           string
-		SMBIOSBIOSVersion string
-	}
-	var dst []Win32_BIOS
-	q := wmi.CreateQuery(&dst, "")
-	err := wmi.Query(q, &dst)
+	var dst []win32BIOS
+	err := wmi.Query(biosQuery, &dst)
 	if err != nil {
 		return nil, err
 	}
