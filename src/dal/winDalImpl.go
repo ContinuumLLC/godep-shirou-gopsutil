@@ -10,8 +10,10 @@ import (
 
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/bios"
-	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/net"	
+	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/disk"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/net"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/processor"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/system"
 	"github.com/shirou/gopsutil/baseboard"
 	"github.com/shirou/gopsutil/host"
 )
@@ -46,7 +48,7 @@ func (a assetDalImpl) GetBaseBoardInfo() (*asset.AssetBaseBoard, error) {
 
 //GetDrivesInfo ...
 func (a assetDalImpl) GetDrivesInfo() ([]asset.AssetDrive, error) {
-	return nil, nil
+	return disk.ByWMI{}.Info()
 }
 
 // GetOSInfo returns the OS info
@@ -73,13 +75,7 @@ func (a assetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 
 // GetSystemInfo returns system info
 func (a assetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
-	info, err := host.Info()
-	if err != nil {
-		return nil, err
-	}
-	return &asset.AssetSystem{
-		SystemName: info.Hostname,
-	}, nil
+	return system.WMI{}.Info()
 }
 
 // GetNetworkInfo returns network info
