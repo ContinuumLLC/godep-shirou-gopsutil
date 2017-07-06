@@ -12,4 +12,6 @@ const (
 	ErrAssetMsgListener = "ErrAssetMsgListener"
 	//ErrAssetInstallDate to handle invalid or blank date format
 	ErrAssetInstallDate = "ErrAssetInstallDate"
+	//ErrNotImplemented error for missing implementation
+	ErrNotImplemented = "ErrNotImplemented"
 )
