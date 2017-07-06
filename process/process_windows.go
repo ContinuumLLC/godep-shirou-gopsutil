@@ -92,6 +92,19 @@ type Win32_Process struct {
 	*/
 }
 
+// Win32_PerfFormattedData_PerfProc_Process struct to provide performance process metrics for windows
+type Win32_PerfFormattedData_PerfProc_Process struct {
+	IDProcess            uint32
+	Name                 string
+	HandleCount          uint32
+	PercentProcessorTime uint64
+	PrivateBytes         uint64
+	ThreadCount          uint32
+	VirtualBytes         uint64
+	WorkingSet           uint64
+	WorkingSetPrivate    uint64
+}
+
 func Pids() ([]int32, error) {
 	var ret []int32
 
@@ -127,6 +140,14 @@ func GetWin32Proc(pid int32) ([]Win32_Process, error) {
 		return []Win32_Process{}, fmt.Errorf("could not get win32Proc: empty")
 	}
 	return dst, nil
+}
+
+// PerfProcessStats returns the performance data from performance counters of process object.
+func PerfProcessStats() ([]Win32_PerfFormattedData_PerfProc_Process, error) {
+	var ret []Win32_PerfFormattedData_PerfProc_Process
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
 }
 
 func (p *Process) Name() (string, error) {
