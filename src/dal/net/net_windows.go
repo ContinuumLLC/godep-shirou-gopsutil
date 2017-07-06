@@ -66,21 +66,7 @@ func getAssetNetwork(dst []Win32_NetworkAdapterConfiguration, dst2 []Win32_Netwo
 		var ipv4, ipv6, subnet, gateway string
 		var ipv4s, ipv6s []string
 
-		if v.IPAddress != nil {
-			for _, value := range *v.IPAddress {
-				if strings.Contains(value, ":") {
-					ipv6s = append(ipv6s, value)
-				} else {
-					ipv4s = append(ipv4s, value)
-				}
-			}
-			if len(ipv4s) > 0 {
-				ipv4 = ipv4s[0]
-			}
-			if len(ipv6s) > 0 {
-				ipv6 = ipv6s[0]
-			}
-		}
+		getIPAddress(v.IPAddress, &ipv4s, &ipv6s, &ipv4, &ipv6)
 
 		var gateways []string
 		getArrayValue(v.DefaultIPGateway, &gateways)
@@ -135,6 +121,23 @@ func getAssetNetwork(dst []Win32_NetworkAdapterConfiguration, dst2 []Win32_Netwo
 	return netArray
 }
 
+func getIPAddress(ptrIPAdd, ipv4s, ipv6s *[]string, ipv4, ipv6 *string) {
+	if ptrIPAdd != nil {
+		for _, value := range *ptrIPAdd {
+			if strings.Contains(value, ":") {
+				*ipv6s = append(*ipv6s, value)
+			} else {
+				*ipv4s = append(*ipv4s, value)
+			}
+		}
+		if len(*ipv4s) > 0 {
+			*ipv4 = (*ipv4s)[0]
+		}
+		if len(*ipv6s) > 0 {
+			*ipv6 = (*ipv6s)[0]
+		}
+	}
+}
 func getArrayValue(ptr, str *[]string) {
 	if ptr != nil {
 		*str = *ptr
