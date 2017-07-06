@@ -18,12 +18,13 @@ type win32Processor struct {
 	Manufacturer              string
 	NumberOfLogicalProcessors int
 	DataWidth                 int
+	Level                     int
 }
 
 //Info to return the Asset Processor information
 func (WMI) Info() ([]asset.AssetProcessor, error) {
 	var dst []win32Processor
-	err := wmi.Query("SELECT Name,NumberOfCores,CurrentClockSpeed,Family,Manufacturer,NumberOfLogicalProcessors,DataWidth FROM Win32_Processor", &dst)
+	err := wmi.Query("SELECT Name,NumberOfCores,CurrentClockSpeed,Family,Manufacturer,NumberOfLogicalProcessors,DataWidth,Level FROM Win32_Processor", &dst)
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +38,7 @@ func (WMI) Info() ([]asset.AssetProcessor, error) {
 		data[i].NumberOfCores = dst[i].NumberOfCores
 		data[i].ProcessorType = strconv.Itoa(dst[i].DataWidth)
 		//data[i].SerialNumber = dst[i].SerialNumber
+		data[i].Level = dst[i].Level
 	}
 	return data, nil
 }
