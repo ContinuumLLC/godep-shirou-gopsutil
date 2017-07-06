@@ -143,10 +143,10 @@ func GetWin32Proc(pid int32) ([]Win32_Process, error) {
 }
 
 // PerfProcessStats returns the performance data from performance counters of process object.
-func PerfProcessStats() ([]WinProcessPerformance, error) {
+func PerfProcessStats() ([]Win32_PerfFormattedData_PerfProc_Process, error) {
 	var ret []Win32_PerfFormattedData_PerfProc_Process
-	q := wmi.CreateQuery(&perfData, "")
-	err := wmi.Query(q, &perfData)
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
 	return ret, err
 }
 
