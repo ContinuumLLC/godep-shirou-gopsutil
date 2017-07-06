@@ -11,6 +11,7 @@ import (
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/bios"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/disk"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/processor"
 	"github.com/shirou/gopsutil/baseboard"
 	"github.com/shirou/gopsutil/host"
 )
@@ -93,7 +94,7 @@ func (a assetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
 
 // GetProcessorInfo returns processor info
 func (a assetDalImpl) GetProcessorInfo() ([]asset.AssetProcessor, error) {
-	return nil, nil
+	return processor.WMI{}.Info()
 }
 
 func (a assetDalImpl) GetInstalledSoftwareInfo() ([]asset.AssetInstalledSoftware, error) {
