@@ -1,0 +1,14 @@
+// +build darwin
+
+package net
+
+import (
+	"errors"
+
+	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
+)
+
+// TODO: Info returns network information for MAC OS
+func Info() ([]asset.AssetNetwork, error) {
+	return nil, errors.New("not implemented yet")
+}
