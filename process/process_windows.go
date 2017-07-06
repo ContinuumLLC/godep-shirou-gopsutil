@@ -105,15 +105,6 @@ type Win32_PerfFormattedData_PerfProc_Process struct {
 	WorkingSetPrivate    uint64
 }
 
-type WinProcessPerformance struct {
-	WMIPerfProcessData    Win32_PerfFormattedData_PerfProc_Process
-	UserName              string
-	DiskReadBytesPerSec   uint64
-	DiskWriteBytesPerSec  uint64
-	NetSendBytesPerSec    uint64
-	NetReceiveBytesPerSec uint64
-}
-
 func Pids() ([]int32, error) {
 	var ret []int32
 
@@ -153,21 +144,9 @@ func GetWin32Proc(pid int32) ([]Win32_Process, error) {
 
 // PerfProcessStats returns the performance data from performance counters of process object.
 func PerfProcessStats() ([]WinProcessPerformance, error) {
-	var perfData []Win32_PerfFormattedData_PerfProc_Process
-	var ret []WinProcessPerformance
-	var objWinProcPerf WinProcessPerformance
+	var ret []Win32_PerfFormattedData_PerfProc_Process
 	q := wmi.CreateQuery(&perfData, "")
 	err := wmi.Query(q, &perfData)
-
-	if nil != err {
-		return ret, err
-	}
-
-	for _, value := range perfData {
-		objWinProcPerf = value.WMIPerfProcessData
-		ret = append(ret, objWinProcPerf)
-	}
-
 	return ret, err
 }
 
