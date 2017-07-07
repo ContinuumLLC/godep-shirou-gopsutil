@@ -38,13 +38,13 @@ func (ByWMI) Info() ([]asset.AssetDrive, error) {
 	iDiskLen := len(dst)
 	for i := 0; i < iDiskLen; i++ {
 		tmp := asset.AssetDrive{
-			Product:      dst[i].Caption,
-			Manufacturer: dst[i].Manufacturer,
-			MediaType:    dst[i].MediaType,
-			LogicalName:  dst[i].Name,
-			//Partitions : TODO
-			SerialNumber: strings.TrimSpace(dst[i].SerialNumber),
-			SizeBytes:    int64(dst[i].Size),
+			Product:            dst[i].Caption,
+			Manufacturer:       dst[i].Manufacturer,
+			MediaType:          dst[i].MediaType,
+			LogicalName:        dst[i].Name,
+			NumberOfPartitions: int(dst[i].Partitions),
+			SerialNumber:       strings.TrimSpace(dst[i].SerialNumber),
+			SizeBytes:          int64(dst[i].Size),
 		}
 		listOfDrives = append(listOfDrives, tmp)
 	}
