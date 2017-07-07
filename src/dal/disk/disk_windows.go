@@ -21,7 +21,7 @@ type win32DiskDrive struct {
 	Caption      string
 	Manufacturer string
 	MediaType    string
-	SerialNumber string
+	SerialNumber *string
 	Index        uint32
 	Partitions   uint32
 	Size         uint64
@@ -37,13 +37,17 @@ func (ByWMI) Info() ([]asset.AssetDrive, error) {
 	var listOfDrives []asset.AssetDrive
 	iDiskLen := len(dst)
 	for i := 0; i < iDiskLen; i++ {
+		var srNum string
+		if dst[i].SerialNumber != nil {
+			srNum = strings.TrimSpace(*dst[i].SerialNumber)
+		}
 		tmp := asset.AssetDrive{
 			Product:            dst[i].Caption,
 			Manufacturer:       dst[i].Manufacturer,
 			MediaType:          dst[i].MediaType,
-			LogicalName:        dst[i].Name,
+			LogicalName:        strings.Replace(dst[i].Name, `\\\\.\\`, `\\.\`, -1),
 			NumberOfPartitions: int(dst[i].Partitions),
-			SerialNumber:       strings.TrimSpace(dst[i].SerialNumber),
+			SerialNumber:       srNum,
 			SizeBytes:          int64(dst[i].Size),
 		}
 		listOfDrives = append(listOfDrives, tmp)
