@@ -10,8 +10,8 @@ import (
 	"github.com/StackExchange/wmi"
 )
 
-// Win32_NetworkAdapterConfiguration struct represents a network adapter configuratons
-type Win32_NetworkAdapterConfiguration struct {
+// win32_NetworkAdapterConfiguration struct represents a network adapter configuratons
+type win32_NetworkAdapterConfiguration struct {
 	Description          string
 	IPAddress            *[]string
 	MACAddress           *string
@@ -28,8 +28,8 @@ type Win32_NetworkAdapterConfiguration struct {
 	Index                uint32
 }
 
-// Win32_NetworkAdapter struct represents a network adapter
-type Win32_NetworkAdapter struct {
+// win32_NetworkAdapter struct represents a network adapter
+type win32_NetworkAdapter struct {
 	Name         string
 	Manufacturer string
 	Index        uint32
@@ -37,13 +37,13 @@ type Win32_NetworkAdapter struct {
 
 // Info returns network information for Windows using WMI
 func Info() ([]asset.AssetNetwork, error) {
-	var dst []Win32_NetworkAdapterConfiguration
+	var dst []win32_NetworkAdapterConfiguration
 	q := wmi.CreateQuery(&dst, "")
 	err := wmi.Query(q, &dst)
 	if err != nil {
 		return nil, err
 	}
-	var dst2 []Win32_NetworkAdapter
+	var dst2 []win32_NetworkAdapter
 	q2 := wmi.CreateQuery(&dst2, "")
 	wmi.Query(q2, &dst2)
 
@@ -51,7 +51,7 @@ func Info() ([]asset.AssetNetwork, error) {
 	return netArray, nil
 }
 
-func getAssetNetwork(dst []Win32_NetworkAdapterConfiguration, dst2 []Win32_NetworkAdapter) []asset.AssetNetwork {
+func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_NetworkAdapter) []asset.AssetNetwork {
 	netArray := make([]asset.AssetNetwork, len(dst))
 	for i, v := range dst {
 		var manuf string

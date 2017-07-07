@@ -19,8 +19,8 @@ func TestGetAssetNetwork(t *testing.T) {
 	dhcp := "10.20.30.40"
 	mac := "0A:00:27:00:00:15"
 
-	a := []Win32_NetworkAdapterConfiguration{
-		Win32_NetworkAdapterConfiguration{
+	a := []win32_NetworkAdapterConfiguration{
+		win32_NetworkAdapterConfiguration{
 			Description:          "Wireless Adapter",
 			Index:                0,
 			DHCPLeaseExpires:     &t1,
@@ -34,7 +34,7 @@ func TestGetAssetNetwork(t *testing.T) {
 			MACAddress:           &mac,
 			IPAddress:            &ipadd,
 		},
-		Win32_NetworkAdapterConfiguration{
+		win32_NetworkAdapterConfiguration{
 			Description:          "Ethernet Adapter",
 			Index:                1,
 			DHCPLeaseExpires:     nil,
@@ -49,12 +49,12 @@ func TestGetAssetNetwork(t *testing.T) {
 			IPAddress:            nil,
 		},
 	}
-	b := []Win32_NetworkAdapter{
-		Win32_NetworkAdapter{
+	b := []win32_NetworkAdapter{
+		win32_NetworkAdapter{
 			Manufacturer: "Intel Corp",
 			Index:        0,
 		},
-		Win32_NetworkAdapter{
+		win32_NetworkAdapter{
 			Manufacturer: "Microsoft Corp",
 			Index:        1,
 		},
