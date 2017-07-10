@@ -202,7 +202,7 @@ func (p *Process) Status() (string, error) {
 	return "", common.ErrNotImplementedError
 }
 func (p *Process) Username() (string, error) {
-	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, uint32(pid))
+	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, uint32(p.pid))
 	if nil != err {
 		return "", err
 	}
