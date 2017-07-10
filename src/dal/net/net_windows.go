@@ -63,7 +63,11 @@ func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_Netwo
 				break
 			}
 		}
-		var ipv4, ipv6, subnet, gateway string
+		ipv4 := "0.0.0.0"
+		ipv6 := "::"
+		subnet := "0.0.0.0"
+		gateway := "0.0.0.0"
+		dhcpsvr := "0.0.0.0"
 		var ipv4s, ipv6s []string
 
 		getIPAddress(v.IPAddress, &ipv4s, &ipv6s, &ipv4, &ipv6)
@@ -81,7 +85,7 @@ func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_Netwo
 		var dnsservers []string
 		getArrayValue(v.DNSServerSearchOrder, &dnsservers)
 
-		var mac, dhcpsvr string
+		var mac string
 		getStringValue(v.MACAddress, &mac)
 		getStringValue(v.DHCPServer, &dhcpsvr)
 
@@ -89,7 +93,8 @@ func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_Netwo
 		getDateValue(v.DHCPLeaseObtained, &lobt)
 		getDateValue(v.DHCPLeaseExpires, &lexp)
 
-		var winsp, winss string
+		winsp := "0.0.0.0"
+		winss := "0.0.0.0"
 		getStringValue(v.WINSPrimaryServer, &winsp)
 		getStringValue(v.WINSSecondaryServer, &winss)
 
@@ -144,7 +149,7 @@ func getArrayValue(ptr, str *[]string) {
 	}
 }
 func getStringValue(ptr, str *string) {
-	if ptr != nil {
+	if ptr != nil && len(*ptr) > 0 {
 		*str = *ptr
 	}
 }
