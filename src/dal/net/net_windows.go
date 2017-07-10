@@ -63,11 +63,7 @@ func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_Netwo
 				break
 			}
 		}
-		ipv4 := "0.0.0.0"
-		ipv6 := "::"
-		subnet := "0.0.0.0"
-		gateway := "0.0.0.0"
-		dhcpsvr := "0.0.0.0"
+		var ipv4, ipv6, subnet, gateway, dhcpsvr = "0.0.0.0", "::", "0.0.0.0", "0.0.0.0", "0.0.0.0"
 		var ipv4s, ipv6s []string
 
 		getIPAddress(v.IPAddress, &ipv4s, &ipv6s, &ipv4, &ipv6)
@@ -93,8 +89,7 @@ func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_Netwo
 		getDateValue(v.DHCPLeaseObtained, &lobt)
 		getDateValue(v.DHCPLeaseExpires, &lexp)
 
-		winsp := "0.0.0.0"
-		winss := "0.0.0.0"
+		var winsp, winss = "0.0.0.0", "0.0.0.0"
 		getStringValue(v.WINSPrimaryServer, &winsp)
 		getStringValue(v.WINSSecondaryServer, &winss)
 
