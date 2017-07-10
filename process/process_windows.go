@@ -202,7 +202,49 @@ func (p *Process) Status() (string, error) {
 	return "", common.ErrNotImplementedError
 }
 func (p *Process) Username() (string, error) {
-	return "", common.ErrNotImplementedError
+	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, uint32(pid))
+	if nil != err {
+		return "", err
+	}
+	defer windows.CloseHandle(hProcess)
+
+	var t windows.Token
+	err = windows.OpenProcessToken(hProcess, windows.TOKEN_QUERY, &t)
+	if nil != err {
+		return "", err
+	}
+	defer windows.CloseHandle(windows.Handle(t))
+
+	var n uint32
+	err = windows.GetTokenInformation(t, windows.TokenUser, nil, 0, &n)
+	if n <= 0 {
+		return "", err
+	}
+
+	b := make([]byte, n)
+
+	err = windows.GetTokenInformation(t, windows.TokenUser, &b[0], uint32(len(b)), &n)
+	if nil != err {
+		return "", err
+	}
+
+	tokenUser, err := t.GetTokenUser()
+
+	if nil != err {
+		return "", err
+	}
+
+	name := uint32(250)
+	domain := uint32(250)
+	var accType uint32
+	strname := make([]uint16, name)
+	strdomain := make([]uint16, domain)
+
+	err = windows.LookupAccountSid(nil, tokenUser.User.Sid, &strname[0], &name, &strdomain[0], &domain, &accType)
+	if nil != err {
+		return "", err
+	}
+	return windows.UTF16ToString(strname), nil
 }
 func (p *Process) Uids() ([]int32, error) {
 	var uids []int32
