@@ -57,16 +57,15 @@ type win32LogicalDisk struct {
 
 // Info returns Disk information for Windows using WMI
 func (w WMI) Info() ([]asset.AssetDrive, error) {
-	var dst []win32DiskDrive
-	err := w.dep.Query(diskQ, &dst)
+	dst, err := w.disk()
 	if err != nil {
 		return nil, err
 	}
 	var drives []asset.AssetDrive
-	iDiskLen := len(dst)
-	for i := 0; i < iDiskLen; i++ {
+	l := len(dst)
+	for i := 0; i < l; i++ {
 		// get partition data corresponding to a disk
-		parts, err := w.diskToPartitions(dst[i].DeviceID)
+		parts, err := w.diskToPartition(dst[i].DeviceID)
 		if err != nil {
 			return nil, err
 		}
@@ -74,27 +73,19 @@ func (w WMI) Info() ([]asset.AssetDrive, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		var srNum string
-		if dst[i].SerialNumber != nil {
-			srNum = strings.TrimSpace(*dst[i].SerialNumber)
-		}
-		disk := asset.AssetDrive{
-			Product:            dst[i].Caption,
-			Manufacturer:       dst[i].Manufacturer,
-			MediaType:          dst[i].MediaType,
-			LogicalName:        strings.Replace(dst[i].Name, `\\\\.\\`, `\\.\`, -1),
-			NumberOfPartitions: int(dst[i].Partitions),
-			SerialNumber:       srNum,
-			SizeBytes:          int64(dst[i].Size),
-			PartitionData:      lDisks,
-		}
-		drives = append(drives, disk)
+		disk := mapToDriveModel(&dst[i], lDisks)
+		drives = append(drives, *disk)
 	}
 	return drives, nil
 }
 
-func (w WMI) diskToPartitions(deviceID string) ([]win32DiskPartition, error) {
+func (w WMI) disk() ([]win32DiskDrive, error) {
+	var dst []win32DiskDrive
+	err := w.dep.Query(diskQ, &dst)
+	return dst, err
+}
+
+func (w WMI) diskToPartition(deviceID string) ([]win32DiskPartition, error) {
 	var dst []win32DiskPartition
 	q := fmt.Sprintf(diskPartitionQ, deviceID)
 	err := w.dep.Query(q, &dst)
@@ -116,16 +107,40 @@ func (w WMI) logicalDiskInfo(dstDP []win32DiskPartition) ([]asset.AssetDrivePart
 		if err != nil {
 			return nil, err
 		}
-		for _, v := range dstLD {
-			part := asset.AssetDrivePartition{
-				Name:        v.Name,
-				Label:       v.VolumeName,
-				Description: v.Description,
-				FileSystem:  v.FileSystem,
-				SizeBytes:   int64(v.Size),
-			}
-			partitions = append(partitions, part)
-		}
+		parts := mapToPartitionDataModel(dstLD)
+		partitions = append(partitions, parts...)
 	}
 	return partitions, nil
+}
+
+func mapToPartitionDataModel(ld []win32LogicalDisk) []asset.AssetDrivePartition {
+	var parts []asset.AssetDrivePartition
+	for _, v := range ld {
+		part := asset.AssetDrivePartition{
+			Name:        v.Name,
+			Label:       v.VolumeName,
+			Description: v.Description,
+			FileSystem:  v.FileSystem,
+			SizeBytes:   int64(v.Size),
+		}
+		parts = append(parts, part)
+	}
+	return parts
+}
+
+func mapToDriveModel(disk *win32DiskDrive, lDisks []asset.AssetDrivePartition) *asset.AssetDrive {
+	var srNum string
+	if disk.SerialNumber != nil {
+		srNum = strings.TrimSpace(*disk.SerialNumber)
+	}
+	return &asset.AssetDrive{
+		Product:            disk.Caption,
+		Manufacturer:       disk.Manufacturer,
+		MediaType:          disk.MediaType,
+		LogicalName:        strings.Replace(disk.Name, `\\.\`, ``, -1),
+		NumberOfPartitions: int(disk.Partitions),
+		SerialNumber:       srNum,
+		SizeBytes:          int64(disk.Size),
+		PartitionData:      lDisks,
+	}
 }
