@@ -3,3 +3,4 @@ vendor
 *.out
 .vscode
 *.xml
+*.log

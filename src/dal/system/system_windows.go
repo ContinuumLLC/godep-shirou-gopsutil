@@ -10,7 +10,7 @@ import (
 	"github.com/ContinuumLLC/platform-common-lib/src/plugin/wmi"
 )
 
-// WMI struct is to represent that System information is to be collected using WMI calls
+// WMI by name itself is the WMI implementation to collect System information
 type WMI struct {
 	dep wmi.Wrapper
 }
