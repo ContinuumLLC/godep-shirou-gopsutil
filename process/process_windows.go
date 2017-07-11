@@ -223,7 +223,7 @@ func (p *Process) Status() (string, error) {
 	return "", common.ErrNotImplementedError
 }
 
-func (p *Process) EnablePrivilege(string strPrivilegeName) error {
+func (p *Process) EnableCurrentProcessPrivilege(string strPrivilegeName) error {
 	hCurrHandle, err := win.GetCurrentProcess()
 
 	var tCurr win.Token
