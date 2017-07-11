@@ -6,7 +6,7 @@ imports:
   subpackages:
   - clients/model/Golang/resourceModel/asset
 - name: github.com/ContinuumLLC/platform-common-lib
-  version: 7b5a9d6f4ec5a4691ab159cf5a99446b9d5ce012
+  version: 6f36febb84d7ebfccf353d985b9847fd58ae9172
   subpackages:
   - src/clar
   - src/clar/mock
@@ -21,6 +21,7 @@ imports:
   - src/pluginUtils
   - src/procParser
   - src/procParser/mock
+  - src/plugin/wmi
 - name: github.com/golang/mock
   version: bd3c8e81be01eef76d4b503f5e687d2d1354d2d9
   subpackages:

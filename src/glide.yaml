@@ -12,6 +12,7 @@ import:
   - src/logging
   - src/plugin/protocol
   - src/plugin/protocol/http
+  - src/plugin/wmi
   - src/pluginUtils
   - src/procParser
 - package: github.com/golang/mock
