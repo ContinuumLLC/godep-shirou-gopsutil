@@ -223,8 +223,8 @@ func (p *Process) Status() (string, error) {
 	return "", common.ErrNotImplementedError
 }
 
-func (p *Process) EnableCurrentProcessPrivilege(string strPrivilegeName) error {
-	hCurrHandle, err := win.GetCurrentProcess()
+func (p *Process) EnableCurrentProcessPrivilege(strPrivilegeName string) error {
+	hCurrHandle, err := windows.GetCurrentProcess()
 
 	var tCurr win.Token
 	err = windows.OpenProcessToken(hCurrHandle, windows.TOKEN_ADJUST_PRIVILEGES, &tCurr)
@@ -235,7 +235,7 @@ func (p *Process) EnableCurrentProcessPrivilege(string strPrivilegeName) error {
 	var tokPrev TOKEN_PRIVILEGES
 	tokPrev.PrivilegeCount = 1
 
-	uiSeDebugName, err := win.UTF16FromString(strPrivilegeName)
+	uiSeDebugName, err := windows.UTF16FromString(strPrivilegeName)
 
 	_ = lookupPrivilegeValue(nil, &uiSeDebugName[0], &tokPrev.Privileges[0].Luid)
 
@@ -244,7 +244,7 @@ func (p *Process) EnableCurrentProcessPrivilege(string strPrivilegeName) error {
 
 	cb := unsafe.Sizeof(tokPrev)
 
-	_, err := adjustTokenPrivileges(tCurr, false, &tokPrev, uint32(cb), nil, nil)
+	_, err = adjustTokenPrivileges(tCurr, false, &tokPrev, uint32(cb), nil, nil)
 
 	return err
 }
