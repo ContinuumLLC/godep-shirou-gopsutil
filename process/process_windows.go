@@ -226,7 +226,7 @@ func (p *Process) Status() (string, error) {
 func (p *Process) EnableCurrentProcessPrivilege(strPrivilegeName string) error {
 	hCurrHandle, err := windows.GetCurrentProcess()
 
-	var tCurr win.Token
+	var tCurr windows.Token
 	err = windows.OpenProcessToken(hCurrHandle, windows.TOKEN_ADJUST_PRIVILEGES, &tCurr)
 	if nil != err {
 		return err
@@ -570,7 +570,7 @@ func lookupPrivilegeValue(systemname *uint16, name *uint16, luid *LUID) (err err
 	return
 }
 
-func adjustTokenPrivileges(token win.Token, disableAllPrivileges bool, newstate *TOKEN_PRIVILEGES, buflen uint32, prevstate *TOKEN_PRIVILEGES, returnlen *uint32) (ret uint32, err error) {
+func adjustTokenPrivileges(token windows.Token, disableAllPrivileges bool, newstate *TOKEN_PRIVILEGES, buflen uint32, prevstate *TOKEN_PRIVILEGES, returnlen *uint32) (ret uint32, err error) {
 	var _p0 uint32
 	if disableAllPrivileges {
 		_p0 = 1
