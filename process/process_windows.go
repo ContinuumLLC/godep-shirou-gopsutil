@@ -223,31 +223,6 @@ func (p *Process) Status() (string, error) {
 	return "", common.ErrNotImplementedError
 }
 
-func (p *Process) EnableCurrentProcessPrivilege(strPrivilegeName string) error {
-	hCurrHandle, err := windows.GetCurrentProcess()
-
-	var tCurr windows.Token
-	err = windows.OpenProcessToken(hCurrHandle, windows.TOKEN_ADJUST_PRIVILEGES, &tCurr)
-	if nil != err {
-		return err
-	}
-
-	var tokPrev TOKEN_PRIVILEGES
-	tokPrev.PrivilegeCount = 1
-
-	uiSeDebugName, err := windows.UTF16FromString(strPrivilegeName)
-
-	_ = lookupPrivilegeValue(nil, &uiSeDebugName[0], &tokPrev.Privileges[0].Luid)
-
-	tokPrev.PrivilegeCount = 1
-	tokPrev.Privileges[0].Attributes = sePrivilegeEnabled
-
-	cb := unsafe.Sizeof(tokPrev)
-
-	_, err = adjustTokenPrivileges(tCurr, false, &tokPrev, uint32(cb), nil, nil)
-
-	return err
-}
 func (p *Process) Username() (string, error) {
 	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, uint32(p.Pid))
 	if nil != err {
@@ -544,6 +519,32 @@ func getProcessMemoryInfo(h windows.Handle, mem *PROCESS_MEMORY_COUNTERS) (err e
 		}
 	}
 	return
+}
+
+func EnableCurrentProcessPrivilege(strPrivilegeName string) error {
+	hCurrHandle, err := windows.GetCurrentProcess()
+
+	var tCurr windows.Token
+	err = windows.OpenProcessToken(hCurrHandle, windows.TOKEN_ADJUST_PRIVILEGES, &tCurr)
+	if nil != err {
+		return err
+	}
+
+	var tokPrev TOKEN_PRIVILEGES
+	tokPrev.PrivilegeCount = 1
+
+	uiSeDebugName, err := windows.UTF16FromString(strPrivilegeName)
+
+	_ = lookupPrivilegeValue(nil, &uiSeDebugName[0], &tokPrev.Privileges[0].Luid)
+
+	tokPrev.PrivilegeCount = 1
+	tokPrev.Privileges[0].Attributes = sePrivilegeEnabled
+
+	cb := unsafe.Sizeof(tokPrev)
+
+	_, err = adjustTokenPrivileges(tCurr, false, &tokPrev, uint32(cb), nil, nil)
+
+	return err
 }
 
 func errnoErr(e syscall.Errno) error {
