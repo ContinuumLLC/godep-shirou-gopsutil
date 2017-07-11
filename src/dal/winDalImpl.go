@@ -46,9 +46,9 @@ func (a assetDalImpl) GetBaseBoardInfo() (*asset.AssetBaseBoard, error) {
 
 }
 
-//GetDrivesInfo ...
+// GetDrivesInfo returns Drives Info
 func (a assetDalImpl) GetDrivesInfo() ([]asset.AssetDrive, error) {
-	return disk.ByWMI{}.Info()
+	return disk.GetByWMI().Info()
 }
 
 // GetOSInfo returns the OS info
