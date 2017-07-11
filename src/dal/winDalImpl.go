@@ -73,7 +73,7 @@ func (a assetDalImpl) GetOSInfo() (*asset.AssetOs, error) {
 
 // GetSystemInfo returns system info
 func (a assetDalImpl) GetSystemInfo() (*asset.AssetSystem, error) {
-	return system.WMI{}.Info()
+	return system.GetByWMI().Info()
 }
 
 // GetNetworkInfo returns network info
