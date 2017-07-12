@@ -224,7 +224,7 @@ func (p *Process) Status() (string, error) {
 }
 
 func (p *Process) Username() (string, error) {
-	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, uint32(p.Pid))
+	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, uint32(p.Pid))
 	if nil != err {
 		return "", err
 	}
