@@ -531,11 +531,13 @@ func EnableCurrentProcessPrivilege(strPrivilegeName string) error {
 	}
 
 	var tokPrev TOKEN_PRIVILEGES
-	tokPrev.PrivilegeCount = 1
 
-	uiSeDebugName, err := windows.UTF16FromString(strPrivilegeName)
+	uiSeDebugName, err := windows.UTF16PtrFromString(strPrivilegeName)
 
-	_ = lookupPrivilegeValue(nil, &uiSeDebugName[0], &tokPrev.Privileges[0].Luid)
+	err = lookupPrivilegeValue(nil, uiSeDebugName, &tokPrev.Privileges[0].Luid)
+	if nil != err {
+		return err
+	}
 
 	tokPrev.PrivilegeCount = 1
 	tokPrev.Privileges[0].Attributes = sePrivilegeEnabled
