@@ -34,10 +34,11 @@ type TOKEN_PRIVILEGES struct {
 }
 
 const (
-	NoMoreFiles                  = 0x12
-	MaxPathLength                = 260
-	errnoERROR_IO_PENDING        = 997
-	sePrivilegeEnabled    uint32 = 0x00000002
+	NoMoreFiles                              = 0x12
+	MaxPathLength                            = 260
+	errnoERROR_IO_PENDING                    = 997
+	PROCESS_QUERY_LIMITED_INFORMATION        = 0x00001000
+	sePrivilegeEnabled                uint32 = 0x00000002
 )
 
 var (
@@ -224,7 +225,7 @@ func (p *Process) Status() (string, error) {
 }
 
 func (p *Process) Username() (string, error) {
-	hProcess, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, uint32(p.Pid))
+	hProcess, err := windows.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, uint32(p.Pid))
 	if nil != err {
 		return "", err
 	}
