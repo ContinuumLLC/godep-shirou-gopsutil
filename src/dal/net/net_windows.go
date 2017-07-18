@@ -3,7 +3,6 @@
 package net
 
 import (
-	"net"
 	"strings"
 	"time"
 
@@ -76,13 +75,9 @@ func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_Netwo
 		}
 		var subnets []string
 		getArrayValue(v.IPSubnet, &subnets)
-		//To be removed, subnet for ipv6 is returned as 64 which when marshalling to inet cassandra type fails
-		//need better handling for such scenario, temporarily setting such subnets to 0.0.0.0
+
 		for i, v := range subnets {
-			ip := net.ParseIP(v)
-			if ip == nil {
-				subnets[i] = "0.0.0.0"
-			}
+			subnets[i] = v
 		}
 		if len(subnets) > 0 {
 			subnet = subnets[0]
