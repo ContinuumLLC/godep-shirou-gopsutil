@@ -50,4 +50,6 @@ imports:
   subpackages:
   - windows
   - unix
+- name: github.com/josephspurrier/goversioninfo
+  version: 53f6213da3d79c41d3ebc5fbc06d97be82e49dba
 testImports: []

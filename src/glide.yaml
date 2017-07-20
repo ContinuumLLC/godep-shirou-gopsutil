@@ -21,3 +21,4 @@ import:
 - package: github.com/shirou/gopsutil
   subpackages:
   - host
+- package: github.com/josephspurrier/goversioninfo
