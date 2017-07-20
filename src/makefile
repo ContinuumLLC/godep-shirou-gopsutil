@@ -6,11 +6,6 @@ else
 	TARGET = $(TARGETNAME)
 endif
 
-BUILDNUMBER = $(BUILD_NUMBER)
-ifndef $(BUILDNUMBER)
-	BUILDNUMBER=12
-endif
-
 TARGETPATH=$(GOPATH)/bin/$(TARGET)
 
 PLUGINPATH=$(GOPATH)/src/github.com/ContinuumLLC/$(TARGETNAME)/services
@@ -60,8 +55,6 @@ localbuild:
 	go build -o $(TARGETPATH) ./asset-plugin
 
 set-buildnumber-win:
-	sed -i '/Patch/ s/"BUILDNUMBER"/$(BUILDNUMBER)/gi' ./asset-plugin/versioninfo.json
-	sed -i ' s/BUILDNUMBER/$(BUILDNUMBER)/gi' ./asset-plugin/versioninfo.json
 	GOOS=windows go generate ./asset-plugin
 
 pack-service: pack-service-linux pack-service-windows pack-service-darwin
