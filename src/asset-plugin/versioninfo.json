@@ -18,7 +18,7 @@
 	"StringFileInfo":
 	{
 		"FileDescription": "Platform Asset Plugin",
-		"LegalCopyright": "© 2017 Continuum Managed Services",
+		"LegalCopyright": "",
         "OriginalFilename": "platform-asset-plugin.exe",
         "ProductVersion": "1.0.#",
 		"ProductName": "ITSPlatform"
