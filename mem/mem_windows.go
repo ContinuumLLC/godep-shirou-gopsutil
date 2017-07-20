@@ -34,6 +34,7 @@ type Win32_PerfFormattedData_PerfOS_Memory struct {
 	FreeSystemPageTableEntries uint32
 	PagesPerSec                uint32
 	PoolNonpagedBytes          uint64
+	PagesOutputPerSec          uint32
 }
 
 // Win32_OperatingSystem struct to provide virtual memory values
