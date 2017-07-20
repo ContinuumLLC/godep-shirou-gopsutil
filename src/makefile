@@ -59,7 +59,7 @@ set-buildnumber-win:
 
 pack-service: pack-service-linux pack-service-windows pack-service-darwin
 
-platform-asset-plugin: set-buildnumber-win platform-asset-plugin-win64 platform-asset-plugin-win32 platform-asset-plugin-linux #platform-asset-plugin-mac
+platform-asset-plugin: platform-asset-plugin-linux set-buildnumber-win platform-asset-plugin-win64 platform-asset-plugin-win32 #platform-asset-plugin-mac
 
 platform-asset-plugin-linux:
 	GOOS=linux GOARCH=amd64 go build -o $(GOPATH)/bin/linux_amd64/$(TARGETNAME) ./asset-plugin
