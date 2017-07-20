@@ -4,13 +4,13 @@
 		"FileVersion": {
 			"Major": 1,
 			"Minor": 0,
-			"Patch": "BUILDNUMBER",
+			"Patch": 0,
 			"Build": 0
 		},
 		"ProductVersion": {
 			"Major": 1,
 			"Minor": 0,
-			"Patch":"BUILDNUMBER",
+			"Patch": 0,
 			"Build": 0
 		},
 		"FileType": "01"
@@ -20,7 +20,7 @@
 		"FileDescription": "Platform Asset Plugin",
 		"LegalCopyright": "© 2017 Continuum Managed Services",
         "OriginalFilename": "platform-asset-plugin.exe",
-        "ProductVersion": "1.0.BUILDNUMBER",
+        "ProductVersion": "1.0.#",
 		"ProductName": "ITSPlatform"
 	},
 	"VarFileInfo":
