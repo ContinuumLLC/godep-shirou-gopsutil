@@ -45,7 +45,7 @@ all: dependencies platform-asset-plugin test cover pack-service
 
 linux: dependencies platform-asset-plugin-linux test cover pack-service-linux
 
-windows: dependencies platform-asset-plugin-win64 platform-asset-plugin-win32 test cover pack-service-windows
+windows: dependencies set-buildnumber-win platform-asset-plugin-win64 platform-asset-plugin-win32 test cover pack-service-windows
 
 mac: dependencies platform-asset-plugin-mac test cover pack-service-darwin
 
@@ -54,15 +54,18 @@ local: dependencies localbuild test code-quality
 localbuild: 
 	go build -o $(TARGETPATH) ./asset-plugin
 
+set-buildnumber-win:
+	GOOS=windows go generate ./asset-plugin
+
 pack-service: pack-service-linux pack-service-windows pack-service-darwin
 
-platform-asset-plugin: platform-asset-plugin-win64 platform-asset-plugin-win32 platform-asset-plugin-linux #platform-asset-plugin-mac
+platform-asset-plugin: platform-asset-plugin-linux set-buildnumber-win platform-asset-plugin-win64 platform-asset-plugin-win32 #platform-asset-plugin-mac
 
 platform-asset-plugin-linux:
 	GOOS=linux GOARCH=amd64 go build -o $(GOPATH)/bin/linux_amd64/$(TARGETNAME) ./asset-plugin
 
 platform-asset-plugin-win64:
-	GOOS=windows GOARCH=amd64 go build -o $(GOPATH)/bin/windows_amd64/$(TARGETNAME).exe ./asset-plugin
+	GOOS=windows GOARCH=amd64 go build -o $(GOPATH)/bin/windows_amd64/$(TARGETNAME).exe ./asset-plugin 
 
 platform-asset-plugin-win32:
 	GOOS=windows GOARCH=386 go build -o $(GOPATH)/bin/windows_386/$(TARGETNAME).exe ./asset-plugin	

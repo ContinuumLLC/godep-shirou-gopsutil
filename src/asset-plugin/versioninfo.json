@@ -1,0 +1,32 @@
+{
+	"FixedFileInfo":
+	{
+		"FileVersion": {
+			"Major": 1,
+			"Minor": 0,
+			"Patch": 0,
+			"Build": 0
+		},
+		"ProductVersion": {
+			"Major": 1,
+			"Minor": 0,
+			"Patch": 0,
+			"Build": 0
+		},
+		"FileType": "01"
+	},
+	"StringFileInfo":
+	{
+		"FileDescription": "Platform Asset Plugin",
+		"LegalCopyright": "",
+        "OriginalFilename": "platform-asset-plugin.exe",
+        "ProductVersion": "1.0.#",
+		"ProductName": "ITSPlatform"
+	},
+	"VarFileInfo":
+	{
+		"Translation": {
+			"LangID": "0409"
+		}
+	}
+}
