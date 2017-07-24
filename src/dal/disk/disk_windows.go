@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	diskQ          = "SELECT Name, Caption, Manufacturer, MediaType, SerialNumber, Index, Partitions, Size, DeviceID FROM Win32_DiskDrive"
+	diskQ          = "SELECT Name, Caption, Manufacturer, MediaType,InterfaceType, SerialNumber, Index, Partitions, Size, DeviceID FROM Win32_DiskDrive"
 	diskPartitionQ = "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='%s'} WHERE AssocClass = Win32_DiskDriveToDiskPartition"
 	logicalDiskQ   = "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='%s'} WHERE AssocClass = Win32_LogicalDiskToPartition"
 )
@@ -30,15 +30,16 @@ func GetByWMI() WMI {
 
 // Win32_DiskDrive WMI class representation
 type win32DiskDrive struct {
-	Name         string
-	Caption      string
-	DeviceID     string
-	Manufacturer string
-	MediaType    string
-	SerialNumber *string
-	Index        uint32
-	Partitions   uint32
-	Size         uint64
+	Name          string
+	Caption       string
+	DeviceID      string
+	Manufacturer  string
+	MediaType     string
+	InterfaceType string
+	SerialNumber  *string
+	Index         uint32
+	Partitions    uint32
+	Size          uint64
 }
 
 // Win32_DiskPartition WMI class representation
@@ -137,6 +138,7 @@ func mapToDriveModel(disk *win32DiskDrive, lDisks []asset.AssetDrivePartition) *
 		Product:            disk.Caption,
 		Manufacturer:       disk.Manufacturer,
 		MediaType:          disk.MediaType,
+		InterfaceType:      disk.InterfaceType,
 		LogicalName:        strings.Replace(disk.Name, `\\.\`, ``, -1),
 		NumberOfPartitions: int(disk.Partitions),
 		SerialNumber:       srNum,
