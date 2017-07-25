@@ -51,7 +51,8 @@ mac: dependencies platform-asset-plugin-mac test cover pack-service-darwin
 
 local: dependencies localbuild test code-quality
 	
-localbuild: 
+localbuild:
+	cp asset_agent_plugin_cfg.json $(GOPATH)/bin/asset_agent_plugin_cfg.json  
 	go build -o $(TARGETPATH) ./asset-plugin
 
 set-buildnumber-win:
