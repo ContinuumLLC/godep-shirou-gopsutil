@@ -33,12 +33,9 @@ var (
 
 // Memory Proc related constants
 const (
-	cMemProcPath                   string = "/proc/meminfo"
-	cMemProcPhysicalTotalBytes     string = "MemTotal"
-	cMemProcPhysicalAvailableBytes string = "MemFree"
-	cMemProcPageAvailableBytes     string = "SwapFree"
-	cMemProcPageTotalBytes         string = "SwapTotal"
-	cPartitionProcPath             string = "/proc/partitions"
+	cMemProcPath               string = "/proc/meminfo"
+	cMemProcPhysicalTotalBytes string = "MemTotal"
+	cPartitionProcPath         string = "/proc/partitions"
 )
 
 //List denotes list of hardware assets returned by lshw command
