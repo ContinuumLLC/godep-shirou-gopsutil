@@ -527,7 +527,8 @@ func mapToArr(m map[string]asset.AssetNetwork) []asset.AssetNetwork {
 }
 
 // GetMemoryInfo returns memory info
-func (a assetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
+// TODO : Implementation for new change in Memory API model
+func (a assetDalImpl) GetMemoryInfo() ([]asset.PhysicalMemory, error) {
 	parser := a.Factory.GetParser()
 	cfg := procParser.Config{
 		ParserMode:    procParser.ModeKeyValue,
@@ -542,17 +543,11 @@ func (a assetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
 	}
 
 	memTotal := util.getDataFromMap(cMemProcPhysicalTotalBytes, data)
-	memAvail := util.getDataFromMap(cMemProcPhysicalAvailableBytes, data)
-	swapTotal := util.getDataFromMap(cMemProcPageTotalBytes, data)
-	swapAvail := util.getDataFromMap(cMemProcPageAvailableBytes, data)
 
-	return &asset.AssetMemory{
-		TotalPhysicalMemoryBytes:     memTotal,
-		AvailablePhysicalMemoryBytes: memAvail,
-		TotalPageFileSpaceBytes:      swapTotal,
-		AvailablePageFileSpaceBytes:  swapAvail,
-		TotalVirtualMemoryBytes:      (memTotal + swapTotal),
-		AvailableVirtualMemoryBytes:  (memAvail + swapAvail),
+	return []asset.PhysicalMemory{
+		asset.PhysicalMemory{
+			SizeBytes: uint64(memTotal),
+		},
 	}, nil
 }
 

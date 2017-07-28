@@ -26,7 +26,6 @@ func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		baseboard asset.AssetBaseBoard
 		bios      asset.AssetBios
 		os        asset.AssetOs
-		mem       asset.AssetMemory
 		sys       asset.AssetSystem
 	)
 	b, err := a.GetBiosInfo()
@@ -57,11 +56,9 @@ func (a assetDalImpl) GetAssetData() (*asset.AssetCollection, error) {
 		sys = *s
 	}
 
-	m, err := a.GetMemoryInfo()
+	mem, err := a.GetMemoryInfo()
 	if err != nil {
 		a.Logger.Logf(logging.ERROR, "GetMemoryInfo() %v", err)
-	} else {
-		mem = *m
 	}
 
 	storages, err := a.GetDrivesInfo()

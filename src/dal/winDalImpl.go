@@ -14,6 +14,7 @@ import (
 	"github.com/ContinuumLLC/platform-api-model/clients/model/Golang/resourceModel/asset"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/bios"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/disk"
+	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/mem"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/net"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/processor"
 	"github.com/ContinuumLLC/platform-asset-plugin/src/dal/system"
@@ -113,8 +114,8 @@ func (a assetDalImpl) GetNetworkInfo() ([]asset.AssetNetwork, error) {
 }
 
 // GetMemoryInfo returns memory info
-func (a assetDalImpl) GetMemoryInfo() (*asset.AssetMemory, error) {
-	return &asset.AssetMemory{}, nil
+func (a assetDalImpl) GetMemoryInfo() ([]asset.PhysicalMemory, error) {
+	return mem.GetByWMI().Info()
 }
 
 // GetProcessorInfo returns processor info

@@ -2,7 +2,7 @@ hash: 5aaf865024c21de0c0651cebe7a38e767bb128e68af7e83826d6edb817c8f297
 updated: 2017-03-01T12:38:39.877426348+05:30
 imports:
 - name: github.com/ContinuumLLC/platform-api-model
-  version: 61df755583dd864a480138d46d411f61fc12bba1
+  version: cc6c3916521008465d3f58e67a5cb4f39d60c75c
   subpackages:
   - clients/model/Golang/resourceModel/asset
 - name: github.com/ContinuumLLC/platform-common-lib
@@ -50,6 +50,4 @@ imports:
   subpackages:
   - windows
   - unix
-- name: github.com/josephspurrier/goversioninfo
-  version: 53f6213da3d79c41d3ebc5fbc06d97be82e49dba
 testImports: []

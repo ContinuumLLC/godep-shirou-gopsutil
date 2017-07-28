@@ -70,6 +70,7 @@ platform-asset-plugin-win64:
 
 platform-asset-plugin-win32:
 	GOOS=windows GOARCH=386 go build -o $(GOPATH)/bin/windows_386/$(TARGETNAME).exe ./asset-plugin	
+	rm -f ./asset-plugin/resource.syso
 
 platform-asset-plugin-mac:
 	GOOS=darwin GOARCH=amd64 go build -o $(GOPATH)/bin/darwin_amd64/$(TARGETNAME) ./asset-plugin
