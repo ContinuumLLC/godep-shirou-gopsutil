@@ -19,8 +19,8 @@ func TestGetAssetNetwork(t *testing.T) {
 	dhcp := "10.20.30.40"
 	mac := "0A:00:27:00:00:15"
 
-	a := []win32_NetworkAdapterConfiguration{
-		win32_NetworkAdapterConfiguration{
+	a := []win32NetworkAdapterConfiguration{
+		win32NetworkAdapterConfiguration{
 			Description:          "Wireless Adapter",
 			Index:                0,
 			DHCPLeaseExpires:     &t1,
@@ -34,7 +34,7 @@ func TestGetAssetNetwork(t *testing.T) {
 			MACAddress:           &mac,
 			IPAddress:            &ipadd,
 		},
-		win32_NetworkAdapterConfiguration{
+		win32NetworkAdapterConfiguration{
 			Description:          "Ethernet Adapter",
 			Index:                1,
 			DHCPLeaseExpires:     nil,
@@ -49,12 +49,12 @@ func TestGetAssetNetwork(t *testing.T) {
 			IPAddress:            nil,
 		},
 	}
-	b := []win32_NetworkAdapter{
-		win32_NetworkAdapter{
+	b := []win32NetworkAdapter{
+		win32NetworkAdapter{
 			Manufacturer: "Intel Corp",
 			Index:        0,
 		},
-		win32_NetworkAdapter{
+		win32NetworkAdapter{
 			Manufacturer: "Microsoft Corp",
 			Index:        1,
 		},
@@ -73,13 +73,11 @@ func TestGetAssetNetwork(t *testing.T) {
 		if v.IPEnabled != a[i].IPEnabled {
 			t.Errorf("Wrong IPEnabled %v, expected IPEnabled %v ", v.IPEnabled, a[i].IPEnabled)
 		}
-		var testIP string
 		if a[i].IPAddress != nil && len(*a[i].IPAddress) > 0 {
-			testIP = (*a[i].IPAddress)[0]
-		}
-
-		if v.IPv4 != testIP {
-			t.Errorf("Wrong IPv4 %v, expected IPv4 %v ", v.IPv4, testIP)
+			testIP := (*a[i].IPAddress)[0]
+			if v.IPv4 != testIP {
+				t.Errorf("Wrong IPv4 %v, expected IPv4 %v ", v.IPv4, testIP)
+			}
 		}
 	}
 }

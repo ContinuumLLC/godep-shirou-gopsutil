@@ -35,13 +35,15 @@ func (w WMI) Info() ([]asset.PhysicalMemory, error) {
 	return mapToMemModel(dst), nil
 }
 
-func mapToMemModel(dst []win32PhysicalMemory) []asset.PhysicalMemory {
-	l := len(dst)
-	data := make([]asset.PhysicalMemory, l)
-	for i := 0; i < l; i++ {
-		data[i].Manufacturer = dst[i].Manufacturer
-		data[i].SerialNumber = dst[i].SerialNumber
-		data[i].SizeBytes = dst[i].Capacity
+func mapToMemModel(dst []win32PhysicalMemory) (ret []asset.PhysicalMemory) {
+	if dst != nil {
+		l := len(dst)
+		ret = make([]asset.PhysicalMemory, l)
+		for i := 0; i < l; i++ {
+			ret[i].Manufacturer = dst[i].Manufacturer
+			ret[i].SerialNumber = dst[i].SerialNumber
+			ret[i].SizeBytes = dst[i].Capacity
+		}
 	}
-	return data
+	return
 }

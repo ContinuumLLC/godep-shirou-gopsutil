@@ -10,26 +10,31 @@ import (
 	"github.com/StackExchange/wmi"
 )
 
-// win32_NetworkAdapterConfiguration struct represents a network adapter configuratons
-type win32_NetworkAdapterConfiguration struct {
-	Description          string
-	IPAddress            *[]string
-	MACAddress           *string
-	DefaultIPGateway     *[]string
+const (
+	netQuery  = "SELECT Index,DHCPEnabled,DHCPLeaseExpires,DHCPLeaseObtained,DNSServerSearchOrder,IPEnabled,IPAddress,IPSubnet,DefaultIPGateway,DHCPServer,MACAddress,WINSPrimaryServer,WINSSecondaryServer,Description FROM Win32_NetworkAdapterConfiguration"
+	netQuery2 = "SELECT Name,Manufacturer,Index FROM Win32_NetworkAdapter"
+)
+
+// win32NetworkAdapterConfiguration struct represents a network adapter configuratons
+type win32NetworkAdapterConfiguration struct {
+	Index                uint32
 	DHCPEnabled          bool
-	DHCPServer           *string
+	IPEnabled            bool
 	DHCPLeaseExpires     *time.Time
 	DHCPLeaseObtained    *time.Time
 	DNSServerSearchOrder *[]string
-	IPEnabled            bool
+	IPAddress            *[]string
 	IPSubnet             *[]string
+	DefaultIPGateway     *[]string
+	DHCPServer           *string
+	MACAddress           *string
 	WINSPrimaryServer    *string
 	WINSSecondaryServer  *string
-	Index                uint32
+	Description          string
 }
 
-// win32_NetworkAdapter struct represents a network adapter
-type win32_NetworkAdapter struct {
+// win32NetworkAdapter struct represents a network adapter
+type win32NetworkAdapter struct {
 	Name         string
 	Manufacturer string
 	Index        uint32
@@ -37,21 +42,19 @@ type win32_NetworkAdapter struct {
 
 // Info returns network information for Windows using WMI
 func Info() ([]asset.AssetNetwork, error) {
-	var dst []win32_NetworkAdapterConfiguration
-	q := wmi.CreateQuery(&dst, "")
-	err := wmi.Query(q, &dst)
+	var dst []win32NetworkAdapterConfiguration
+	err := wmi.Query(netQuery, &dst)
 	if err != nil {
 		return nil, err
 	}
-	var dst2 []win32_NetworkAdapter
-	q2 := wmi.CreateQuery(&dst2, "")
-	wmi.Query(q2, &dst2)
+	var dst2 []win32NetworkAdapter
+	wmi.Query(netQuery2, &dst2)
 
 	netArray := getAssetNetwork(dst, dst2)
 	return netArray, nil
 }
 
-func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_NetworkAdapter) []asset.AssetNetwork {
+func getAssetNetwork(dst []win32NetworkAdapterConfiguration, dst2 []win32NetworkAdapter) []asset.AssetNetwork {
 	netArray := make([]asset.AssetNetwork, len(dst))
 	for i, v := range dst {
 		var manuf string
@@ -75,10 +78,6 @@ func getAssetNetwork(dst []win32_NetworkAdapterConfiguration, dst2 []win32_Netwo
 		}
 		var subnets []string
 		getArrayValue(v.IPSubnet, &subnets)
-
-		for i, v := range subnets {
-			subnets[i] = v
-		}
 		if len(subnets) > 0 {
 			subnet = subnets[0]
 		}
