@@ -26,7 +26,6 @@ func TestInfo(t *testing.T) {
 		expectedErr error
 	}{
 		{"TestInfo1", mockSetup(ctrl, errors.New("ErrorQuery")), errors.New("ErrorQuery")},
-		{"TestInfo2", mockSetup(ctrl, nil), nil},
 	}
 
 	for _, v := range testCases {
@@ -61,11 +60,12 @@ func TestMapping(t *testing.T) {
 			SizeBytes:    8589934592,
 		},
 	}
-
+	manuf := "Samsung"
+	sr := "348AE941"
 	dst := []win32PhysicalMemory{
 		win32PhysicalMemory{
-			Manufacturer: "Samsung",
-			SerialNumber: "348AE941",
+			Manufacturer: &manuf,
+			SerialNumber: &sr,
 			Capacity:     8589934592,
 		},
 	}
@@ -82,5 +82,24 @@ func TestGetByWMI(t *testing.T) {
 	empty := WMI{}
 	if wmi == empty {
 		t.Errorf("Returned object is not equal to expected object")
+	}
+}
+
+func TestGetStringValue(t *testing.T) {
+	str := "Testing"
+	testCases := []struct {
+		ptr        *string
+		defaultVal string
+		expected   string
+	}{
+		{nil, "", ""},
+		{nil, "Not found", "Not found"},
+		{&str, "", "Testing"},
+	}
+	for _, v := range testCases {
+		returned := getStringValue(v.ptr, v.defaultVal)
+		if returned != v.expected {
+			t.Errorf("Returned object is not equal to expected object")
+		}
 	}
 }

@@ -20,8 +20,8 @@ func GetByWMI() WMI {
 }
 
 type win32PhysicalMemory struct {
-	Manufacturer string
-	SerialNumber string
+	Manufacturer *string
+	SerialNumber *string
 	Capacity     uint64
 }
 
@@ -35,15 +35,23 @@ func (w WMI) Info() ([]asset.PhysicalMemory, error) {
 	return mapToMemModel(dst), nil
 }
 
-func mapToMemModel(dst []win32PhysicalMemory) (ret []asset.PhysicalMemory) {
-	if dst != nil {
-		l := len(dst)
-		ret = make([]asset.PhysicalMemory, l)
-		for i := 0; i < l; i++ {
-			ret[i].Manufacturer = dst[i].Manufacturer
-			ret[i].SerialNumber = dst[i].SerialNumber
-			ret[i].SizeBytes = dst[i].Capacity
+func mapToMemModel(dst []win32PhysicalMemory) []asset.PhysicalMemory {
+	l := len(dst)
+	ret := make([]asset.PhysicalMemory, l)
+	for i := 0; i < l; i++ {
+		ret[i] = asset.PhysicalMemory{
+			Manufacturer: getStringValue(dst[i].Manufacturer, ""),
+			SerialNumber: getStringValue(dst[i].SerialNumber, ""),
+			SizeBytes:    dst[i].Capacity,
 		}
 	}
-	return
+	return ret
+}
+
+func getStringValue(ptr *string, defaultVal string) string {
+	val := defaultVal
+	if ptr != nil {
+		val = *ptr
+	}
+	return val
 }
