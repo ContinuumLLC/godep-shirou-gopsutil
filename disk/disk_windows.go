@@ -87,8 +87,9 @@ type Win32_PerfFormattedData_PerfDisk_LogicalDisk struct {
 
 type Win32_LogicalDisk struct {
 	Name      string
-	Size      uint64
-	FreeSpace uint64
+	Size      *uint64 // null if no disk in CD/DVD drive
+	FreeSpace *uint64 // null if no disk in CD/DVD drive
+	DriveType uint32
 }
 
 type Win32_DiskDrive struct {
@@ -240,8 +241,7 @@ func LogicalPartitionsStats() ([]Win32_PerfFormattedData_PerfDisk_LogicalDisk, e
 
 func LogicalDiskSize() ([]Win32_LogicalDisk, error) {
 	var ret []Win32_LogicalDisk
-	// MediaType (12) is for Fixed hard disk media
-	q := wmi.CreateQuery(&ret, "where MediaType = 12")
+	q := wmi.CreateQuery(&ret, "")
 	err := wmi.Query(q, &ret)
 	return ret, err
 }
