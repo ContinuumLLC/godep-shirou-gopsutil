@@ -97,7 +97,7 @@ type Win32_DiskDrive struct {
 	Model      string
 	Index      uint32
 	Partitions uint32
-	Size       uint64
+	Size       *uint64
 }
 
 const WaitMSec = 500
