@@ -33,6 +33,73 @@ type Win32_PerfFormattedData struct {
 	AvgDisksecPerWrite      uint64
 }
 
+type Win32_PerfFormattedData_PerfDisk_PhysicalDisk struct {
+	AvgDiskBytesPerRead     uint64
+	AvgDiskBytesPerTransfer uint64
+	AvgDiskBytesPerWrite    uint64
+	AvgDiskQueueLength      uint64
+	AvgDiskReadQueueLength  uint64
+	AvgDiskSecPerRead       uint32
+	AvgDiskSecPerTransfer   uint32
+	AvgDiskSecPerWrite      uint32
+	AvgDiskWriteQueueLength uint64
+	CurrentDiskQueueLength  uint32
+	DiskBytesPerSec         uint64
+	DiskReadBytesPerSec     uint64
+	DiskReadsPerSec         uint32
+	DiskTransfersPerSec     uint32
+	DiskWriteBytesPerSec    uint64
+	DiskWritesPerSec        uint32
+	Name                    string
+	PercentDiskReadTime     uint64
+	PercentDiskTime         uint64
+	PercentDiskWriteTime    uint64
+	PercentIdleTime         uint64
+	SplitIOPerSec           uint32
+}
+
+type Win32_PerfFormattedData_PerfDisk_LogicalDisk struct {
+	AvgDiskBytesPerRead     uint64
+	AvgDiskBytesPerTransfer uint64
+	AvgDiskBytesPerWrite    uint64
+	AvgDiskQueueLength      uint64
+	AvgDiskReadQueueLength  uint64
+	AvgDiskSecPerRead       uint32
+	AvgDiskSecPerTransfer   uint32
+	AvgDiskSecPerWrite      uint32
+	AvgDiskWriteQueueLength uint64
+	CurrentDiskQueueLength  uint32
+	DiskBytesPerSec         uint64
+	DiskReadBytesPerSec     uint64
+	DiskReadsPerSec         uint32
+	DiskTransfersPerSec     uint32
+	DiskWriteBytesPerSec    uint64
+	DiskWritesPerSec        uint32
+	Name                    string
+	PercentDiskReadTime     uint64
+	PercentDiskTime         uint64
+	PercentDiskWriteTime    uint64
+	PercentIdleTime         uint64
+	SplitIOPerSec           uint32
+	FreeMegabytes           uint32
+	PercentFreeSpace        uint32
+}
+
+type Win32_LogicalDisk struct {
+	Name      string
+	Size      *uint64 // null if no disk in CD/DVD drive
+	FreeSpace *uint64 // null if no disk in CD/DVD drive
+	DriveType uint32
+}
+
+type Win32_DiskDrive struct {
+	Name       string
+	Model      string
+	Index      uint32
+	Partitions uint32
+	Size       uint64
+}
+
 const WaitMSec = 500
 
 func Usage(path string) (*UsageStat, error) {
@@ -137,10 +204,10 @@ func IOCounters(names ...string) (map[string]IOCountersStat, error) {
 		return ret, err
 	}
 	for _, d := range dst {
+
 		if len(d.Name) > 3 { // not get _Total or Harddrive
 			continue
 		}
-
 		if len(names) > 0 && !common.StringsHas(names, d.Name) {
 			continue
 		}
@@ -156,4 +223,32 @@ func IOCounters(names ...string) (map[string]IOCountersStat, error) {
 		}
 	}
 	return ret, nil
+}
+
+func PhysicalDisksStats() ([]Win32_PerfFormattedData_PerfDisk_PhysicalDisk, error) {
+	var ret []Win32_PerfFormattedData_PerfDisk_PhysicalDisk
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
+}
+
+func LogicalPartitionsStats() ([]Win32_PerfFormattedData_PerfDisk_LogicalDisk, error) {
+	var ret []Win32_PerfFormattedData_PerfDisk_LogicalDisk
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
+}
+
+func LogicalDiskSize() ([]Win32_LogicalDisk, error) {
+	var ret []Win32_LogicalDisk
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
+}
+
+func Info() ([]Win32_DiskDrive, error) {
+	var ret []Win32_DiskDrive
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
 }

@@ -115,26 +115,12 @@ func TestTemperatureStat_String(t *testing.T) {
 	}
 }
 
-func TestVirtualization(t *testing.T) {
-	system, role, err := Virtualization()
+func TestServicePack(t *testing.T) {
+	sp, err := ServicePack()
 	if err != nil {
-		t.Errorf("Virtualization() failed, %v", err)
+		t.Error(err)
 	}
-	if system == "" || role == "" {
-		t.Errorf("Virtualization() retuns empty system or role:  %s, %s", system, role)
+	if sp == "" {
+		t.Error("Service pack is empty")
 	}
-
-	t.Logf("Virtualization(): %s, %s", system, role)
-}
-
-func TestKernelVersion(t *testing.T) {
-	version, err := KernelVersion()
-	if err != nil {
-		t.Errorf("KernelVersion() failed, %v", err)
-	}
-	if version == "" {
-		t.Errorf("KernelVersion() retuns empty: %s", version)
-	}
-
-	t.Logf("KernelVersion(): %s", version)
 }
