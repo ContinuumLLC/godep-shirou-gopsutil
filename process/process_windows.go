@@ -3,6 +3,7 @@
 package process
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"syscall"
@@ -72,46 +73,45 @@ type MemoryMapsStat struct {
 }
 
 type Win32_Process struct {
-	Name                  string
-	ExecutablePath        *string
-	CommandLine           *string
-	Priority              uint32
-	CreationDate          *time.Time
-	ProcessID             uint32
-	ThreadCount           uint32
-	Status                *string
-	ReadOperationCount    uint64
-	ReadTransferCount     uint64
-	WriteOperationCount   uint64
-	WriteTransferCount    uint64
-	CSCreationClassName   string
-	CSName                string
-	Caption               *string
-	CreationClassName     string
-	Description           *string
-	ExecutionState        *uint16
-	HandleCount           uint32
-	KernelModeTime        uint64
-	MaximumWorkingSetSize *uint32
-	MinimumWorkingSetSize *uint32
-	OSCreationClassName   string
-	OSName                string
-	OtherOperationCount   uint64
-	OtherTransferCount    uint64
-	PageFaults            uint32
-	PageFileUsage         uint32
-	ParentProcessID       uint32
-	PeakPageFileUsage     uint32
-	PeakVirtualSize       uint64
-	PeakWorkingSetSize    uint32
-	PrivatePageCount      uint64
-	TerminationDate       *time.Time
-	UserModeTime          uint64
-	WorkingSetSize        uint64
-}
+	Name                string
+	ExecutablePath      *string
+	CommandLine         *string
+	Priority            uint32
+	CreationDate        *time.Time
+	ProcessID           uint32
+	ThreadCount         uint32
+	Status              *string
+	ReadOperationCount  uint64
+	ReadTransferCount   uint64
+	WriteOperationCount uint64
+	WriteTransferCount  uint64
 
-func init() {
-	wmi.DefaultClient.AllowMissingFields = true
+	/*
+		CSCreationClassName   string
+		CSName                string
+		Caption               *string
+		CreationClassName     string
+		Description           *string
+		ExecutionState        *uint16
+		HandleCount           uint32
+		KernelModeTime        uint64
+		MaximumWorkingSetSize *uint32
+		MinimumWorkingSetSize *uint32
+		OSCreationClassName   string
+		OSName                string
+		OtherOperationCount   uint64
+		OtherTransferCount    uint64
+		PageFaults            uint32
+		PageFileUsage         uint32
+		ParentProcessID       uint32
+		PeakPageFileUsage     uint32
+		PeakVirtualSize       uint64
+		PeakWorkingSetSize    uint32
+		PrivatePageCount      uint64
+		TerminationDate       *time.Time
+		UserModeTime          uint64
+		WorkingSetSize        uint64
+	*/
 }
 
 // Win32_PerfFormattedData_PerfProc_Process struct to provide performance process metrics for windows
@@ -143,27 +143,24 @@ func Pids() ([]int32, error) {
 }
 
 func (p *Process) Ppid() (int32, error) {
-	dst, err := GetWin32Proc(p.Pid)
+	ret, _, _, err := p.getFromSnapProcess(p.Pid)
 	if err != nil {
 		return 0, err
 	}
-
-	return int32(dst[0].ParentProcessID), nil
+	return ret, nil
 }
 
 func GetWin32Proc(pid int32) ([]Win32_Process, error) {
 	var dst []Win32_Process
 	query := fmt.Sprintf("WHERE ProcessId = %d", pid)
 	q := wmi.CreateQuery(&dst, query)
-
-	if err := wmi.Query(q, &dst); err != nil {
+	err := wmi.Query(q, &dst)
+	if err != nil {
 		return []Win32_Process{}, fmt.Errorf("could not get win32Proc: %s", err)
 	}
-
-	if len(dst) == 0 {
+	if len(dst) != 1 {
 		return []Win32_Process{}, fmt.Errorf("could not get win32Proc: empty")
 	}
-
 	return dst, nil
 }
 
@@ -182,7 +179,6 @@ func (p *Process) Name() (string, error) {
 	}
 	return dst[0].Name, nil
 }
-
 func (p *Process) Exe() (string, error) {
 	dst, err := GetWin32Proc(p.Pid)
 	if err != nil {
@@ -190,7 +186,6 @@ func (p *Process) Exe() (string, error) {
 	}
 	return *dst[0].ExecutablePath, nil
 }
-
 func (p *Process) Cmdline() (string, error) {
 	dst, err := GetWin32Proc(p.Pid)
 	if err != nil {
@@ -223,12 +218,7 @@ func (p *Process) Cwd() (string, error) {
 	return "", common.ErrNotImplementedError
 }
 func (p *Process) Parent() (*Process, error) {
-	dst, err := GetWin32Proc(p.Pid)
-	if err != nil {
-		return nil, fmt.Errorf("could not get ParentProcessID: %s", err)
-	}
-
-	return NewProcess(int32(dst[0].ParentProcessID))
+	return p, common.ErrNotImplementedError
 }
 func (p *Process) Status() (string, error) {
 	return "", common.ErrNotImplementedError
@@ -279,7 +269,6 @@ func (p *Process) Username() (string, error) {
 	}
 	return windows.UTF16ToString(strname), nil
 }
-
 func (p *Process) Uids() ([]int32, error) {
 	var uids []int32
 
@@ -305,11 +294,6 @@ func (p *Process) IOnice() (int32, error) {
 	return 0, common.ErrNotImplementedError
 }
 func (p *Process) Rlimit() ([]RlimitStat, error) {
-	var rlimit []RlimitStat
-
-	return rlimit, common.ErrNotImplementedError
-}
-func (p *Process) RlimitUsage(_ bool) ([]RlimitStat, error) {
 	var rlimit []RlimitStat
 
 	return rlimit, common.ErrNotImplementedError
@@ -342,32 +326,12 @@ func (p *Process) NumThreads() (int32, error) {
 	}
 	return int32(dst[0].ThreadCount), nil
 }
-func (p *Process) Threads() (map[int32]*cpu.TimesStat, error) {
-	ret := make(map[int32]*cpu.TimesStat)
+func (p *Process) Threads() (map[string]string, error) {
+	ret := make(map[string]string, 0)
 	return ret, common.ErrNotImplementedError
 }
 func (p *Process) Times() (*cpu.TimesStat, error) {
-	sysTimes, err := getProcessCPUTimes(p.Pid)
-	if err != nil {
-		return nil, err
-	}
-
-	// User and kernel times are represented as a FILETIME structure
-	// wich contains a 64-bit value representing the number of
-	// 100-nanosecond intervals since January 1, 1601 (UTC):
-	// http://msdn.microsoft.com/en-us/library/ms724284(VS.85).aspx
-	// To convert it into a float representing the seconds that the
-	// process has executed in user/kernel mode I borrowed the code
-	// below from psutil's _psutil_windows.c, and in turn from Python's
-	// Modules/posixmodule.c
-
-	user := float64(sysTimes.UserTime.HighDateTime)*429.4967296 + float64(sysTimes.UserTime.LowDateTime)*1e-7
-	kernel := float64(sysTimes.KernelTime.HighDateTime)*429.4967296 + float64(sysTimes.KernelTime.LowDateTime)*1e-7
-
-	return &cpu.TimesStat{
-		User:   user,
-		System: kernel,
-	}, nil
+	return nil, common.ErrNotImplementedError
 }
 func (p *Process) CPUAffinity() ([]int32, error) {
 	return nil, common.ErrNotImplementedError
@@ -390,23 +354,7 @@ func (p *Process) MemoryInfoEx() (*MemoryInfoExStat, error) {
 }
 
 func (p *Process) Children() ([]*Process, error) {
-	var dst []Win32_Process
-	query := wmi.CreateQuery(&dst, fmt.Sprintf("Where ParentProcessId = %d", p.Pid))
-	err := wmi.Query(query, &dst)
-	if err != nil {
-		return nil, err
-	}
-
-	out := []*Process{}
-	for _, proc := range dst {
-		p, err := NewProcess(int32(proc.ProcessID))
-		if err != nil {
-			continue
-		}
-		out = append(out, p)
-	}
-
-	return out, nil
+	return nil, common.ErrNotImplementedError
 }
 
 func (p *Process) OpenFiles() ([]OpenFilesStat, error) {
@@ -487,11 +435,12 @@ func (p *Process) getFromSnapProcess(pid int32) (int32, int32, string, error) {
 			return int32(pe32.Th32ParentProcessID), int32(pe32.CntThreads), szexe, nil
 		}
 	}
-	return 0, 0, "", fmt.Errorf("Couldn't find pid: %d", pid)
+	return 0, 0, "", errors.New("Couldn't find pid:" + string(pid))
 }
 
 // Get processes
 func processes() ([]*Process, error) {
+
 	var dst []Win32_Process
 	q := wmi.CreateQuery(&dst, "")
 	err := wmi.Query(q, &dst)
@@ -501,8 +450,7 @@ func processes() ([]*Process, error) {
 	if len(dst) == 0 {
 		return []*Process{}, fmt.Errorf("could not get Process")
 	}
-
-	results := []*Process{}
+	results := make([]*Process, 0, len(dst))
 	for _, proc := range dst {
 		p, err := NewProcess(int32(proc.ProcessID))
 		if err != nil {
@@ -550,8 +498,7 @@ func getRusage(pid int32) (*windows.Rusage, error) {
 
 func getMemoryInfo(pid int32) (PROCESS_MEMORY_COUNTERS, error) {
 	var mem PROCESS_MEMORY_COUNTERS
-	// PROCESS_QUERY_LIMITED_INFORMATION is 0x1000
-	c, err := windows.OpenProcess(0x1000, false, uint32(pid))
+	c, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, uint32(pid))
 	if err != nil {
 		return mem, err
 	}

@@ -209,12 +209,3 @@ func Users() ([]UserStat, error) {
 func SensorsTemperatures() ([]TemperatureStat, error) {
 	return []TemperatureStat{}, common.ErrNotImplementedError
 }
-
-func Virtualization() (string, string, error) {
-	return "", "", common.ErrNotImplementedError
-}
-
-func KernelVersion() (string, error) {
-	_, _, version, err := PlatformInformation()
-	return version, err
-}

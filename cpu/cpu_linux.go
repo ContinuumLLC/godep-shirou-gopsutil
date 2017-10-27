@@ -33,15 +33,18 @@ func Times(percpu bool) ([]TimesStat, error) {
 	filename := common.HostProc("stat")
 	var lines = []string{}
 	if percpu {
-		statlines, err := common.ReadLines(filename)
-		if err != nil || len(statlines) < 2 {
-			return []TimesStat{}, nil
-		}
-		for _, line := range statlines[1:] {
+		var startIdx uint = 1
+		for {
+			linen, _ := common.ReadLinesOffsetN(filename, startIdx, 1)
+			if len(linen) == 0 {
+				break
+			}
+			line := linen[0]
 			if !strings.HasPrefix(line, "cpu") {
 				break
 			}
 			lines = append(lines, line)
+			startIdx++
 		}
 	} else {
 		lines, _ = common.ReadLinesOffsetN(filename, 0, 1)

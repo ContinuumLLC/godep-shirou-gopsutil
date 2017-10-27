@@ -99,8 +99,8 @@ func (p *Process) Exe() (string, error) {
 		return "", err
 	}
 
-	lsof := exec.Command(lsof_bin, "-p", strconv.Itoa(int(p.Pid)), "-Fpfn")
-	awk := exec.Command(awk_bin, "NR==5{print}")
+	lsof := exec.Command(lsof_bin, "-p", strconv.Itoa(int(p.Pid)), "-Fn")
+	awk := exec.Command(awk_bin, "NR==3{print}")
 	sed := exec.Command(sed_bin, "s/n\\//\\//")
 
 	output, _, err := common.Pipeline(lsof, awk, sed)
@@ -248,10 +248,6 @@ func (p *Process) Rlimit() ([]RlimitStat, error) {
 	var rlimit []RlimitStat
 	return rlimit, common.ErrNotImplementedError
 }
-func (p *Process) RlimitUsage(_ bool) ([]RlimitStat, error) {
-	var rlimit []RlimitStat
-	return rlimit, common.ErrNotImplementedError
-}
 func (p *Process) IOCounters() (*IOCountersStat, error) {
 	return nil, common.ErrNotImplementedError
 }
@@ -268,8 +264,8 @@ func (p *Process) NumThreads() (int32, error) {
 	}
 	return int32(len(r)), nil
 }
-func (p *Process) Threads() (map[int32]*cpu.TimesStat, error) {
-	ret := make(map[int32]*cpu.TimesStat)
+func (p *Process) Threads() (map[string]string, error) {
+	ret := make(map[string]string, 0)
 	return ret, common.ErrNotImplementedError
 }
 

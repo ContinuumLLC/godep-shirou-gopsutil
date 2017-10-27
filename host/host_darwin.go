@@ -181,10 +181,8 @@ func PlatformInformation() (string, string, string, error) {
 }
 
 func Virtualization() (string, string, error) {
-	return "", "", common.ErrNotImplementedError
-}
+	system := ""
+	role := ""
 
-func KernelVersion() (string, error) {
-	_, _, version, err := PlatformInformation()
-	return version, err
+	return system, role, nil
 }

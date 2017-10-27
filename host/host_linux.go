@@ -132,7 +132,7 @@ func Uptime() (uint64, error) {
 }
 
 func Users() ([]UserStat, error) {
-	utmpfile := common.HostVar("run/utmp")
+	utmpfile := "/var/run/utmp"
 
 	file, err := os.Open(utmpfile)
 	if err != nil {

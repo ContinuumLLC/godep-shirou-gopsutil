@@ -87,8 +87,6 @@ You can set an alternative location to :code:`/sys` by setting the :code:`HOST_S
 
 You can set an alternative location to :code:`/etc` by setting the :code:`HOST_ETC` environment variable.
 
-You can set an alternative location to :code:`/var` by setting the :code:`HOST_VAR` environment variable.
-
 Documentation
 ------------------------
 
@@ -97,7 +95,7 @@ see http://godoc.org/github.com/shirou/gopsutil
 Requirements
 -----------------
 
-- go1.7 or above is required.
+- go1.5 or above is required.
 
 
 More Info
@@ -202,8 +200,8 @@ name             Linux FreeBSD OpenBSD MacOSX Windows
 pid                 x     x      x       x       x
 ppid                x     x      x       x       x
 name                x     x      x       x       x
-cmdline             x     x              x       x
-create_time         x                    x
+cmdline             x                    x       x
+create_time         x
 status              x     x      x       x
 cwd                 x
 exe                 x     x      x               x
@@ -215,7 +213,7 @@ nice                x     x      x       x       x
 num_fds             x
 num_ctx_switches    x
 num_threads         x     x      x       x       x
-cpu_times           x                            x
+cpu_times           x
 memory_info         x     x      x       x       x
 memory_info_ex      x
 memory_maps         x
@@ -225,16 +223,16 @@ suspend             x     x      x       x
 resume              x     x      x       x
 terminate           x     x      x       x       x
 kill                x     x      x       x
-username            x     x      x       x       x
+username            x
 ionice
-rlimit              x
-num_handlers
-threads             x
+rlimit
+num_handlres
+threads
 cpu_percent         x            x       x
 cpu_affinity
 memory_percent
-parent              x            x       x       x
-children            x     x      x       x       x
+parent              x            x       x
+children            x     x      x       x
 connections         x            x       x
 is_running
 ================ ===== ======= ======= ====== =======

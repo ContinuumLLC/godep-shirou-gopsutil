@@ -322,7 +322,7 @@ func ConnectionsPid(kind string, pid int32) ([]ConnectionStat, error) {
 		}
 	}
 	if err != nil {
-		return nil, fmt.Errorf("cound not get pid(s), %d: %s", pid, err)
+		return nil, fmt.Errorf("cound not get pid(s), %d", pid)
 	}
 	return statsFromInodes(root, pid, tmap, inodes)
 }
@@ -416,12 +416,12 @@ func getProcInodes(root string, pid int32, max int) (map[string][]inodeMap, erro
 	dir := fmt.Sprintf("%s/%d/fd", root, pid)
 	f, err := os.Open(dir)
 	if err != nil {
-		return ret, err
+		return ret, nil
 	}
 	defer f.Close()
 	files, err := f.Readdir(max)
 	if err != nil {
-		return ret, err
+		return ret, nil
 	}
 	for _, fd := range files {
 		inodePath := fmt.Sprintf("%s/%d/fd/%s", root, pid, fd.Name())
@@ -541,10 +541,6 @@ func getProcInodesAll(root string, max int) (map[string][]inodeMap, error) {
 	for _, pid := range pids {
 		t, err := getProcInodes(root, pid, max)
 		if err != nil {
-			// skip if permission error
-			if os.IsPermission(err) {
-				continue
-			}
 			return ret, err
 		}
 		if len(t) == 0 {

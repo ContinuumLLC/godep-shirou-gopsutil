@@ -69,7 +69,6 @@ func Times(percpu bool) ([]TimesStat, error) {
 	system := (kernel - idle)
 
 	ret = append(ret, TimesStat{
-		CPU:    "cpu-total",
 		Idle:   float64(idle),
 		User:   float64(user),
 		System: float64(system),

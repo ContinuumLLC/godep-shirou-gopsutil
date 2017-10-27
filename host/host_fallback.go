@@ -19,11 +19,3 @@ func Uptime() (uint64, error) {
 func Users() ([]UserStat, error) {
 	return []UserStat{}, common.ErrNotImplementedError
 }
-
-func Virtualization() (string, string, error) {
-	return "", "", common.ErrNotImplementedError
-}
-
-func KernelVersion() (string, error) {
-	return "", common.ErrNotImplementedError
-}
