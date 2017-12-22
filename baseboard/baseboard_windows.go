@@ -14,7 +14,7 @@ type Win32_BaseBoard struct {
 	Product      string
 	Manufacturer string
 	SerialNumber string
-	Version      string
+	Version      *string
 	Model        *string
 	InstallDate  *time.Time
 }
@@ -27,20 +27,23 @@ func Info() (*InfoStat, error) {
 	if err != nil {
 		return nil, err
 	}
-	var model string
+	var model, version string
 	var installDate time.Time
 
 	if dst[0].Model != nil {
 		model = *(dst[0].Model)
 	}
-	if dst[0].Model != nil {
+	if dst[0].Version != nil {
+		version = *(dst[0].Version)
+	}
+	if dst[0].InstallDate != nil {
 		installDate = *(dst[0].InstallDate)
 	}
 	return &InfoStat{
 		Product:      dst[0].Product,
 		Manufacturer: dst[0].Manufacturer,
 		SerialNumber: dst[0].SerialNumber,
-		Version:      dst[0].Version,
+		Version:      version,
 		Name:         dst[0].Name,
 		Model:        model,
 		InstallDate:  installDate,
