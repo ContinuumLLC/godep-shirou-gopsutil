@@ -3,6 +3,7 @@
 package host
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -20,6 +21,7 @@ import (
 var (
 	procGetSystemTimeAsFileTime = common.Modkernel32.NewProc("GetSystemTimeAsFileTime")
 	osInfo                      *Win32_OperatingSystem
+	ErrOSInfoNotFound           = errors.New("ErrOSInfoNotFound")
 )
 
 type Win32_OperatingSystem struct {
@@ -119,7 +121,9 @@ func GetOSInfo() (Win32_OperatingSystem, error) {
 	if err != nil {
 		return Win32_OperatingSystem{}, err
 	}
-
+	if len(dst) == 0 {
+		return Win32_OperatingSystem{}, ErrOSInfoNotFound
+	}
 	osInfo = &dst[0]
 
 	return dst[0], nil

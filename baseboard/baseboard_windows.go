@@ -3,9 +3,14 @@
 package baseboard
 
 import (
+	"errors"
 	"time"
 
 	"github.com/StackExchange/wmi"
+)
+
+var (
+	ErrBaseboardInfoNotFound = errors.New("ErrBaseboardInfoNotFound")
 )
 
 // Win32_BaseBoard struct represents a baseboard
@@ -26,6 +31,9 @@ func Info() (*InfoStat, error) {
 	err := wmi.Query(q, &dst)
 	if err != nil {
 		return nil, err
+	}
+	if len(dst) == 0 {
+		return nil, ErrBaseboardInfoNotFound
 	}
 	var model, version string
 	var installDate time.Time
