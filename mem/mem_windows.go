@@ -40,8 +40,8 @@ type Win32_PerfFormattedData_PerfOS_Memory struct {
 // Win32_OperatingSystem struct to provide virtual memory values
 type Win32_OperatingSystem struct {
 	//Virtual memory total and free in KBs
-	TotalVirtualMemorySize uint64
-	FreeVirtualMemory      uint64
+	TotalVirtualMemorySize *uint64
+	FreeVirtualMemory      *uint64
 }
 
 func VirtualMemory() (*VirtualMemoryStat, error) {
@@ -64,13 +64,21 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	// (Start->Program->Accessories->System Tools->System Information).
 	// https://groups.google.com/forum/#!topic/microsoft.public.vc.mfc/i7UzUJOYziE
 	var dst []Win32_OperatingSystem
+	var totalVirtualMemorySize, freeVirtualMemory uint64
 	q := wmi.CreateQuery(&dst, "")
 	err := wmi.Query(q, &dst)
 	if err != nil {
 		return ret, err
 	}
-	ret.TotalVirtual = dst[0].TotalVirtualMemorySize * 1024 // in bytes
-	ret.AvailableVirtual = dst[0].FreeVirtualMemory * 1024  // in bytes
+	if dst[0].TotalVirtualMemorySize != nil {
+		totalVirtualMemorySize = *(dst[0].TotalVirtualMemorySize)
+	}
+	if dst[0].FreeVirtualMemory != nil {
+		freeVirtualMemory = *(dst[0].FreeVirtualMemory)
+	}
+
+	ret.TotalVirtual = totalVirtualMemorySize * 1024 // in bytes
+	ret.AvailableVirtual = freeVirtualMemory * 1024  // in bytes
 	ret.UsedVirtual = ret.TotalVirtual - ret.AvailableVirtual
 	return ret, nil
 }
