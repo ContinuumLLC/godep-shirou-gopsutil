@@ -64,7 +64,7 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	// (Start->Program->Accessories->System Tools->System Information).
 	// https://groups.google.com/forum/#!topic/microsoft.public.vc.mfc/i7UzUJOYziE
 	var dst []Win32_OperatingSystem
-	var totalVirtualMemorySize,freeVirtualMemory := 0
+	var totalVirtualMemorySize, freeVirtualMemory uint64
 	q := wmi.CreateQuery(&dst, "")
 	err := wmi.Query(q, &dst)
 	if err != nil {
