@@ -114,6 +114,23 @@ func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
 	return ret, err
 }
 
+type performanceInformation struct {
+	cb                uint32
+	commitTotal       uint64
+	commitLimit       uint64
+	commitPeak        uint64
+	physicalTotal     uint64
+	physicalAvailable uint64
+	systemCache       uint64
+	kernelTotal       uint64
+	kernelPaged       uint64
+	kernelNonpaged    uint64
+	pageSize          uint64
+	handleCount       uint32
+	processCount      uint32
+	threadCount       uint32
+}
+
 func SwapMemory() (*SwapMemoryStat, error) {
 	var perfInfo performanceInformation
 	perfInfo.cb = uint32(unsafe.Sizeof(perfInfo))
