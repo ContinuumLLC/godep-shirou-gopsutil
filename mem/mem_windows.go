@@ -98,11 +98,13 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	return ret, nil
 }
 
+/*
 func SwapMemory() (*SwapMemoryStat, error) {
 	ret := &SwapMemoryStat{}
 
 	return ret, nil
 }
+*/
 
 // PerfInfo returns the performance data from performance counters of memory object.
 func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
@@ -112,7 +114,7 @@ func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
 	return ret, err
 }
 
-func SwapMemoryWithContext() (*SwapMemoryStat, error) {
+func SwapMemory() (*SwapMemoryStat, error) {
 	var perfInfo performanceInformation
 	perfInfo.cb = uint32(unsafe.Sizeof(perfInfo))
 	if nil == procGetPerformanceInfo {
