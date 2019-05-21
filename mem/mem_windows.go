@@ -12,6 +12,7 @@ import (
 
 var (
 	procGlobalMemoryStatusEx = common.Modkernel32.NewProc("GlobalMemoryStatusEx")
+	procGetPerformanceInfo   = common.ModPsapi.NewProc("GetPerformanceInfo")
 )
 
 type memoryStatusEx struct {
@@ -59,26 +60,40 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	}
 	ret.Used = ret.Total - ret.Available
 
-	// GlobalMemoryStatusEx WinAPI retrieves virtual memory information
-	// but does not match with the one that is displayed by the system information application run on the same system.
-	// (Start->Program->Accessories->System Tools->System Information).
-	// https://groups.google.com/forum/#!topic/microsoft.public.vc.mfc/i7UzUJOYziE
-	var dst []Win32_OperatingSystem
-	var totalVirtualMemorySize, freeVirtualMemory uint64
-	q := wmi.CreateQuery(&dst, "")
-	err := wmi.Query(q, &dst)
-	if err != nil {
-		return ret, err
-	}
-	if dst[0].TotalVirtualMemorySize != nil {
-		totalVirtualMemorySize = *(dst[0].TotalVirtualMemorySize)
-	}
-	if dst[0].FreeVirtualMemory != nil {
-		freeVirtualMemory = *(dst[0].FreeVirtualMemory)
+	swapMem, err := SwapMemory()
+	if nil != err || nil == swapMem {
+		ret.TotalVirtual = swapMem.Total
+		ret.AvailableVirtual = swapMem.Free
 	}
 
-	ret.TotalVirtual = totalVirtualMemorySize * 1024 // in bytes
-	ret.AvailableVirtual = freeVirtualMemory * 1024  // in bytes
+	if 0 == ret.TotalVirtual || 0 == ret.AvailableVirtual {
+		ret.TotalVirtual = memInfo.ullTotalPageFile
+		ret.AvailableVirtual = memInfo.ullAvailPageFile
+	}
+
+	if 0 == ret.TotalVirtual || 0 == ret.AvailableVirtual {
+		// GlobalMemoryStatusEx WinAPI retrieves virtual memory information
+		// but does not match with the one that is displayed by the system information application run on the same system.
+		// (Start->Program->Accessories->System Tools->System Information).
+		// https://groups.google.com/forum/#!topic/microsoft.public.vc.mfc/i7UzUJOYziE
+		var dst []Win32_OperatingSystem
+		var totalVirtualMemorySize, freeVirtualMemory uint64
+		q := wmi.CreateQuery(&dst, "")
+		err := wmi.Query(q, &dst)
+		if err != nil {
+			return ret, err
+		}
+		if dst[0].TotalVirtualMemorySize != nil {
+			totalVirtualMemorySize = *(dst[0].TotalVirtualMemorySize)
+		}
+		if dst[0].FreeVirtualMemory != nil {
+			freeVirtualMemory = *(dst[0].FreeVirtualMemory)
+		}
+
+		ret.TotalVirtual = totalVirtualMemorySize * 1024 // in bytes
+		ret.AvailableVirtual = freeVirtualMemory * 1024  // in bytes
+	}
+
 	ret.UsedVirtual = ret.TotalVirtual - ret.AvailableVirtual
 	return ret, nil
 }
@@ -95,4 +110,33 @@ func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
 	q := wmi.CreateQuery(&ret, "")
 	err := wmi.Query(q, &ret)
 	return ret, err
+}
+
+func SwapMemoryWithContext() (*SwapMemoryStat, error) {
+	var perfInfo performanceInformation
+	perfInfo.cb = uint32(unsafe.Sizeof(perfInfo))
+	if nil == procGetPerformanceInfo {
+		return nil, nil
+	}
+	mem, _, _ := procGetPerformanceInfo.Call(uintptr(unsafe.Pointer(&perfInfo)), uintptr(perfInfo.cb))
+	if mem == 0 {
+		return nil, windows.GetLastError()
+	}
+	tot := perfInfo.commitLimit * perfInfo.pageSize
+	used := perfInfo.commitTotal * perfInfo.pageSize
+	free := tot - used
+	var usedPercent float64
+	if tot == 0 {
+		usedPercent = 0
+	} else {
+		usedPercent = float64(used) / float64(tot)
+	}
+	ret := &SwapMemoryStat{
+		Total:       tot,
+		Used:        used,
+		Free:        free,
+		UsedPercent: usedPercent,
+	}
+
+	return ret, nil
 }

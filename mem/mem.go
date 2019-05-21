@@ -74,6 +74,18 @@ type SwapMemoryStat struct {
 	Sout        uint64  `json:"sout"`
 }
 
+type SwapMemoryStat struct {
+	Total       uint64  `json:"total"`
+	Used        uint64  `json:"used"`
+	Free        uint64  `json:"free"`
+	UsedPercent float64 `json:"usedPercent"`
+	Sin         uint64  `json:"sin"`
+	Sout        uint64  `json:"sout"`
+	PgIn        uint64  `json:"pgin"`
+	PgOut       uint64  `json:"pgout"`
+	PgFault     uint64  `json:"pgfault"`
+}
+
 func (m VirtualMemoryStat) String() string {
 	s, _ := json.Marshal(m)
 	return string(s)
