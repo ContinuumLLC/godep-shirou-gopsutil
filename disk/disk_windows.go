@@ -187,6 +187,7 @@ func Partitions(all bool) ([]PartitionStat, error) {
 					Device:     path,
 					Fstype:     string(bytes.Replace(lpFileSystemNameBuffer, []byte("\x00"), []byte(""), -1)),
 					Opts:       opts,
+					DriveType:  uint32(typeret),
 				}
 				ret = append(ret, d)
 			}

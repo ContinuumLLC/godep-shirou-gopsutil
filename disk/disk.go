@@ -30,6 +30,7 @@ type PartitionStat struct {
 	Mountpoint string `json:"mountpoint"`
 	Fstype     string `json:"fstype"`
 	Opts       string `json:"opts"`
+	DriveType  uint32 `json:"driveType"`
 }
 
 type IOCountersStat struct {
