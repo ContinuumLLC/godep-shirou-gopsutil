@@ -31,6 +31,8 @@ type PartitionStat struct {
 	Fstype     string `json:"fstype"`
 	Opts       string `json:"opts"`
 	DriveType  uint32 `json:"driveType"`
+	VolumeName string `json:"volumeName"`
+	MediaType  uint32 `json:"mediaType"`
 }
 
 type IOCountersStat struct {

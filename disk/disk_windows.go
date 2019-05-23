@@ -4,6 +4,7 @@ package disk
 
 import (
 	"bytes"
+	"syscall"
 	"unsafe"
 
 	"github.com/StackExchange/wmi"
@@ -100,7 +101,18 @@ type Win32_DiskDrive struct {
 	Size       *uint64
 }
 
-const WaitMSec = 500
+type diskGeometry struct {
+	Cylinders         int64
+	MediaType         int32
+	TracksPerCylinder uint32
+	SectorsPerTrack   uint32
+	BytesPerSector    uint32
+}
+
+const (
+	WaitMSec                  = 500
+	ioctlDiskGetDriveGeometry = 458752
+)
 
 func Usage(path string) (*UsageStat, error) {
 	ret := &UsageStat{}
@@ -182,18 +194,54 @@ func Partitions(all bool) ([]PartitionStat, error) {
 					opts += ".compress"
 				}
 
+				drivePath := "\\\\.\\"
+				drivePath += path
+				mediaType, err := getMediaType(drivePath)
 				d := PartitionStat{
 					Mountpoint: path,
 					Device:     path,
 					Fstype:     string(bytes.Replace(lpFileSystemNameBuffer, []byte("\x00"), []byte(""), -1)),
 					Opts:       opts,
 					DriveType:  uint32(typeret),
+					VolumeName: string(bytes.Replace(lpVolumeNameBuffer, []byte("\x00"), []byte(""), -1)),
+					MediaType:  mediaType,
 				}
 				ret = append(ret, d)
 			}
 		}
 	}
 	return ret, nil
+}
+
+func getMediaType(rootPathName string) (mediaType uint32, err error) {
+	hFile, err := windows.CreateFile(syscall.StringToUTF16Ptr(rootPathName),
+		0,
+		windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE,
+		nil,
+		windows.OPEN_EXISTING,
+		0,
+		0)
+
+	if nil != err {
+		return
+	}
+	defer windows.CloseHandle(hFile)
+
+	var diskGeo diskGeometry
+	var dsikGeoSize uint32
+	err = windows.DeviceIoControl(hFile,
+		ioctlDiskGetDriveGeometry,
+		nil,
+		0,
+		(*byte)(unsafe.Pointer(&diskGeo)),
+		uint32(unsafe.Sizeof(diskGeo)),
+		&dsikGeoSize,
+		nil)
+	if nil != err {
+		return
+	}
+
+	return uint32(diskGeo.MediaType), nil
 }
 
 func IOCounters(names ...string) (map[string]IOCountersStat, error) {
