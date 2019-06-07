@@ -109,9 +109,16 @@ type diskGeometry struct {
 	BytesPerSector    uint32
 }
 
+type diskDeviceNumber struct {
+	DeviceType      uint32
+	DeviceNumber    uint32
+	PartitionNumber uint32
+}
+
 const (
-	WaitMSec                  = 500
-	ioctlDiskGetDriveGeometry = 458752
+	WaitMSec                    = 500
+	ioctlDiskGetDriveGeometry   = 458752
+	ioctlStorageGetDeviceNumber = 2953344
 )
 
 func Usage(path string) (*UsageStat, error) {
@@ -194,9 +201,24 @@ func Partitions(all bool) ([]PartitionStat, error) {
 					opts += ".compress"
 				}
 
-				drivePath := "\\\\.\\"
+				drivePath := "\\\\.\\\\"
 				drivePath += path
-				mediaType, err := getMediaType(drivePath)
+
+				hFile, err := windows.CreateFile(syscall.StringToUTF16Ptr(drivePath),
+					0,
+					windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE,
+					nil,
+					windows.OPEN_EXISTING,
+					0,
+					0)
+
+				if nil != err {
+					continue
+				}
+
+				mediaType, err := getMediaType(hFile)
+				diskNumber, err := getDiskNumber(hFile)
+				windows.CloseHandle(hFile)
 				d := PartitionStat{
 					Mountpoint: path,
 					Device:     path,
@@ -205,6 +227,7 @@ func Partitions(all bool) ([]PartitionStat, error) {
 					DriveType:  uint32(typeret),
 					VolumeName: string(bytes.Replace(lpVolumeNameBuffer, []byte("\x00"), []byte(""), -1)),
 					MediaType:  mediaType,
+					DiskNumber: diskNumber,
 				}
 				ret = append(ret, d)
 			}
@@ -213,19 +236,7 @@ func Partitions(all bool) ([]PartitionStat, error) {
 	return ret, nil
 }
 
-func getMediaType(rootPathName string) (mediaType uint32, err error) {
-	hFile, err := windows.CreateFile(syscall.StringToUTF16Ptr(rootPathName),
-		0,
-		windows.FILE_SHARE_READ|windows.FILE_SHARE_WRITE,
-		nil,
-		windows.OPEN_EXISTING,
-		0,
-		0)
-
-	if nil != err {
-		return
-	}
-	defer windows.CloseHandle(hFile)
+func getMediaType(hFile windows.Handle) (mediaType uint32, err error) {
 
 	var diskGeo diskGeometry
 	var dsikGeoSize uint32
@@ -242,6 +253,25 @@ func getMediaType(rootPathName string) (mediaType uint32, err error) {
 	}
 
 	return uint32(diskGeo.MediaType), nil
+}
+
+func getDiskNumber(hFile windows.Handle) (diskNumber uint32, err error) {
+
+	var diskNum diskDeviceNumber
+	var dsikNumSize uint32
+	err = windows.DeviceIoControl(hFile,
+		ioctlStorageGetDeviceNumber,
+		nil,
+		0,
+		(*byte)(unsafe.Pointer(&diskNum)),
+		uint32(unsafe.Sizeof(diskNum)),
+		&dsikNumSize,
+		nil)
+	if nil != err {
+		return
+	}
+
+	return uint32(diskNum.DeviceNumber), nil
 }
 
 func IOCounters(names ...string) (map[string]IOCountersStat, error) {
