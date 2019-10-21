@@ -165,7 +165,9 @@ func Partitions(all bool) ([]PartitionStat, error) {
 	if err != nil {
 		return ret, err
 	}
-	ret = append(ret, *volumeInfo)
+	if volumeInfo != nil {
+		ret = append(ret, *volumeInfo)
+	}
 
 	// loop over all volumes, excluding the first volume
 	for {
@@ -179,7 +181,9 @@ func Partitions(all bool) ([]PartitionStat, error) {
 		if err != nil {
 			return ret, err
 		}
-		ret = append(ret, *volumeInfo)
+		if volumeInfo != nil {
+			ret = append(ret, *volumeInfo)
+		}
 	}
 
 	// Close the handle
@@ -221,7 +225,6 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 				//device is not ready will happen if there is no disk in the drive
 				return nil, errors.New("Device is not ready!")
 			}
-			return nil, windows.GetLastError()
 		}
 
 		opts := "rw"
@@ -248,7 +251,6 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 			windows.OPEN_EXISTING,
 			0,
 			0)
-
 		if nil != err {
 			return nil, err
 		}
