@@ -4,7 +4,6 @@ package disk
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -193,8 +192,6 @@ func Partitions(all bool) ([]PartitionStat, error) {
 }
 
 func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
-	d := PartitionStat{}
-
 	bufferSize := uint32(256)
 	volumeNameBuffer := make([]byte, bufferSize)
 	mountPointBuffer := make([]byte, bufferSize)
@@ -205,11 +202,14 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 
 	volpath, _ := windows.UTF16PtrFromString(volumeName)
 	typeret, _, _ := procGetDriveType.Call(uintptr(unsafe.Pointer(volpath)))
+	// 0: DRIVE_UNKNOWN 1: DRIVE_NO_ROOT_DIR 2: DRIVE_REMOVABLE 3: DRIVE_FIXED 4: DRIVE_REMOTE 5: DRIVE_CDROM
 	if typeret == 0 {
 		return nil, windows.GetLastError()
 	}
-	// 2: DRIVE_REMOVABLE 3: DRIVE_FIXED 4: DRIVE_REMOTE 5: DRIVE_CDROM
-	if typeret == 2 || typeret == 3 || typeret == 4 || typeret == 5 {
+
+	// 1: DRIVE_NO_ROOT_DIR The root path is invalid; for example, there is no volume mounted at the specified path.
+	// Including type 1 because we also want to get details about Unmounted Partitions
+	if typeret == 1 || typeret == 2 || typeret == 3 || typeret == 4 || typeret == 5 {
 		err = windows.GetVolumeInformation(
 			(*uint16)(unsafe.Pointer(volpath)),
 			(*uint16)(unsafe.Pointer(&volumeNameBuffer[0])),
@@ -223,7 +223,8 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 		if err != nil {
 			if typeret == 5 || typeret == 2 {
 				//device is not ready will happen if there is no disk in the drive
-				return nil, errors.New("Device is not ready!")
+				// Should ignore it ?
+				return nil, nil
 			}
 		}
 
@@ -235,6 +236,7 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 			opts += ".compress"
 		}
 
+		// Ignore the error, some volumes may not have a Mount Point (Unmounted Partitions)
 		_ = windows.GetVolumePathNamesForVolumeName(
 			(*uint16)(unsafe.Pointer(volpath)),
 			(*uint16)(unsafe.Pointer(&mountPointBuffer[0])),
@@ -252,23 +254,25 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 			0,
 			0)
 		if nil != err {
-			return nil, err
+			return nil, nil
 		}
 		mediaType, err := getMediaType(hFile)
 		diskNumber, err := getDiskNumber(hFile)
 		windows.CloseHandle(hFile)
 
-		d.Mountpoint = string(cleanVolumePath(mountPointBuffer))
-		d.Device = volumeName
-		d.Fstype = string(bytes.Replace(lpFileSystemNameBuffer, []byte("\x00"), []byte(""), -1))
-		d.Opts = opts
-		d.DriveType = uint32(typeret)
-		d.VolumeName = string(bytes.Replace(volumeNameBuffer, []byte("\x00"), []byte(""), -1))
-		d.MediaType = mediaType
-		d.DiskNumber = diskNumber
+		return &PartitionStat{
+			Mountpoint: string(cleanVolumePath(mountPointBuffer)),
+			Device:     volumeName,
+			Fstype:     string(bytes.Replace(lpFileSystemNameBuffer, []byte("\x00"), []byte(""), -1)),
+			Opts:       opts,
+			DriveType:  uint32(typeret),
+			VolumeName: string(bytes.Replace(volumeNameBuffer, []byte("\x00"), []byte(""), -1)),
+			MediaType:  mediaType,
+			DiskNumber: diskNumber,
+		}, nil
 	}
 
-	return &d, nil
+	return nil, nil
 }
 
 func getMediaType(hFile windows.Handle) (mediaType uint32, err error) {
