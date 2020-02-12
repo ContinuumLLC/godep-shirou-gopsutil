@@ -52,13 +52,18 @@ type lastPercent struct {
 var lastCPUPercent lastPercent
 var invoke common.Invoker
 
-func Init() {
+func init() {
 	invoke = common.Invoke{}
+	go getlastCPUPercent()
+}
+
+func getlastCPUPercent() {
 	lastCPUPercent.Lock()
 	lastCPUPercent.lastCPUTimes, _ = Times(false)
 	lastCPUPercent.lastPerCPUTimes, _ = Times(true)
 	lastCPUPercent.Unlock()
 }
+
 
 func Counts(logical bool) (int, error) {
 	return runtime.NumCPU(), nil
