@@ -52,7 +52,7 @@ type lastPercent struct {
 var lastCPUPercent lastPercent
 var invoke common.Invoker
 
-func init() {
+func Init() {
 	invoke = common.Invoke{}
 	lastCPUPercent.Lock()
 	lastCPUPercent.lastCPUTimes, _ = Times(false)

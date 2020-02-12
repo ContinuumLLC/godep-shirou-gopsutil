@@ -2,7 +2,7 @@ hash: 8ee80536e2a5626d0433f7e036129fdf1bdae060dce70616fe3004fed5a7a8d1
 updated: 2017-06-07T16:24:26.876999+05:30
 imports:
 - name: github.com/go-ole/go-ole
-  version: 02d3668a0cf01f58411cc85cd37c174c257ec7c2
+  version: 14974a1cf6477f616180232977d8ab4791ea8820
   subpackages:
   - oleutil
 - name: github.com/shirou/w32
