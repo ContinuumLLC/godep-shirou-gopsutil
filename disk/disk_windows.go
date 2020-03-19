@@ -208,7 +208,7 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 
 	// 1: DRIVE_NO_ROOT_DIR The root path is invalid; for example, there is no volume mounted at the specified path.
 	// Including type 1 because we also want to get details about Unmounted Partitions
-	if typeret == 1 || typeret == 2 || typeret == 3 || typeret == 4 || typeret == 5 {
+	if typeret == 1 || typeret == 2 || typeret == 3 || typeret == 4 {
 		err = windows.GetVolumeInformation(
 			(*uint16)(unsafe.Pointer(volpath)),
 			(*uint16)(unsafe.Pointer(&volumeNameBuffer[0])),
@@ -220,7 +220,7 @@ func getVolumeInfo(volumeName string) (partition *PartitionStat, err error) {
 			bufferSize)
 
 		if err != nil {
-			if typeret == 5 || typeret == 2 {
+			if typeret == 2 {
 				//device is not ready will happen if there is no disk in the drive
 				// Should ignore it ?
 				return nil, nil
