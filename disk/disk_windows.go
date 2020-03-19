@@ -161,7 +161,7 @@ func Partitions(all bool) ([]PartitionStat, error) {
 	}
 
 	defer func() {
-		_ := windows.FindVolumeClose(handle)
+		_ = windows.FindVolumeClose(handle)
 	}()
 
 	volumeInfo, err := getVolumeInfo(string(cleanVolumePath(volnameBuffer)))
