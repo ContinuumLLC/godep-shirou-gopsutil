@@ -4,6 +4,8 @@ package disk
 
 import (
 	"bytes"
+	"encoding/binary"
+	"errors"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -115,10 +117,34 @@ type diskDeviceNumber struct {
 }
 
 const (
-	WaitMSec                    = 500
-	ioctlDiskGetDriveGeometry   = 458752
-	ioctlStorageGetDeviceNumber = 2953344
+	WaitMSec                        = 500
+	ioctlDiskGetDriveGeometry       = 458752
+	ioctlStorageGetDeviceNumber     = 2953344
+	ioctlVolumeGetVolumeDiskExtents = 5636096
 )
+
+type diskExtent struct {
+	DiskNumber     uint32
+	StartingOffset uint64
+	ExtentLength   uint64
+}
+
+type volumeDiskExtents []byte
+
+func (v *volumeDiskExtents) Len() uint {
+	return uint(binary.LittleEndian.Uint32([]byte(*v)))
+}
+
+func (v *volumeDiskExtents) Extent(n uint) diskExtent {
+	ba := []byte(*v)
+	//This calculates the next offset in the structure
+	offset := 8 + 24*n
+	return diskExtent{
+		DiskNumber:     binary.LittleEndian.Uint32(ba[offset:]),
+		StartingOffset: binary.LittleEndian.Uint64(ba[offset+8:]),
+		ExtentLength:   binary.LittleEndian.Uint64(ba[offset+16:]),
+	}
+}
 
 func Usage(path string) (*UsageStat, error) {
 	ret := &UsageStat{}
@@ -308,7 +334,17 @@ func getDiskNumber(hFile windows.Handle) (diskNumber uint32, err error) {
 		&dsikNumSize,
 		nil)
 	if nil != err {
-		return
+		size := uint32(16 * 1024)
+		vols := make(volumeDiskExtents, size)
+		var bytesReturned uint32
+		err = windows.DeviceIoControl(hFile, ioctlVolumeGetVolumeDiskExtents, nil, 0, &vols[0], size, &bytesReturned, nil)
+		if err != nil {
+			return
+		}
+		if vols.Len() > 0 {
+			return vols.Extent(0).DiskNumber, nil
+		}
+		return 0, errors.New("Unable to get disk number")
 	}
 
 	return uint32(diskNum.DeviceNumber), nil
