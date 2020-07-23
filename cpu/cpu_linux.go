@@ -110,10 +110,13 @@ func Info() ([]InfoStat, error) {
 	filename := common.HostProc("cpuinfo")
 	lines, _ := common.ReadLines(filename)
 
-	var ret []InfoStat
+	var ret []InfoStat = []InfoStat{}
 	var processorName string
 
 	c := InfoStat{CPU: -1, Cores: 1}
+	var err error
+	//counter is used to append multi CPUs into the list
+	counter := 0
 	for _, line := range lines {
 		fields := strings.Split(line, ":")
 		if len(fields) < 2 {
@@ -124,14 +127,21 @@ func Info() ([]InfoStat, error) {
 
 		switch key {
 		case "Processor":
-			processorName = value
-		case "processor":
-			if c.CPU >= 0 {
-				err := finishCPUInfo(&c)
+			if counter > 0 {
+				ret, err = addRemCPUDetails(c, ret)
 				if err != nil {
 					return ret, err
 				}
-				ret = append(ret, c)
+				c = InfoStat{CPU: -1, Cores: 1}
+			}
+			processorName = value
+			counter++
+		case "processor":
+			if counter > 0 {
+				ret, err = addRemCPUDetails(c, ret)
+				if err != nil {
+					return ret, err
+				}
 			}
 			c = InfoStat{Cores: 1, ModelName: processorName}
 			t, err := strconv.ParseInt(value, 10, 64)
@@ -139,10 +149,17 @@ func Info() ([]InfoStat, error) {
 				return ret, err
 			}
 			c.CPU = int32(t)
+			counter++
 		case "vendorId", "vendor_id":
 			c.VendorID = value
 		case "cpu family":
 			c.Family = value
+		case "cpu cores":
+			t, err := strconv.ParseInt(value, 10, 32)
+			if err != nil {
+				return ret, err
+			}
+			c.Cores = int32(t)
 		case "model":
 			c.Model = value
 		case "model name", "cpu":
@@ -188,6 +205,15 @@ func Info() ([]InfoStat, error) {
 			c.Microcode = value
 		}
 	}
+
+	//called to add the last CPU element
+	ret, err = addRemCPUDetails(c, ret)
+	return ret, err
+}
+
+//addRemCPUDetails adds the remaining cpudetails by parsing other files
+//and append it into list
+func addRemCPUDetails(c InfoStat, ret []InfoStat) ([]InfoStat, error) {
 	if c.CPU >= 0 {
 		err := finishCPUInfo(&c)
 		if err != nil {
