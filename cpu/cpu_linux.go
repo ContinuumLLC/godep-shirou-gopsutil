@@ -128,7 +128,6 @@ func Info() ([]InfoStat, error) {
 		switch key {
 		case "Processor":
 			if counter > 0 {
-				fmt.Println(c)
 				ret, err = addRemCPUDetails(c, ret)
 				if err != nil {
 					return ret, err
