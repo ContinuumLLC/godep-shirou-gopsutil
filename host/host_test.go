@@ -114,3 +114,13 @@ func TestTemperatureStat_String(t *testing.T) {
 		t.Errorf("TemperatureStat string is invalid")
 	}
 }
+
+func TestServicePack(t *testing.T) {
+	sp, err := ServicePack()
+	if err != nil {
+		t.Error(err)
+	}
+	if sp == "" {
+		t.Error("Service pack is empty")
+	}
+}

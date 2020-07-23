@@ -3,6 +3,7 @@
 package host
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"runtime"
@@ -20,6 +21,7 @@ import (
 var (
 	procGetSystemTimeAsFileTime = common.Modkernel32.NewProc("GetSystemTimeAsFileTime")
 	osInfo                      *Win32_OperatingSystem
+	ErrOSInfoNotFound           = errors.New("ErrOSInfoNotFound")
 )
 
 type Win32_OperatingSystem struct {
@@ -27,7 +29,13 @@ type Win32_OperatingSystem struct {
 	Caption        string
 	ProductType    uint32
 	BuildNumber    string
+	CSDVersion     *string
+	OSArchitecture string
+	Manufacturer   string
+	SerialNumber   string
+	OSLanguage     uint32
 	LastBootUpTime time.Time
+	InstallDate    time.Time
 }
 
 func Info() (*InfoStat, error) {
@@ -113,7 +121,9 @@ func GetOSInfo() (Win32_OperatingSystem, error) {
 	if err != nil {
 		return Win32_OperatingSystem{}, err
 	}
-
+	if len(dst) == 0 {
+		return Win32_OperatingSystem{}, ErrOSInfoNotFound
+	}
 	osInfo = &dst[0]
 
 	return dst[0], nil
@@ -177,6 +187,21 @@ func PlatformInformation() (platform string, family string, version string, err 
 	version = fmt.Sprintf("%s Build %s", osInfo.Version, osInfo.BuildNumber)
 
 	return
+}
+
+func ServicePack() (servicePack string, err error) {
+	if osInfo == nil {
+		_, err = GetOSInfo()
+		if err != nil {
+			return servicePack, err
+		}
+	}
+
+	// OS Service Pack
+	if osInfo.CSDVersion != nil {
+		servicePack = *osInfo.CSDVersion
+	}
+	return servicePack, nil
 }
 
 func Users() ([]UserStat, error) {

@@ -1,0 +1,30 @@
+hash: 8ee80536e2a5626d0433f7e036129fdf1bdae060dce70616fe3004fed5a7a8d1
+updated: 2017-06-07T16:24:26.876999+05:30
+imports:
+- name: github.com/go-ole/go-ole
+  version: 14974a1cf6477f616180232977d8ab4791ea8820
+  subpackages:
+  - oleutil
+- name: github.com/shirou/w32
+  version: bb4de0191aa41b5507caa14b0650cdbddcd9280b
+- name: github.com/StackExchange/wmi
+  version: ea383cf3ba6ec950874b8486cd72356d007c768f
+- name: golang.org/x/sys
+  version: b90f89a1e7a9c1f6b918820b3daa7f08488c8594
+  subpackages:
+  - windows
+  - unix
+testImports:
+- name: github.com/davecgh/go-spew
+  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: f6abca593680b2315d2075e0f5e2a9751e3f431a
+  subpackages:
+  - assert
+  - require

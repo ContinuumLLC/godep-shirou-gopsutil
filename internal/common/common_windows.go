@@ -48,6 +48,7 @@ var (
 	Modkernel32 = windows.NewLazyDLL("kernel32.dll")
 	ModNt       = windows.NewLazyDLL("ntdll.dll")
 	ModPdh      = windows.NewLazyDLL("pdh.dll")
+	ModPsapi    = windows.NewLazySystemDLL("psapi.dll")
 
 	ProcGetSystemTimes           = Modkernel32.NewProc("GetSystemTimes")
 	ProcNtQuerySystemInformation = ModNt.NewProc("NtQuerySystemInformation")

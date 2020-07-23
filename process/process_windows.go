@@ -18,14 +18,36 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+type LUID struct {
+	LowPart  uint32
+	HighPart int32
+}
+
+type LUID_AND_ATTRIBUTES struct {
+	Luid       LUID
+	Attributes uint32
+}
+
+type TOKEN_PRIVILEGES struct {
+	PrivilegeCount uint32
+	Privileges     [1]LUID_AND_ATTRIBUTES
+}
+
 const (
-	NoMoreFiles   = 0x12
-	MaxPathLength = 260
+	NoMoreFiles                              = 0x12
+	MaxPathLength                            = 260
+	errnoERROR_IO_PENDING                    = 997
+	PROCESS_QUERY_LIMITED_INFORMATION        = 0x00001000
+	sePrivilegeEnabled                uint32 = 0x00000002
 )
 
 var (
-	modpsapi                 = windows.NewLazyDLL("psapi.dll")
-	procGetProcessMemoryInfo = modpsapi.NewProc("GetProcessMemoryInfo")
+	modpsapi                        = windows.NewLazyDLL("psapi.dll")
+	procGetProcessMemoryInfo        = modpsapi.NewProc("GetProcessMemoryInfo")
+	modadvapi32                     = syscall.NewLazyDLL("advapi32.dll")
+	procLookupPrivilegeValueW       = modadvapi32.NewProc("LookupPrivilegeValueW")
+	procAdjustTokenPrivileges       = modadvapi32.NewProc("AdjustTokenPrivileges")
+	errERRORIOPENDING         error = syscall.Errno(errnoERROR_IO_PENDING)
 )
 
 type SystemProcessInformation struct {
@@ -92,6 +114,19 @@ type Win32_Process struct {
 	*/
 }
 
+// Win32_PerfFormattedData_PerfProc_Process struct to provide performance process metrics for windows
+type Win32_PerfFormattedData_PerfProc_Process struct {
+	IDProcess            uint32
+	Name                 string
+	HandleCount          uint32
+	PercentProcessorTime uint64
+	PrivateBytes         uint64
+	ThreadCount          uint32
+	VirtualBytes         uint64
+	WorkingSet           uint64
+	WorkingSetPrivate    uint64
+}
+
 func Pids() ([]int32, error) {
 	var ret []int32
 
@@ -127,6 +162,14 @@ func GetWin32Proc(pid int32) ([]Win32_Process, error) {
 		return []Win32_Process{}, fmt.Errorf("could not get win32Proc: empty")
 	}
 	return dst, nil
+}
+
+// PerfProcessStats returns the performance data from performance counters of process object.
+func PerfProcessStats() ([]Win32_PerfFormattedData_PerfProc_Process, error) {
+	var ret []Win32_PerfFormattedData_PerfProc_Process
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
 }
 
 func (p *Process) Name() (string, error) {
@@ -180,8 +223,51 @@ func (p *Process) Parent() (*Process, error) {
 func (p *Process) Status() (string, error) {
 	return "", common.ErrNotImplementedError
 }
+
 func (p *Process) Username() (string, error) {
-	return "", common.ErrNotImplementedError
+	hProcess, err := windows.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, uint32(p.Pid))
+	if nil != err {
+		return "", err
+	}
+	defer windows.CloseHandle(hProcess)
+
+	var t windows.Token
+	err = windows.OpenProcessToken(hProcess, windows.TOKEN_QUERY, &t)
+	if nil != err {
+		return "", err
+	}
+	defer windows.CloseHandle(windows.Handle(t))
+
+	var n uint32
+	err = windows.GetTokenInformation(t, windows.TokenUser, nil, 0, &n)
+	if n <= 0 {
+		return "", err
+	}
+
+	b := make([]byte, n)
+
+	err = windows.GetTokenInformation(t, windows.TokenUser, &b[0], uint32(len(b)), &n)
+	if nil != err {
+		return "", err
+	}
+
+	tokenUser, err := t.GetTokenUser()
+
+	if nil != err {
+		return "", err
+	}
+
+	name := uint32(250)
+	domain := uint32(250)
+	var accType uint32
+	strname := make([]uint16, name)
+	strdomain := make([]uint16, domain)
+
+	err = windows.LookupAccountSid(nil, tokenUser.User.Sid, &strname[0], &name, &strdomain[0], &domain, &accType)
+	if nil != err {
+		return "", err
+	}
+	return windows.UTF16ToString(strname), nil
 }
 func (p *Process) Uids() ([]int32, error) {
 	var uids []int32
@@ -433,5 +519,79 @@ func getProcessMemoryInfo(h windows.Handle, mem *PROCESS_MEMORY_COUNTERS) (err e
 			err = syscall.EINVAL
 		}
 	}
+	return
+}
+
+func EnableCurrentProcessPrivilege(strPrivilegeName string) error {
+	hCurrHandle, err := windows.GetCurrentProcess()
+
+	var tCurr windows.Token
+	err = windows.OpenProcessToken(hCurrHandle, windows.TOKEN_ADJUST_PRIVILEGES, &tCurr)
+	if nil != err {
+		return err
+	}
+
+	var tokPrev TOKEN_PRIVILEGES
+
+	uiSeDebugName, err := windows.UTF16PtrFromString(strPrivilegeName)
+
+	err = lookupPrivilegeValue(nil, uiSeDebugName, &tokPrev.Privileges[0].Luid)
+	if nil != err {
+		return err
+	}
+
+	tokPrev.PrivilegeCount = 1
+	tokPrev.Privileges[0].Attributes = sePrivilegeEnabled
+
+	cb := unsafe.Sizeof(tokPrev)
+
+	_, err = adjustTokenPrivileges(tCurr, false, &tokPrev, uint32(cb), nil, nil)
+
+	return err
+}
+
+func errnoErr(e syscall.Errno) error {
+
+	switch e {
+
+	case 0:
+		return nil
+	case errnoERROR_IO_PENDING:
+		return errERRORIOPENDING
+	}
+	return e
+}
+
+func lookupPrivilegeValue(systemname *uint16, name *uint16, luid *LUID) (err error) {
+	r1, _, e1 := syscall.Syscall(procLookupPrivilegeValueW.Addr(), 3, uintptr(unsafe.Pointer(systemname)), uintptr(unsafe.Pointer(name)), uintptr(unsafe.Pointer(luid)))
+	if r1 == 0 {
+		if e1 != 0 {
+			err = errnoErr(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+	return
+}
+
+func adjustTokenPrivileges(token windows.Token, disableAllPrivileges bool, newstate *TOKEN_PRIVILEGES, buflen uint32, prevstate *TOKEN_PRIVILEGES, returnlen *uint32) (ret uint32, err error) {
+	var _p0 uint32
+	if disableAllPrivileges {
+		_p0 = 1
+	} else {
+		_p0 = 0
+	}
+
+	r0, _, e1 := syscall.Syscall6(procAdjustTokenPrivileges.Addr(), 6, uintptr(token), uintptr(_p0), uintptr(unsafe.Pointer(newstate)), uintptr(buflen), uintptr(unsafe.Pointer(prevstate)), uintptr(unsafe.Pointer(returnlen)))
+	ret = uint32(r0)
+
+	if true {
+		if e1 != 0 {
+			err = errnoErr(e1)
+		} else {
+			err = syscall.EINVAL
+		}
+	}
+
 	return
 }
