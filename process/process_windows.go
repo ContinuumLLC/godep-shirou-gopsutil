@@ -14,6 +14,7 @@ import (
 	cpu "github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/internal/common"
 	net "github.com/shirou/gopsutil/net"
+	"github.com/shirou/w32"
 	"golang.org/x/sys/windows"
 )
 
@@ -104,8 +105,6 @@ type ioCounters struct {
 	ReadTransferCount   uint64
 	WriteTransferCount  uint64
 	OtherTransferCount  uint64
-}
-
 	/*
 		CSCreationClassName   string
 		CSName                string
@@ -146,9 +145,6 @@ type Win32_PerfFormattedData_PerfProc_Process struct {
 	WorkingSet           uint64
 	WorkingSetPrivate    uint64
 }
-
-func Pids() ([]int32, error) {
-	var ret []int32
 
 func init() {
 	var systemInfo systemInfo
@@ -674,14 +670,17 @@ func (p *Process) ResumeWithContext(ctx context.Context) error {
 	return nil
 }
 
-func (p *Process) TerminateWithContext(ctx context.Context) error {
-	proc, err := windows.OpenProcess(windows.PROCESS_TERMINATE, false, uint32(p.Pid))
-	if err != nil {
-		return err
+func (p *Process) Terminate() error {
+	// PROCESS_TERMINATE = 0x0001
+	proc := w32.OpenProcess(0x0001, false, uint32(p.Pid))
+	ret := w32.TerminateProcess(proc, 0)
+	w32.CloseHandle(proc)
+
+	if ret == false {
+		return windows.GetLastError()
+	} else {
+		return nil
 	}
-	err = windows.TerminateProcess(proc, 0)
-	windows.CloseHandle(proc)
-	return err
 }
 
 func (p *Process) KillWithContext(ctx context.Context) error {
@@ -704,27 +703,30 @@ func (p *Process) setPpid(ppid int32) {
 	p.parent = ppid
 }
 
-func getFromSnapProcess(pid int32) (int32, int32, string, error) {
-	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, uint32(pid))
-	if err != nil {
-		return 0, 0, "", err
+func (p *Process) getFromSnapProcess(pid int32) (int32, int32, string, error) {
+	snap := w32.CreateToolhelp32Snapshot(w32.TH32CS_SNAPPROCESS, uint32(pid))
+	if snap == 0 {
+		return 0, 0, "", windows.GetLastError()
 	}
-	defer windows.CloseHandle(snap)
-	var pe32 windows.ProcessEntry32
-	pe32.Size = uint32(unsafe.Sizeof(pe32))
-	if err = windows.Process32First(snap, &pe32); err != nil {
-		return 0, 0, "", err
+	defer w32.CloseHandle(snap)
+	var pe32 w32.PROCESSENTRY32
+	pe32.DwSize = uint32(unsafe.Sizeof(pe32))
+	if w32.Process32First(snap, &pe32) == false {
+		return 0, 0, "", windows.GetLastError()
 	}
-	for {
-		if pe32.ProcessID == uint32(pid) {
-			szexe := windows.UTF16ToString(pe32.ExeFile[:])
-			return int32(pe32.ParentProcessID), int32(pe32.Threads), szexe, nil
+
+	if pe32.Th32ProcessID == uint32(pid) {
+		szexe := windows.UTF16ToString(pe32.SzExeFile[:])
+		return int32(pe32.Th32ParentProcessID), int32(pe32.CntThreads), szexe, nil
+	}
+
+	for w32.Process32Next(snap, &pe32) {
+		if pe32.Th32ProcessID == uint32(pid) {
+			szexe := windows.UTF16ToString(pe32.SzExeFile[:])
+			return int32(pe32.Th32ParentProcessID), int32(pe32.CntThreads), szexe, nil
 		}
-		if err = windows.Process32Next(snap, &pe32); err != nil {
-			break
-		}
 	}
-	return 0, 0, "", fmt.Errorf("couldn't find pid: %d", pid)
+	return 0, 0, "", errors.New("Couldn't find pid:" + string(pid))
 }
 
 func ProcessesWithContext(ctx context.Context) ([]*Process, error) {
