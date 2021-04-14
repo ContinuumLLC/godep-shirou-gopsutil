@@ -204,54 +204,24 @@ func PartitionsWithContext(ctx context.Context, all bool) ([]PartitionStat, erro
 	if err != nil {
 		return ret, err
 	}
-	for _, v := range lpBuffer {
-		if v >= 65 && v <= 90 {
-			path := string(v) + ":"
-			typepath, _ := windows.UTF16PtrFromString(path)
-			typeret, _, _ := procGetDriveType.Call(uintptr(unsafe.Pointer(typepath)))
-			if typeret == 0 {
-				return ret, windows.GetLastError()
-			}
-			// 2: DRIVE_REMOVABLE 3: DRIVE_FIXED 4: DRIVE_REMOTE 5: DRIVE_CDROM
+	if volumeInfo != nil {
+		ret = append(ret, *volumeInfo)
+	}
 
-			if typeret == 2 || typeret == 3 || typeret == 4 || typeret == 5 {
-				lpVolumeNameBuffer := make([]byte, 256)
-				lpVolumeSerialNumber := int64(0)
-				lpMaximumComponentLength := int64(0)
-				lpFileSystemFlags := int64(0)
-				lpFileSystemNameBuffer := make([]byte, 256)
-				volpath, _ := windows.UTF16PtrFromString(string(v) + ":/")
-				driveret, _, err := procGetVolumeInformation.Call(
-					uintptr(unsafe.Pointer(volpath)),
-					uintptr(unsafe.Pointer(&lpVolumeNameBuffer[0])),
-					uintptr(len(lpVolumeNameBuffer)),
-					uintptr(unsafe.Pointer(&lpVolumeSerialNumber)),
-					uintptr(unsafe.Pointer(&lpMaximumComponentLength)),
-					uintptr(unsafe.Pointer(&lpFileSystemFlags)),
-					uintptr(unsafe.Pointer(&lpFileSystemNameBuffer[0])),
-					uintptr(len(lpFileSystemNameBuffer)))
-				if driveret == 0 {
-					if typeret == 5 || typeret == 2 {
-						continue //device is not ready will happen if there is no disk in the drive
-					}
-					return ret, err
-				}
-				opts := "rw"
-				if lpFileSystemFlags&FileReadOnlyVolume != 0 {
-					opts = "ro"
-				}
-				if lpFileSystemFlags&FileFileCompression != 0 {
-					opts += ".compress"
-				}
+	// loop over all volumes, excluding the first volume
+	for {
+		// If no more partiotions, returns error, exit the loop
+		err = windows.FindNextVolume(handle, (*uint16)(unsafe.Pointer(&volnameBuffer[0])), bufferSize)
+		if err != nil {
+			break
+		}
 
-				d := PartitionStat{
-					Mountpoint: path,
-					Device:     path,
-					Fstype:     string(bytes.Replace(lpFileSystemNameBuffer, []byte("\x00"), []byte(""), -1)),
-					Opts:       opts,
-				}
-				ret = append(ret, d)
-			}
+		volumeInfo, err := getVolumeInfo(string(cleanVolumePath(volnameBuffer)))
+		if err != nil {
+			return ret, err
+		}
+		if volumeInfo != nil {
+			ret = append(ret, *volumeInfo)
 		}
 	}
 

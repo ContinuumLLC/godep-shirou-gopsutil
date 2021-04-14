@@ -150,7 +150,6 @@ func SwapMemoryWithContext(ctx context.Context) (*SwapMemoryStat, error) {
 
 	return ret, nil
 }
-*/
 
 // PerfInfo returns the performance data from performance counters of memory object.
 func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
@@ -158,21 +157,4 @@ func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
 	q := wmi.CreateQuery(&ret, "")
 	err := wmi.Query(q, &ret)
 	return ret, err
-}
-
-type performanceInformation struct {
-	cb                uint32
-	commitTotal       uint64
-	commitLimit       uint64
-	commitPeak        uint64
-	physicalTotal     uint64
-	physicalAvailable uint64
-	systemCache       uint64
-	kernelTotal       uint64
-	kernelPaged       uint64
-	kernelNonpaged    uint64
-	pageSize          uint64
-	handleCount       uint32
-	processCount      uint32
-	threadCount       uint32
 }

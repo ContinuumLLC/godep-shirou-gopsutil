@@ -54,36 +54,11 @@ type Win32_Processor struct {
 	MaxClockSpeed             uint32
 }
 
-// SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION
-// defined in windows api doc with the following
-// https://docs.microsoft.com/en-us/windows/desktop/api/winternl/nf-winternl-ntquerysysteminformation#system_processor_performance_information
-// additional fields documented here
-// https://www.geoffchappell.com/studies/windows/km/ntoskrnl/api/ex/sysinfo/processor_performance.htm
-type win32_SystemProcessorPerformanceInformation struct {
-	IdleTime       int64 // idle time in 100ns (this is not a filetime).
-	KernelTime     int64 // kernel time in 100ns.  kernel time includes idle time. (this is not a filetime).
-	UserTime       int64 // usertime in 100ns (this is not a filetime).
-	DpcTime        int64 // dpc time in 100ns (this is not a filetime).
-	InterruptTime  int64 // interrupt time in 100ns
-	InterruptCount uint32
-}
-
 // Win32_PerfFormattedData_PerfOS_System struct to have count of processes and processor queue length
 type Win32_PerfFormattedData_PerfOS_System struct {
 	Processes            uint32
 	ProcessorQueueLength uint32
 }
-
-const (
-	ClocksPerSec = 10000000.0
-
-	// systemProcessorPerformanceInformationClass information class to query with NTQuerySystemInformation
-	// https://processhacker.sourceforge.io/doc/ntexapi_8h.html#ad5d815b48e8f4da1ef2eb7a2f18a54e0
-	win32_SystemProcessorPerformanceInformationClass = 8
-
-	// size of systemProcessorPerformanceInfoSize in memory
-	win32_SystemProcessorPerformanceInfoSize = uint32(unsafe.Sizeof(win32_SystemProcessorPerformanceInformation{}))
-)
 
 // Times returns times stat per cpu and combined for all CPUs
 func Times(percpu bool) ([]TimesStat, error) {
