@@ -1,8 +1,9 @@
 gopsutil: psutil for golang
 ==============================
 
-.. image:: https://circleci.com/gh/shirou/gopsutil.svg?&style=shield
-        :target: https://circleci.com/gh/shirou/gopsutil
+
+.. image:: https://github.com/shirou/gopsutil/workflows/Test/badge.svg
+        :target: https://github.com/shirou/gopsutil/actions?query=workflow%3ATest
 
 .. image:: https://coveralls.io/repos/shirou/gopsutil/badge.svg?branch=master
         :target: https://coveralls.io/r/shirou/gopsutil?branch=master
@@ -10,15 +11,13 @@ gopsutil: psutil for golang
 .. image:: https://godoc.org/github.com/shirou/gopsutil?status.svg
         :target: http://godoc.org/github.com/shirou/gopsutil
 
-This is a port of psutil (http://pythonhosted.org/psutil/). The challenge is porting all
+This is a port of psutil (https://github.com/giampaolo/psutil). The challenge is porting all
 psutil functions on some architectures.
 
+v3 migration
+---------------
 
-Breaking Changes! golang 1.8 is required
--------------------------------------------
-
-After v2.17.04, golang 1.8 is required to build.
-
+from v3.20.10, gopsutil becomes v3 which breaks backawards compatiblity. See `v3Changes.md <_tools/v3migration/v3Changes.md>`_ more detail changes.
 
 Tag semantics
 -------------------------
@@ -43,8 +42,13 @@ Available Architectures
 - Linux i386/amd64/arm(raspberry pi)
 - Windows/amd64
 - Darwin i386/amd64
-- OpenBDS amd64 (Thank you @mpfz0r!)
+- OpenBSD amd64 (Thank you @mpfz0r!)
 - Solaris amd64 (developed and tested on SmartOS/Illumos, Thank you @jen20!)
+
+These are partial support:
+
+- CPU on DragonFly BSD (#893, Thank you @gballet!)
+- host on Linux RISC-V (#896, Thank you @tklauser!)
 
 All works are implemented without cgo by porting c struct to golang struct.
 
@@ -52,7 +56,6 @@ All works are implemented without cgo by porting c struct to golang struct.
 Usage
 ---------
 
-Note: gopsutil v2 breaks compatibility. If you want to stay with compatibility, please use v1 branch and vendoring.
 
 .. code:: go
 
@@ -61,7 +64,8 @@ Note: gopsutil v2 breaks compatibility. If you want to stay with compatibility, 
    import (
        "fmt"
 
-       "github.com/shirou/gopsutil/mem"
+       "github.com/shirou/gopsutil/v3/mem"
+       // "github.com/shirou/gopsutil/mem"  // to use v2
    )
 
    func main() {
@@ -87,6 +91,13 @@ You can set an alternative location to :code:`/sys` by setting the :code:`HOST_S
 
 You can set an alternative location to :code:`/etc` by setting the :code:`HOST_ETC` environment variable.
 
+You can set an alternative location to :code:`/var` by setting the :code:`HOST_VAR` environment variable.
+
+You can set an alternative location to :code:`/run` by setting the :code:`HOST_RUN` environment variable.
+
+You can set an alternative location to :code:`/dev` by setting the :code:`HOST_DEV` environment variable.
+
+
 Documentation
 ------------------------
 
@@ -95,7 +106,7 @@ see http://godoc.org/github.com/shirou/gopsutil
 Requirements
 -----------------
 
-- go1.5 or above is required.
+- go1.11 or above is required.
 
 
 More Info
@@ -114,6 +125,10 @@ Several methods have been added which are not present in psutil, but will provid
   - PlatformVersion       (ex: "Ubuntu 13.10")
   - VirtualizationSystem  (ex: "LXC")
   - VirtualizationRole    (ex: "guest"/"host")
+
+- IOCounters
+
+  - Label (linux only)    The registered `device mapper name <https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-block-dm>`_
 
 - cpu/CPUInfo()  (linux, freebsd)
 
@@ -185,7 +200,7 @@ boot_time             x      x       x       x       x
 users                 x      x       x       x       x
 pids                  x      x       x       x       x
 pid_exists            x      x       x       x       x
-net_connections       x                      x
+net_connections       x              x       x
 net_protocols         x
 net_if_addrs
 net_if_stats
@@ -200,8 +215,8 @@ name             Linux FreeBSD OpenBSD MacOSX Windows
 pid                 x     x      x       x       x
 ppid                x     x      x       x       x
 name                x     x      x       x       x
-cmdline             x                    x       x
-create_time         x
+cmdline             x     x              x       x
+create_time         x                    x       x
 status              x     x      x       x
 cwd                 x
 exe                 x     x      x               x
@@ -213,7 +228,7 @@ nice                x     x      x       x       x
 num_fds             x
 num_ctx_switches    x
 num_threads         x     x      x       x       x
-cpu_times           x
+cpu_times           x                            x
 memory_info         x     x      x       x       x
 memory_info_ex      x
 memory_maps         x
@@ -223,18 +238,19 @@ suspend             x     x      x       x
 resume              x     x      x       x
 terminate           x     x      x       x       x
 kill                x     x      x       x
-username            x
+username            x     x      x       x       x
 ionice
-rlimit
-num_handlres
-threads
+rlimit              x
+num_handlers
+threads             x
 cpu_percent         x            x       x
 cpu_affinity
 memory_percent
-parent              x            x       x
-children            x     x      x       x
+parent              x            x       x       x
+children            x     x      x       x       x
 connections         x            x       x
 is_running
+page_faults         x
 ================ ===== ======= ======= ====== =======
 
 Original Metrics
@@ -294,7 +310,7 @@ Related Works
 
 I have been influenced by the following great works:
 
-- psutil: http://pythonhosted.org/psutil/
+- psutil: https://github.com/giampaolo/psutil
 - dstat: https://github.com/dagwieers/dstat
 - gosigar: https://github.com/cloudfoundry/gosigar/
 - goprocinfo: https://github.com/c9s/goprocinfo

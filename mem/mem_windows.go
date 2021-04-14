@@ -3,6 +3,7 @@
 package mem
 
 import (
+	"context"
 	"unsafe"
 
 	"github.com/StackExchange/wmi"
@@ -46,6 +47,10 @@ type Win32_OperatingSystem struct {
 }
 
 func VirtualMemory() (*VirtualMemoryStat, error) {
+	return VirtualMemoryWithContext(context.Background())
+}
+
+func VirtualMemoryWithContext(ctx context.Context) (*VirtualMemoryStat, error) {
 	var memInfo memoryStatusEx
 	memInfo.cbSize = uint32(unsafe.Sizeof(memInfo))
 	mem, _, _ := procGlobalMemoryStatusEx.Call(uintptr(unsafe.Pointer(&memInfo)))
@@ -56,6 +61,7 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	ret := &VirtualMemoryStat{
 		Total:       memInfo.ullTotalPhys,
 		Available:   memInfo.ullAvailPhys,
+		Free:        memInfo.ullAvailPhys,
 		UsedPercent: float64(memInfo.dwMemoryLoad),
 	}
 	ret.Used = ret.Total - ret.Available
@@ -98,9 +104,49 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	return ret, nil
 }
 
-/*
+type performanceInformation struct {
+	cb                uint32
+	commitTotal       uint64
+	commitLimit       uint64
+	commitPeak        uint64
+	physicalTotal     uint64
+	physicalAvailable uint64
+	systemCache       uint64
+	kernelTotal       uint64
+	kernelPaged       uint64
+	kernelNonpaged    uint64
+	pageSize          uint64
+	handleCount       uint32
+	processCount      uint32
+	threadCount       uint32
+}
+
 func SwapMemory() (*SwapMemoryStat, error) {
-	ret := &SwapMemoryStat{}
+	return SwapMemoryWithContext(context.Background())
+}
+
+func SwapMemoryWithContext(ctx context.Context) (*SwapMemoryStat, error) {
+	var perfInfo performanceInformation
+	perfInfo.cb = uint32(unsafe.Sizeof(perfInfo))
+	mem, _, _ := procGetPerformanceInfo.Call(uintptr(unsafe.Pointer(&perfInfo)), uintptr(perfInfo.cb))
+	if mem == 0 {
+		return nil, windows.GetLastError()
+	}
+	tot := perfInfo.commitLimit * perfInfo.pageSize
+	used := perfInfo.commitTotal * perfInfo.pageSize
+	free := tot - used
+	var usedPercent float64
+	if tot == 0 {
+		usedPercent = 0
+	} else {
+		usedPercent = float64(used) / float64(tot) * 100
+	}
+	ret := &SwapMemoryStat{
+		Total:       tot,
+		Used:        used,
+		Free:        free,
+		UsedPercent: usedPercent,
+	}
 
 	return ret, nil
 }
@@ -129,33 +175,4 @@ type performanceInformation struct {
 	handleCount       uint32
 	processCount      uint32
 	threadCount       uint32
-}
-
-func SwapMemory() (*SwapMemoryStat, error) {
-	var perfInfo performanceInformation
-	perfInfo.cb = uint32(unsafe.Sizeof(perfInfo))
-	if nil == procGetPerformanceInfo {
-		return nil, nil
-	}
-	mem, _, _ := procGetPerformanceInfo.Call(uintptr(unsafe.Pointer(&perfInfo)), uintptr(perfInfo.cb))
-	if mem == 0 {
-		return nil, windows.GetLastError()
-	}
-	tot := perfInfo.commitLimit * perfInfo.pageSize
-	used := perfInfo.commitTotal * perfInfo.pageSize
-	free := tot - used
-	var usedPercent float64
-	if tot == 0 {
-		usedPercent = 0
-	} else {
-		usedPercent = float64(used) / float64(tot)
-	}
-	ret := &SwapMemoryStat{
-		Total:       tot,
-		Used:        used,
-		Free:        free,
-		UsedPercent: usedPercent,
-	}
-
-	return ret, nil
 }
