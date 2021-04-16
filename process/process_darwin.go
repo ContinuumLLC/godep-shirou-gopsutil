@@ -436,6 +436,11 @@ func parseKinfoProc(buf []byte) (KinfoProc, error) {
 	return k, nil
 }
 
+// GetRunningProcesses returns a slice of pointers to Process structs for all currently running processes.
+func GetRunningProcesses() ([]Process, error) {
+	return processes()
+}
+
 // Returns a proc as defined here:
 // http://unix.superglobalmegacorp.com/Net2/newsrc/sys/kinfo_proc.h.html
 func (p *Process) getKProc() (*KinfoProc, error) {
