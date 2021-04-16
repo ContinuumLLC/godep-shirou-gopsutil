@@ -888,3 +888,22 @@ func Pids() ([]int32, error) {
 
 	return ret, nil
 }
+
+func GetRunningProcesses() ([]*Process, error) {
+	out := []*Process{}
+
+	pids, err := Pids()
+	if err != nil {
+		return out, err
+	}
+
+	for _, pid := range pids {
+		p, err := NewProcess(pid)
+		if err != nil {
+			continue
+		}
+		out = append(out, p)
+	}
+
+	return out, nil
+}
