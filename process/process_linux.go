@@ -889,6 +889,7 @@ func Pids() ([]int32, error) {
 	return ret, nil
 }
 
+// GetRunningProcesses returns a slice of pointers to Process structs for all currently running processes.
 func GetRunningProcesses() ([]*Process, error) {
 	out := []*Process{}
 
