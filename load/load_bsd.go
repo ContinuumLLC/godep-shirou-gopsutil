@@ -3,6 +3,7 @@
 package load
 
 import (
+	"context"
 	"os/exec"
 	"strings"
 	"unsafe"
@@ -11,6 +12,10 @@ import (
 )
 
 func Avg() (*AvgStat, error) {
+	return AvgWithContext(context.Background())
+}
+
+func AvgWithContext(ctx context.Context) (*AvgStat, error) {
 	// This SysctlRaw method borrowed from
 	// https://github.com/prometheus/node_exporter/blob/master/collector/loadavg_freebsd.go
 	type loadavg struct {
@@ -32,15 +37,25 @@ func Avg() (*AvgStat, error) {
 	return ret, nil
 }
 
+type forkstat struct {
+	forks    int
+	vforks   int
+	__tforks int
+}
+
 // Misc returns miscellaneous host-wide statistics.
 // darwin use ps command to get process running/blocked count.
 // Almost same as Darwin implementation, but state is different.
 func Misc() (*MiscStat, error) {
+	return MiscWithContext(context.Background())
+}
+
+func MiscWithContext(ctx context.Context) (*MiscStat, error) {
 	bin, err := exec.LookPath("ps")
 	if err != nil {
 		return nil, err
 	}
-	out, err := invoke.Command(bin, "axo", "state")
+	out, err := invoke.CommandWithContext(ctx, bin, "axo", "state")
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +69,12 @@ func Misc() (*MiscStat, error) {
 			ret.ProcsBlocked++
 		}
 	}
+
+	f, err := getForkStat()
+	if err != nil {
+		return nil, err
+	}
+	ret.ProcsCreated = f.forks
 
 	return &ret, nil
 }

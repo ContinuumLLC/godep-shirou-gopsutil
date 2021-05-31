@@ -3,6 +3,7 @@
 package mem
 
 import (
+	"context"
 	"unsafe"
 
 	"github.com/StackExchange/wmi"
@@ -46,6 +47,10 @@ type Win32_OperatingSystem struct {
 }
 
 func VirtualMemory() (*VirtualMemoryStat, error) {
+	return VirtualMemoryWithContext(context.Background())
+}
+
+func VirtualMemoryWithContext(ctx context.Context) (*VirtualMemoryStat, error) {
 	var memInfo memoryStatusEx
 	memInfo.cbSize = uint32(unsafe.Sizeof(memInfo))
 	mem, _, _ := procGlobalMemoryStatusEx.Call(uintptr(unsafe.Pointer(&memInfo)))
@@ -56,6 +61,7 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	ret := &VirtualMemoryStat{
 		Total:       memInfo.ullTotalPhys,
 		Available:   memInfo.ullAvailPhys,
+		Free:        memInfo.ullAvailPhys,
 		UsedPercent: float64(memInfo.dwMemoryLoad),
 	}
 	ret.Used = ret.Total - ret.Available
@@ -98,22 +104,6 @@ func VirtualMemory() (*VirtualMemoryStat, error) {
 	return ret, nil
 }
 
-/*
-func SwapMemory() (*SwapMemoryStat, error) {
-	ret := &SwapMemoryStat{}
-
-	return ret, nil
-}
-*/
-
-// PerfInfo returns the performance data from performance counters of memory object.
-func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
-	var ret []Win32_PerfFormattedData_PerfOS_Memory
-	q := wmi.CreateQuery(&ret, "")
-	err := wmi.Query(q, &ret)
-	return ret, err
-}
-
 type performanceInformation struct {
 	cb                uint32
 	commitTotal       uint64
@@ -132,11 +122,12 @@ type performanceInformation struct {
 }
 
 func SwapMemory() (*SwapMemoryStat, error) {
+	return SwapMemoryWithContext(context.Background())
+}
+
+func SwapMemoryWithContext(ctx context.Context) (*SwapMemoryStat, error) {
 	var perfInfo performanceInformation
 	perfInfo.cb = uint32(unsafe.Sizeof(perfInfo))
-	if nil == procGetPerformanceInfo {
-		return nil, nil
-	}
 	mem, _, _ := procGetPerformanceInfo.Call(uintptr(unsafe.Pointer(&perfInfo)), uintptr(perfInfo.cb))
 	if mem == 0 {
 		return nil, windows.GetLastError()
@@ -148,7 +139,7 @@ func SwapMemory() (*SwapMemoryStat, error) {
 	if tot == 0 {
 		usedPercent = 0
 	} else {
-		usedPercent = float64(used) / float64(tot)
+		usedPercent = float64(used) / float64(tot) * 100
 	}
 	ret := &SwapMemoryStat{
 		Total:       tot,
@@ -158,4 +149,12 @@ func SwapMemory() (*SwapMemoryStat, error) {
 	}
 
 	return ret, nil
+}
+
+// PerfInfo returns the performance data from performance counters of memory object.
+func PerfInfo() ([]Win32_PerfFormattedData_PerfOS_Memory, error) {
+	var ret []Win32_PerfFormattedData_PerfOS_Memory
+	q := wmi.CreateQuery(&ret, "")
+	err := wmi.Query(q, &ret)
+	return ret, err
 }

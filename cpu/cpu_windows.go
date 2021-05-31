@@ -3,6 +3,7 @@
 package cpu
 
 import (
+	"context"
 	"fmt"
 	"unsafe"
 
@@ -36,30 +37,21 @@ const (
 	win32_SystemProcessorPerformanceInfoSize = uint32(unsafe.Sizeof(win32_SystemProcessorPerformanceInformation{}))
 )
 
+var (
+	procGetActiveProcessorCount = common.Modkernel32.NewProc("GetActiveProcessorCount")
+	procGetNativeSystemInfo     = common.Modkernel32.NewProc("GetNativeSystemInfo")
+)
+
 type Win32_Processor struct {
 	LoadPercentage            *uint16
 	Family                    uint16
 	Manufacturer              string
 	Name                      string
 	NumberOfLogicalProcessors uint32
+	NumberOfCores             uint32
 	ProcessorID               *string
 	Stepping                  *string
 	MaxClockSpeed             uint32
-}
-
-// Win32_PerfFormattedData_Counters_ProcessorInformation stores instance value of the perf counters
-type Win32_PerfFormattedData_Counters_ProcessorInformation struct {
-	Name                  string
-	PercentDPCTime        uint64
-	PercentIdleTime       uint64
-	PercentUserTime       uint64
-	PercentProcessorTime  uint64
-	PercentInterruptTime  uint64
-	PercentPriorityTime   uint64
-	PercentPrivilegedTime uint64
-	InterruptsPerSec      uint32
-	ProcessorFrequency    uint32
-	DPCRate               uint32
 }
 
 // Win32_PerfFormattedData_PerfOS_System struct to have count of processes and processor queue length
@@ -70,6 +62,10 @@ type Win32_PerfFormattedData_PerfOS_System struct {
 
 // Times returns times stat per cpu and combined for all CPUs
 func Times(percpu bool) ([]TimesStat, error) {
+	return TimesWithContext(context.Background(), percpu)
+}
+
+func TimesWithContext(ctx context.Context, percpu bool) ([]TimesStat, error) {
 	if percpu {
 		return perCPUTimes()
 	}
@@ -94,6 +90,7 @@ func Times(percpu bool) ([]TimesStat, error) {
 	system := (kernel - idle)
 
 	ret = append(ret, TimesStat{
+		CPU:    "cpu-total",
 		Idle:   float64(idle),
 		User:   float64(user),
 		System: float64(system),
@@ -102,11 +99,14 @@ func Times(percpu bool) ([]TimesStat, error) {
 }
 
 func Info() ([]InfoStat, error) {
+	return InfoWithContext(context.Background())
+}
+
+func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 	var ret []InfoStat
 	var dst []Win32_Processor
 	q := wmi.CreateQuery(&dst, "")
-	err := wmi.Query(q, &dst)
-	if err != nil {
+	if err := common.WMIQueryWithContext(ctx, q, &dst); err != nil {
 		return ret, err
 	}
 
@@ -136,9 +136,16 @@ func Info() ([]InfoStat, error) {
 // ProcInfo returns processes count and processor queue length in the system.
 // There is a single queue for processor even on multiprocessors systems.
 func ProcInfo() ([]Win32_PerfFormattedData_PerfOS_System, error) {
+	return ProcInfoWithContext(context.Background())
+}
+
+func ProcInfoWithContext(ctx context.Context) ([]Win32_PerfFormattedData_PerfOS_System, error) {
 	var ret []Win32_PerfFormattedData_PerfOS_System
 	q := wmi.CreateQuery(&ret, "")
-	err := wmi.Query(q, &ret)
+	err := common.WMIQueryWithContext(ctx, q, &ret)
+	if err != nil {
+		return []Win32_PerfFormattedData_PerfOS_System{}, err
+	}
 	return ret, err
 }
 
@@ -197,4 +204,52 @@ func perfInfo() ([]win32_SystemProcessorPerformanceInformation, error) {
 	resultBuffer = resultBuffer[:numReturnedElements]
 
 	return resultBuffer, nil
+}
+
+// SystemInfo is an equivalent representation of SYSTEM_INFO in the Windows API.
+// https://msdn.microsoft.com/en-us/library/ms724958%28VS.85%29.aspx?f=255&MSPPError=-2147217396
+// https://github.com/elastic/go-windows/blob/bb1581babc04d5cb29a2bfa7a9ac6781c730c8dd/kernel32.go#L43
+type systemInfo struct {
+	wProcessorArchitecture      uint16
+	wReserved                   uint16
+	dwPageSize                  uint32
+	lpMinimumApplicationAddress uintptr
+	lpMaximumApplicationAddress uintptr
+	dwActiveProcessorMask       uintptr
+	dwNumberOfProcessors        uint32
+	dwProcessorType             uint32
+	dwAllocationGranularity     uint32
+	wProcessorLevel             uint16
+	wProcessorRevision          uint16
+}
+
+func CountsWithContext(ctx context.Context, logical bool) (int, error) {
+	if logical {
+		// https://github.com/giampaolo/psutil/blob/d01a9eaa35a8aadf6c519839e987a49d8be2d891/psutil/_psutil_windows.c#L97
+		err := procGetActiveProcessorCount.Find()
+		if err == nil { // Win7+
+			ret, _, _ := procGetActiveProcessorCount.Call(uintptr(0xffff)) // ALL_PROCESSOR_GROUPS is 0xffff according to Rust's winapi lib https://docs.rs/winapi/*/x86_64-pc-windows-msvc/src/winapi/shared/ntdef.rs.html#120
+			if ret != 0 {
+				return int(ret), nil
+			}
+		}
+		var systemInfo systemInfo
+		_, _, err = procGetNativeSystemInfo.Call(uintptr(unsafe.Pointer(&systemInfo)))
+		if systemInfo.dwNumberOfProcessors == 0 {
+			return 0, err
+		}
+		return int(systemInfo.dwNumberOfProcessors), nil
+	}
+	// physical cores https://github.com/giampaolo/psutil/blob/d01a9eaa35a8aadf6c519839e987a49d8be2d891/psutil/_psutil_windows.c#L499
+	// for the time being, try with unreliable and slow WMI call…
+	var dst []Win32_Processor
+	q := wmi.CreateQuery(&dst, "")
+	if err := common.WMIQueryWithContext(ctx, q, &dst); err != nil {
+		return 0, err
+	}
+	var count uint32
+	for _, d := range dst {
+		count += d.NumberOfCores
+	}
+	return int(count), nil
 }
